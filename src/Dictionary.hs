@@ -67,6 +67,7 @@ type StackState = State Stack (Object, Variable)
 
 type FuncInfo = Map Key Int
 
+-- | List of functors and their amount of parameters.
 functors :: FuncInfo
 functors = Map.fromList [
         ("+", 2), ("-", 2), ("*", 2), ("/", 2), ("div", 2), 

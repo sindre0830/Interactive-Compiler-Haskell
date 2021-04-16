@@ -25,3 +25,5 @@
 [0.10.0] **development**: Added codeBlock parsing in list parser and vice versa
 
 [0.11.0] **development**: Added list and codeBlock parser to the main parser function
+
+[0.11.1] **development**: Added function headers

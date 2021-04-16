@@ -10,9 +10,11 @@ import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
 
+-- | Splits string by whitespace.
 tokenize :: String -> Tokens
 tokenize = words
 
+-- ! parses tokens to stack and list of objects.
 parser :: Tokens -> Stack -> Object -> (Stack, Object)
 parser [] stack objects = (stack, objects)
 parser (x:xs) stack objects = do
@@ -40,6 +42,7 @@ parser (x:xs) stack objects = do
             parser rest (CODEBLOCK key : stack) objects
         _ -> parser xs (typeParser x : stack) objects
 
+-- | Parses codeBlocks.
 codeBlockParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
 codeBlockParser [] _ objects = ([ERROR (show IncompleteCodeBlock)], [], objects)
 codeBlockParser (x:xs) stack objects = do
@@ -69,6 +72,7 @@ codeBlockParser (x:xs) stack objects = do
         _ -> do
             codeBlockParser xs ((typeParser x) : stack) objects
 
+-- | Parses lists.
 listParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
 listParser [] _ objects = ([ERROR (show IncompleteList)], [], objects)
 listParser (x:xs) stack objects = do
@@ -98,6 +102,7 @@ listParser (x:xs) stack objects = do
         _ -> do
             listParser xs ((typeParser x) : stack) objects
 
+-- | Parses strings.
 stringParser :: Tokens -> Data -> (Type, Tokens)
 stringParser [] _ = (ERROR (show IncompleteString), [])
 stringParser (x:xs) str = do
@@ -108,6 +113,7 @@ stringParser (x:xs) str = do
                 then stringParser xs x
             else stringParser xs (str ++ " " ++ x)
 
+-- | Parses types.
 typeParser :: Token -> Type
 typeParser value = do
     if isJust (readMaybe value :: Maybe Int)
