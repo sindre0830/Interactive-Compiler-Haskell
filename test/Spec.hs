@@ -14,9 +14,16 @@ main :: IO ()
 main = do
     hspec $ do
         -- module Parsing
+        spec_tokenize
         spec_typeParser
 
 -- module Parsing
+
+spec_tokenize :: Spec
+spec_tokenize = do
+    describe "tokenize tests:" $ do
+        it "tokenize \"1 2 +\" returns [\"1\", \"2\", \"+\"]" $ do
+            tokenize "1 2 +" `shouldBe` ["1", "2", "+"]
 
 spec_typeParser :: Spec
 spec_typeParser = do
