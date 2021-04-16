@@ -3,3 +3,5 @@
 [0.0.0] **setup**: Initial commit
 
 [0.0.1] **setup**: Copied code from iteration 1
+
+[0.1.0] **development**: Added types
