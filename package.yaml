@@ -1,5 +1,5 @@
 name:                assignment-two
-version:             0.1.0
+version:             0.2.0
 github:              "sindre0830/assignment-two"
 license:             BSD3
 author:              "Sindre Eiklid"
@@ -26,7 +26,7 @@ library:
   source-dirs: src
   dependencies:
   - containers
-  - HaXml
+  - mtl
 
 executables:
   assignment-two-exe:
@@ -51,4 +51,4 @@ tests:
     - assignment-two
     - hspec
     - containers
-    - HaXml
+    - mtl

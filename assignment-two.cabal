@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 283953ccd7dd4647e8a232c16f7f9ad947a85350815de94f7f159ec12b4174a8
+-- hash: 5f87082fe6556866118cb7d8f0aa1832efa4dd120feaf427a483c5da5d46333b
 
 name:           assignment-two
 version:        0.1.0
@@ -38,9 +38,9 @@ library
   hs-source-dirs:
       src
   build-depends:
-      HaXml
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , containers
+    , mtl
   default-language: Haskell2010
 
 executable assignment-two-exe
@@ -64,9 +64,9 @@ test-suite assignment-two-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      HaXml
-    , assignment-two
+      assignment-two
     , base >=4.7 && <5
     , containers
     , hspec
+    , mtl
   default-language: Haskell2010
