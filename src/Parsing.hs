@@ -20,6 +20,24 @@ parser (x:xs) stack objects = do
         ['"'] -> do
             let (value, rest) = stringParser xs ""
             parser rest (value : stack) objects
+        ['['] -> do
+            -- allocate space in map
+            let key = show (Map.size objects)
+            let updatedObjects = Map.insert key [] objects
+            -- parse list
+            let (newStack, rest, newObjects) = listParser xs [] updatedObjects
+            -- update allocated space in map with inner codeBlock
+            let objects = Map.insert key newStack newObjects
+            parser rest (LIST key : stack) objects
+        ['{'] -> do
+            -- allocate space in map
+            let key = show (Map.size objects)
+            let updatedObjects = Map.insert key [] objects
+            -- parse list
+            let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
+            -- update allocated space in map with inner codeBlock
+            let objects = Map.insert key newStack newObjects
+            parser rest (CODEBLOCK key : stack) objects
         _ -> parser xs (typeParser x : stack) objects
 
 codeBlockParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
