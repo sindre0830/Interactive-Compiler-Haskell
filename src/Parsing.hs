@@ -22,6 +22,26 @@ parser (x:xs) stack objects = do
             parser rest (value : stack) objects
         _ -> parser xs (typeParser x : stack) objects
 
+codeBlockParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
+codeBlockParser [] _ objects = ([ERROR (show IncompleteCodeBlock)], [], objects)
+codeBlockParser (x:xs) stack objects = do
+    case x of
+        "}" -> (stack, xs, objects)
+        "{" -> do
+            -- allocate space in map
+            let key = show (Map.size objects)
+            let updatedObjects = Map.insert key [] objects
+            -- get inner codeBlock
+            let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
+            -- update alloceted space in map with inner codeBlock
+            let objects = Map.insert key newStack newObjects
+            codeBlockParser rest (CODEBLOCK key : stack) objects
+        ['"'] -> do
+            let (value, rest) = stringParser xs []
+            codeBlockParser rest (value : stack) objects
+        _ -> do
+            codeBlockParser xs ((typeParser x) : stack) objects
+
 listParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
 listParser [] _ objects = ([ERROR (show IncompleteList)], [], objects)
 listParser (x:xs) stack objects = do

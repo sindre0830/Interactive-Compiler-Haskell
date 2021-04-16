@@ -98,7 +98,7 @@ data ErrorTypes
     | NumberConversionError    
     | IncompleteString
     | IncompleteList
-    | IncompleteCodeblock
+    | IncompleteCodeBlock
     | InvalidListType
     | InvalidList
     | InvalidCodeblock
