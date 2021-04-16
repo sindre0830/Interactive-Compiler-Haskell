@@ -1,10 +1,10 @@
-name:                assignment-two-iteration-two
-version:             0.1.0.0
-github:              "githubuser/assignment-two-iteration-two"
+name:                assignment-two
+version:             0.0.1
+github:              "sindre0830/assignment-two"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2021 Author name here"
+author:              "Sindre Eiklid"
+maintainer:          "sindre0830@gmail.com"
+copyright:           "2021 Sindre Eiklid"
 
 extra-source-files:
 - README.md
@@ -17,16 +17,19 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/assignment-two-iteration-two#readme>
+description:         Please see the README on GitHub at <https://git.gvk.idi.ntnu.no/course/prog2006/as/sindre0830/assignment-two#readme>
 
 dependencies:
 - base >= 4.7 && < 5
 
 library:
   source-dirs: src
+  dependencies:
+  - containers
+  - HaXml
 
 executables:
-  assignment-two-iteration-two-exe:
+  assignment-two-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -34,10 +37,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - assignment-two-iteration-two
+    - assignment-two
 
 tests:
-  assignment-two-iteration-two-test:
+  assignment-two-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -45,4 +48,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - assignment-two-iteration-two
+    - assignment-two
+    - hspec
+    - containers
+    - HaXml
