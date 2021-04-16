@@ -17,3 +17,5 @@
 [0.6.0] **development**: Added string parser
 
 [0.7.0] **development**: Added simple list parser
+
+[0.8.0] **development**: Added string parsing to list parser

@@ -53,6 +53,8 @@ spec_listParser = do
             listParser (tokenize "1 [ 2 ] 3 ]") [] Map.empty `shouldBe` ([INT 3, LIST "0", INT 1], [], (Map.fromList [("0", [INT 2])]))
         it "listParser (tokenize \"[ [ ] ] [ ] ]\") [] Map.empty returns ([LIST \"2\", LIST \"0\"], [], (Map.fromList [(\"0\", [LIST \"1\"]), (\"1\", []), (\"2\", [])]))" $ do
             listParser (tokenize "[ [ ] ] [ ] ]") [] Map.empty `shouldBe` ([LIST "2", LIST "0"], [], (Map.fromList [("0", [LIST "1"]), ("1", []), ("2", [])]))
+        it "listParser (tokenize \"1 \" a string \" 2 ]\") [] Map.empty returns ([INT 2, STRING \"a string\", INT 1], [], Map.empty)" $ do
+            listParser (tokenize "1 \" a string \" 2 ]") [] Map.empty `shouldBe` ([INT 2, STRING "a string", INT 1], [], Map.empty)
 
 spec_stringParser :: Spec
 spec_stringParser = do
