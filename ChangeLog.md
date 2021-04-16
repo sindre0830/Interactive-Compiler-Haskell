@@ -27,3 +27,5 @@
 [0.11.0] **development**: Added list and codeBlock parser to the main parser function
 
 [0.11.1] **development**: Added function headers
+
+[0.12.0] **development**: Added failsafe to parser when codeBlock or list returns error

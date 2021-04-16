@@ -45,6 +45,10 @@ getCODEBLOCK (CODEBLOCK h) = h
 getERROR :: EitherN a b c d e f g h i -> i
 getERROR (ERROR i) = i
 
+isERROR :: EitherN a b c d e f g h i -> Bool
+isERROR (ERROR _) = True
+isERROR _ = False
+
 type List = Key
 
 type CodeBlock = Key

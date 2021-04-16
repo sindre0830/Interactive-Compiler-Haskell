@@ -44,7 +44,11 @@ spec_parser = do
             parser ["\"", "a", "string", "\"", "\"", "b", "string", "\""] [] Map.empty `shouldBe` ([STRING "b string", STRING "a string"], Map.empty)
         it "parser (tokenize \"1 2 + { 10 * [ { 1 2 + } 2 ] }\") [] Map.empty returns \
                 \  ([CODEBLOCK \"0\", FUNC \"+\", INT 2, INT 1], Map.fromList [(\"0\", [LIST \"1\", FUNC \"*\", INT 10]), (\"1\", [INT 2, CODEBLOCK \"2\"]), (\"2\", [FUNC \"+\", INT 2, INT 1])])" $ do
-            parser (tokenize "1 2 + { 10 * [ { 1 2 + } 2 ] }") [] Map.empty `shouldBe` ([CODEBLOCK "0", FUNC "+", INT 2, INT 1], Map.fromList [("0", [LIST "1", FUNC "*", INT 10]), ("1", [INT 2, CODEBLOCK "2"]), ("2", [FUNC "+", INT 2, INT 1])])
+            parser (tokenize "1 2 + { 10 * [ { 1 2 + } 2 ] }") [] Map.empty `shouldBe` ([LIST "0", FUNC "+", INT 2, INT 1], Map.fromList [("0", [LIST "1", FUNC "*", INT 10]), ("1", [INT 2, CODEBLOCK "2"]), ("2", [FUNC "+", INT 2, INT 1])])
+        it "parser (tokenize \"{\") [] Map.empty returns ([ERROR \"IncompleteCodeBlock\"], Map.empty)" $ do
+            parser (tokenize "{") [] Map.empty `shouldBe` ([ERROR "IncompleteCodeBlock"], Map.empty)
+        it "parser (tokenize \"[\") [] Map.empty returns ([ERROR \"IncompleteList\"], Map.empty)" $ do
+            parser (tokenize "[") [] Map.empty `shouldBe` ([ERROR "IncompleteList"], Map.empty)
 
 spec_codeBlockParser :: Spec
 spec_codeBlockParser = do

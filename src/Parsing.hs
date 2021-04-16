@@ -28,18 +28,32 @@ parser (x:xs) stack objects = do
             let updatedObjects = Map.insert key [] objects
             -- parse list
             let (newStack, rest, newObjects) = listParser xs [] updatedObjects
-            -- update allocated space in map with inner codeBlock
-            let objects = Map.insert key newStack newObjects
-            parser rest (LIST key : stack) objects
+            -- check if list is valid
+            if isERROR $ head newStack
+                then do
+                    -- deallocate space from map and push error to stack
+                    let newObjects = Map.delete key objects 
+                    parser rest (head newStack : stack) newObjects
+            else do
+                -- update allocated space in map with inner list
+                let objects = Map.insert key newStack newObjects
+                parser rest (LIST key : stack) objects
         ['{'] -> do
             -- allocate space in map
             let key = show (Map.size objects)
             let updatedObjects = Map.insert key [] objects
-            -- parse list
+            -- parse codeBlock
             let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
-            -- update allocated space in map with inner codeBlock
-            let objects = Map.insert key newStack newObjects
-            parser rest (CODEBLOCK key : stack) objects
+            -- check if codeBlock is valid
+            if isERROR $ head newStack
+                then do
+                    -- deallocate space from map and push error to stack
+                    let newObjects = Map.delete key objects 
+                    parser rest (head newStack : stack) newObjects
+            else do
+                -- update allocated space in map with inner codeBlock
+                let objects = Map.insert key newStack newObjects
+                parser rest (LIST key : stack) objects
         _ -> parser xs (typeParser x : stack) objects
 
 -- | Parses codeBlocks.
