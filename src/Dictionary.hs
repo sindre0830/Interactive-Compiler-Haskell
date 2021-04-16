@@ -8,6 +8,7 @@ import Control.Monad.State.Lazy
 
 type Data = String
 type Key = String
+type Divider = String
 
 type Tokens = [String]
 
@@ -45,9 +46,41 @@ getCODEBLOCK (CODEBLOCK h) = h
 getERROR :: EitherN a b c d e f g h i -> i
 getERROR (ERROR i) = i
 
+isINT :: EitherN a b c d e f g h i -> Bool
+isINT (INT _) = True
+isINT _ = False
+
+isFLOAT :: EitherN a b c d e f g h i -> Bool
+isFLOAT (FLOAT _) = True
+isFLOAT _ = False
+
+isBOOL :: EitherN a b c d e f g h i -> Bool
+isBOOL (BOOL _) = True
+isBOOL _ = False
+
+isSTRING :: EitherN a b c d e f g h i -> Bool
+isSTRING (STRING _) = True
+isSTRING _ = False
+
+isFUNC :: EitherN a b c d e f g h i -> Bool
+isFUNC (FUNC _) = True
+isFUNC _ = False
+
+isUNKNOWN :: EitherN a b c d e f g h i -> Bool
+isUNKNOWN (UNKNOWN _) = True
+isUNKNOWN _ = False
+
 isERROR :: EitherN a b c d e f g h i -> Bool
 isERROR (ERROR _) = True
 isERROR _ = False
+
+isLIST :: EitherN a b c d e f g h i -> Bool
+isLIST (LIST _) = True
+isLIST _ = False
+
+isCODEBLOCK :: EitherN a b c d e f g h i -> Bool
+isCODEBLOCK (CODEBLOCK _) = True
+isCODEBLOCK _ = False
 
 type List = Key
 

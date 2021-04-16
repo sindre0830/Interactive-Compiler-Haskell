@@ -29,3 +29,5 @@
 [0.11.1] **development**: Added function headers
 
 [0.12.0] **development**: Added failsafe to parser when codeBlock or list returns error
+
+[0.13.0] **development**: Added printer functionality to stack

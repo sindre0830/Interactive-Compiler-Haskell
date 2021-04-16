@@ -8,6 +8,8 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 -- local modules
 import Dictionary
+import Stack
+import Parsing
 
 readInput :: IO ()
 readInput = do
@@ -35,11 +37,11 @@ modeInteractive :: Stack -> Variable -> IO ()
 modeInteractive stack variables = do
     readInput
     input <- getLine
-    -- let tokens = tokenize input
-    -- let newStack = stack ++ parser tokens variables
-    -- putStrLn "\n\tBefore compiling:"
-    -- putStrLn $ "\t\tRaw:   " ++ show newStack
-    -- putStrLn $ "\t\tStack: " ++ printableStack newStack variables
+    let tokens = tokenize input
+    let (newStack, objects) = parser tokens [] Map.empty
+    putStrLn "\n\tBefore compiling:"
+    putStrLn $ "\t\tRaw:   " ++ show newStack
+    putStrLn $ "\t\tStack: " ++ printableStack newStack objects
     -- let execStack = executePrefix newStack variables
     -- putStrLn "\n\tAfter compiling:"
     -- putStrLn $ "\t\tRaw:   " ++ show execStack

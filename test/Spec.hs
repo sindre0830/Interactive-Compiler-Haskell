@@ -20,6 +20,8 @@ main = do
         spec_listParser
         spec_stringParser
         spec_typeParser
+        -- module Stack
+        spec_formatStack
 
 -- module Parsing
 
@@ -109,3 +111,16 @@ spec_typeParser = do
             typeParser "+" `shouldBe` FUNC "+"
         it "typeParser \"abc\" returns UNKNOWN \"abc\"" $ do
             typeParser "abc" `shouldBe` UNKNOWN "abc"
+
+-- module Stack
+
+spec_printableStack :: Spec
+spec_printableStack = do
+        it "printableStack [INT 2, STRING \"a string\", INT 1] Map.empty returns \"[1, \"a string\", 2\"]" $ do
+            printableStack [INT 2, STRING "a string", INT 1] Map.empty `shouldBe` "[1, \"a string\", 2]"
+
+spec_formatStack :: Spec
+spec_formatStack = do
+    describe "formatStack tests:" $ do
+        it "formatStack [INT 2, STRING \"a string\", INT 1] \", \" Map.empty returns \"1, \"a string\", 2\"" $ do
+            formatStack [INT 2, STRING "a string", INT 1] ", " Map.empty `shouldBe` "1, \"a string\", 2"
