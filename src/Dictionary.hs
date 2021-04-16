@@ -7,49 +7,67 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy
 
 type Data = String
-type Name = String
+type Key = String
 
 type Tokens = [String]
 
-type Variable = Map Name StackTypes
+type Token = String
 
 
-data EitherN a b c d e
-    = INT a | FLOAT b | BOOL c | STRING d | OBJECT e
+data EitherN a b c d e f g h i
+    = INT a | FLOAT b | BOOL c | STRING d | FUNC e | UNKNOWN f | LIST g | CODEBLOCK h | ERROR i
     deriving (Eq, Show)
 
-
-getINT :: EitherN a b c d e -> a
+getINT :: EitherN a b c d e f g h i -> a
 getINT (INT a) = a
 
-getFLOAT :: EitherN a b c d e -> b
+getFLOAT :: EitherN a b c d e f g h i -> b
 getFLOAT (FLOAT b) = b
 
-getBOOL :: EitherN a b c d e -> c
+getBOOL :: EitherN a b c d e f g h i -> c
 getBOOL (BOOL c) = c
 
-getSTRING :: EitherN a b c d e -> d
+getSTRING :: EitherN a b c d e f g h i -> d
 getSTRING (STRING d) = d
 
-getOBJECT :: EitherN a b c d e -> e
-getOBJECT (OBJECT e) = e
+getFUNC :: EitherN a b c d e f g h i -> e
+getFUNC (FUNC e) = e
 
+getUNKNOWN :: EitherN a b c d e f g h i -> f
+getUNKNOWN (UNKNOWN f) = f
 
-data Type
-    = FUNCTOR
-    | ERROR
-    | UNKNOWN
-    | LIST
-    | CODEBLOCK
-    deriving (Eq, Show)
+getLIST :: EitherN a b c d e f g h i -> g
+getLIST (LIST g) = g
 
-type Object = (Data, Type)
+getCODEBLOCK :: EitherN a b c d e f g h i -> h
+getCODEBLOCK (CODEBLOCK h) = h
 
-type StackTypes = EitherN Int Float Bool String Object
+getERROR :: EitherN a b c d e f g h i -> i
+getERROR (ERROR i) = i
 
-type Stack = [StackTypes] 
+type List = Key
 
-functors :: Map Name Int
+type CodeBlock = Key
+
+type Func = Data
+
+type Error = Data
+
+type Unknown = Data
+
+type Type = EitherN Int Float Bool String Func Unknown List CodeBlock Error
+
+type Stack = [Type]
+
+type Variable = Map Key Type
+
+type Object = Map Key Stack
+
+type StackState = State Stack (Object, Variable) 
+
+type FuncInfo = Map Key Int
+
+functors :: FuncInfo
 functors = Map.fromList [
         ("+", 2), ("-", 2), ("*", 2), ("/", 2), ("div", 2), 
         ("&&", 2), ("||", 2), ("not", 1), 
@@ -62,3 +80,29 @@ functors = Map.fromList [
         ("if", 3),
         ("map", 2), ("each", 2), ("foldl", 3)
     ]
+
+data ErrorTypes
+    = StackEmpty
+    | UnknownValue
+    | ExpectedBool
+    | ExpectedStringOfInteger
+    | ExpectedStringOfFloat
+    | ExpectedNumber
+    | ExpectedEnumerable
+    | ExpectedCodeblock
+    | ExpectedList
+    | ExpectedVariable
+    | ExpectedString
+    | DivisionByZero
+    | ProgramFinishedWithMultipleValues
+    | NumberConversionError    
+    | IncompleteString
+    | IncompleteList
+    | IncompleteCodeblock
+    | InvalidListType
+    | InvalidList
+    | InvalidCodeblock
+    | InvalidParamaterAmount
+    | InvalidType
+    | EmptyList
+    deriving (Eq, Show)

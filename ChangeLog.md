@@ -9,3 +9,5 @@
 [0.2.0] **development**: Added type parser
 
 [0.3.0] **development**: Added tokenize tester
+
+[0.4.0] **development**: Added more types

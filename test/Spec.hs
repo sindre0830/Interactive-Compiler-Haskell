@@ -34,7 +34,7 @@ spec_typeParser = do
             typeParser "1.5" `shouldBe` FLOAT 1.5
         it "typeParser \"True\" returns BOOL True" $ do
             typeParser "True" `shouldBe` BOOL True
-        it "typeParser \"+\" returns OBJECT (\"+\", FUNCTOR)" $ do
-            typeParser "+" `shouldBe` OBJECT ("+", FUNCTOR)
-        it "typeParser \"abc\" returns OBJECT (\"abc\", UNKNOWN)" $ do
-            typeParser "abc" `shouldBe` OBJECT ("abc", UNKNOWN)
+        it "typeParser \"+\" returns FUNC \"+\"" $ do
+            typeParser "+" `shouldBe` FUNC "+"
+        it "typeParser \"abc\" returns UNKNOWN \"abc\"" $ do
+            typeParser "abc" `shouldBe` UNKNOWN "abc"
