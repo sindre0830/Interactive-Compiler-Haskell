@@ -13,3 +13,7 @@
 [0.4.0] **development**: Added more types
 
 [0.5.0] **development**: Added simple parser
+
+[0.6.0] **development**: Added string parser
+
+[0.7.0] **development**: Added simple list parser
