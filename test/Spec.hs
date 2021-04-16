@@ -14,10 +14,17 @@ main :: IO ()
 main = do
     hspec $ do
         -- module Parsing
+        spec_parser
         spec_tokenize
         spec_typeParser
 
 -- module Parsing
+
+spec_parser :: Spec
+spec_parser = do
+    describe "parser tests:" $ do
+        it "parser [\"1\", \"2\", \"+\"] [] Map.empty returns ([FUNC \"+\", INT 2, INT 1], Map.empty)" $ do
+            parser ["1", "2", "+"] [] Map.empty `shouldBe` ([FUNC "+", INT 2, INT 1], Map.empty)
 
 spec_tokenize :: Spec
 spec_tokenize = do

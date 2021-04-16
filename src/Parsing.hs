@@ -10,6 +10,13 @@ import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
 
+parser :: Tokens -> Stack -> Object -> (Stack, Object)
+parser [] stack objects = (stack, objects)
+parser (x:xs) stack objects = do
+    case x of
+        _ -> parser xs (typeParser x : stack) objects
+
+
 tokenize :: String -> Tokens
 tokenize = words
 
