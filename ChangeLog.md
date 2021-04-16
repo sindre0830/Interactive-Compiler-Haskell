@@ -21,3 +21,5 @@
 [0.8.0] **development**: Added string parsing to list parser
 
 [0.9.0] **development**: Added codeBlock parser
+
+[0.10.0] **development**: Added codeBlock parsing in list parser and vice versa

@@ -33,9 +33,18 @@ codeBlockParser (x:xs) stack objects = do
             let updatedObjects = Map.insert key [] objects
             -- get inner codeBlock
             let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
-            -- update alloceted space in map with inner codeBlock
+            -- update allocated space in map with inner codeBlock
             let objects = Map.insert key newStack newObjects
             codeBlockParser rest (CODEBLOCK key : stack) objects
+        "[" -> do
+            -- allocate space in map
+            let key = show (Map.size objects)
+            let updatedObjects = Map.insert key [] objects
+            -- get inner list
+            let (newStack, rest, newObjects) = listParser xs [] updatedObjects
+            -- update allocated space in map with inner list
+            let objects = Map.insert key newStack newObjects
+            codeBlockParser rest (LIST key : stack) objects
         ['"'] -> do
             let (value, rest) = stringParser xs []
             codeBlockParser rest (value : stack) objects
@@ -53,9 +62,18 @@ listParser (x:xs) stack objects = do
             let updatedObjects = Map.insert key [] objects
             -- get inner list
             let (newStack, rest, newObjects) = listParser xs [] updatedObjects
-            -- update alloceted space in map with inner list
+            -- update allocated space in map with inner list
             let objects = Map.insert key newStack newObjects
             listParser rest (LIST key : stack) objects
+        "{" -> do
+            -- allocate space in map
+            let key = show (Map.size objects)
+            let updatedObjects = Map.insert key [] objects
+            -- get inner codeBlock
+            let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
+            -- update allocated space in map with inner codeBlock
+            let objects = Map.insert key newStack newObjects
+            listParser rest (CODEBLOCK key : stack) objects
         ['"'] -> do
             let (value, rest) = stringParser xs []
             listParser rest (value : stack) objects
