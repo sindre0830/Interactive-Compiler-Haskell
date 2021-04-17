@@ -14,6 +14,7 @@ main :: IO ()
 main = do
     hspec $ do
         -- module Parsing
+        spec_parseInput
         spec_tokenize
         spec_parser
         spec_codeBlockParser
@@ -24,6 +25,12 @@ main = do
         spec_formatStack
 
 -- module Parsing
+
+spec_parseInput :: Spec
+spec_parseInput = do
+    describe "parseInput tests:" $ do
+        it "evalState (parseInput \"1 2 +\") ([], [], []) returns [FUNC \"+\", INT 2, INT 1]" $ do
+            evalState (parseInput "1 2 +") (Map.empty, Map.empty, []) `shouldBe` [FUNC "+", INT 2, INT 1]
 
 spec_tokenize :: Spec
 spec_tokenize = do

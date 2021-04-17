@@ -31,3 +31,5 @@
 [0.12.0] **development**: Added failsafe to parser when codeBlock or list returns error
 
 [0.13.0] **development**: Added printer functionality to stack
+
+[0.14.0] **development**: Added input parser that updates global variable

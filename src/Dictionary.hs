@@ -100,7 +100,7 @@ type Variable = Map Key Type
 
 type Object = Map Key Stack
 
-type StackState = State Stack (Object, Variable) 
+type StackState = State (Object, Variable, Stack) Stack
 
 type FuncInfo = Map Key Int
 
