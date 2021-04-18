@@ -37,3 +37,5 @@
 [0.15.0] **development**: Implemented head functor
 
 [0.16.0] **development**: Fixed memory garbage by deallocating list before removing pointer
+
+[0.17.0] **development**: Implemented tail functor

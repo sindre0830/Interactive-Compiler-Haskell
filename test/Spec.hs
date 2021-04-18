@@ -38,6 +38,16 @@ spec_funcHead = do
         it "evalState funcHead (Map.empty, Map.empty, []) returns [ERROR InvalidParameterAmount]" $ do
             evalState funcHead (Map.empty, Map.empty, []) `shouldBe` [ERROR InvalidParameterAmount]
 
+spec_funcTail :: Spec
+spec_funcTail = do
+    describe "funcTail tests:" $ do
+        it "evalState funcTail (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns [LIST \"0\"]" $ do
+            evalState funcTail (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"]) `shouldBe` [LIST "0"]
+        it "evalState funcTail (Map.empty, Map.empty, [INT 10]) returns [ERROR ExpectedList]" $ do
+            evalState funcTail (Map.empty, Map.empty, [INT 10]) `shouldBe` [ERROR ExpectedList]
+        it "evalState funcTail (Map.empty, Map.empty, []) returns [ERROR InvalidParameterAmount]" $ do
+            evalState funcTail (Map.empty, Map.empty, []) `shouldBe` [ERROR InvalidParameterAmount]
+
 -- module Parsing
 
 spec_parseInput :: Spec

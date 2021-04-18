@@ -28,3 +28,21 @@ funcHead = do
                                         (head (objects Map.! key) : rest, newObjects))
     put (newObjects, variables, newStack)
     return newStack
+
+funcTail :: StackState
+funcTail = do
+    (objects, variables, stack) <- get
+    let (a:rest) = stack
+    let list = (objects Map.! getLIST a)
+    let (newStack, newObjects) = (if length stack < functors Map.! "Tail"
+                                    then ([(ERROR InvalidParameterAmount)], objects)
+                                else do
+                                    let (a:rest) = stack
+                                    if not $ isLIST a
+                                        then (ERROR ExpectedList : rest, objects)
+                                    else do
+                                        let key = getLIST a
+                                        let newObjects = Map.insert key (tail (objects Map.! key)) objects
+                                        (stack, newObjects))
+    put (newObjects, variables, newStack)
+    return newStack
