@@ -14,10 +14,8 @@ import Parsing
 funcHead :: StackState
 funcHead = do
     (objects, variables, stack) <- get
-    let (a:rest) = stack
-    let list = (objects Map.! getLIST a)
     let (newStack, newObjects) = (if length stack < functors Map.! "head"
-                                    then ([(ERROR InvalidParameterAmount)], objects)
+                                    then ([ERROR InvalidParameterAmount], objects)
                                 else do
                                     let (a:rest) = stack
                                     if not $ isLIST a
@@ -32,10 +30,8 @@ funcHead = do
 funcTail :: StackState
 funcTail = do
     (objects, variables, stack) <- get
-    let (a:rest) = stack
-    let list = (objects Map.! getLIST a)
     let (newStack, newObjects) = (if length stack < functors Map.! "Tail"
-                                    then ([(ERROR InvalidParameterAmount)], objects)
+                                    then ([ERROR InvalidParameterAmount], objects)
                                 else do
                                     let (a:rest) = stack
                                     if not $ isLIST a

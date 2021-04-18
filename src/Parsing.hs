@@ -92,7 +92,7 @@ codeBlockParser (x:xs) stack objects = do
             let (value, rest) = stringParser xs []
             codeBlockParser rest (value : stack) objects
         _ -> do
-            codeBlockParser xs ((typeParser x) : stack) objects
+            codeBlockParser xs (typeParser x : stack) objects
 
 -- | Parses lists.
 listParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
@@ -122,7 +122,7 @@ listParser (x:xs) stack objects = do
             let (value, rest) = stringParser xs []
             listParser rest (value : stack) objects
         _ -> do
-            listParser xs ((typeParser x) : stack) objects
+            listParser xs (typeParser x : stack) objects
 
 -- | Parses strings.
 stringParser :: Tokens -> Data -> (Type, Tokens)

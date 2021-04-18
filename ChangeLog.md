@@ -39,3 +39,5 @@
 [0.16.0] **development**: Fixed memory garbage by deallocating list before removing pointer
 
 [0.17.0] **development**: Implemented tail functor
+
+[0.17.1] **development**: Removed useless brackets
