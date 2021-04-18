@@ -11,6 +11,22 @@ import Control.Monad.State.Lazy
 import Dictionary
 import Parsing
 
+funcEmpty :: StackState
+funcEmpty = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) = (if length stack < functors Map.! "empty"
+                                    then ([ERROR InvalidParameterAmount], objects)
+                                else do
+                                    let (a:rest) = stack
+                                    if not $ isLIST a
+                                        then (ERROR ExpectedList : rest, objects)
+                                    else do
+                                        let key = getLIST a
+                                        let newObjects = Map.delete key objects
+                                        (BOOL (null (objects Map.! key)) : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, newStack)
+
 funcHead :: StackState
 funcHead = do
     (objects, variables, stack) <- get

@@ -14,6 +14,7 @@ main :: IO ()
 main = do
     hspec $ do
         -- module compiler
+        spec_funcEmpty
         spec_funcHead
         spec_funcTail
         -- module Parsing
@@ -29,6 +30,18 @@ main = do
         spec_formatStack
 
 -- module compiler
+
+spec_funcEmpty :: Spec
+spec_funcEmpty = do
+    describe "funcEmpty tests:" $ do
+        it "printableStack (evalState funcEmpty (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"])) returns \"[False]\"" $ do
+            printableStack (evalState funcEmpty (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"])) `shouldBe` "[False]"
+        it "printableStack (evalState funcEmpty (Map.fromList [(\"0\", [])], Map.empty, [LIST \"0\"])) returns \"[True]\"" $ do
+            printableStack (evalState funcEmpty (Map.fromList [("0", [])], Map.empty, [LIST "0"])) `shouldBe` "[True]"
+        it "printableStack (evalState funcEmpty (Map.empty, Map.empty, [INT 10])) returns \"[ExpectedList]\"" $ do
+            printableStack (evalState funcEmpty (Map.empty, Map.empty, [INT 10])) `shouldBe` "[ExpectedList]"
+        it "printableStack (evalState funcEmpty (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcEmpty (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 spec_funcHead :: Spec
 spec_funcHead = do

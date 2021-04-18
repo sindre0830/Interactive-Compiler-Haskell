@@ -49,3 +49,5 @@
 [0.19.0] **development**: Fixed tail functor where I checked amount of parameters
 
 [0.20.0] **development**: Changed output of one head test to printable stack
+
+[0.21.0] **development**: Implemented empty functor
