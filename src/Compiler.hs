@@ -16,11 +16,15 @@ funcHead = do
     (objects, variables, stack) <- get
     let (a:rest) = stack
     let list = (objects Map.! getLIST a)
-    let newStack = (if length stack < functors Map.! "head"
-                        then [(ERROR InvalidParameterAmount)]
-                    else do
-                        let (a:rest) = stack
-                        if not $ isLIST a
-                            then ERROR ExpectedList : rest
-                        else head (objects Map.! getLIST a) : rest)
+    let (newStack, newObjects) = (if length stack < functors Map.! "head"
+                                    then ([(ERROR InvalidParameterAmount)], objects)
+                                else do
+                                    let (a:rest) = stack
+                                    if not $ isLIST a
+                                        then (ERROR ExpectedList : rest, objects)
+                                    else do
+                                        let key = getLIST a
+                                        let newObjects = Map.delete key objects
+                                        (head (objects Map.! key) : rest, newObjects))
+    put (newObjects, variables, newStack)
     return newStack
