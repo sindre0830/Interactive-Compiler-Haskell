@@ -7,8 +7,8 @@ import qualified Data.Map as Map
 -- local modules
 import Dictionary
 
-printableStack :: Stack -> Object -> String 
-printableStack stack objects = "[" ++ (formatStack stack ", " objects) ++ "]"
+printableStack :: Object -> Stack -> String 
+printableStack objects stack = "[" ++ (formatStack stack ", " objects) ++ "]"
 
 formatStack :: Stack -> Divider -> Object -> String
 formatStack [] _ _ = []
@@ -20,7 +20,7 @@ formatStack (x:xs) divider objects
     | isSTRING x    = formatStack xs divider objects ++ divider ++ show (getSTRING x)
     | isFUNC x      = formatStack xs divider objects ++ divider ++ getFUNC x
     | isUNKNOWN x   = formatStack xs divider objects ++ divider ++ show (getUNKNOWN x)
-    | isLIST x      = formatStack xs divider objects ++ divider ++ printableStack (objects Map.! getLIST x) objects
-    | isCODEBLOCK x = formatStack xs divider objects ++ divider ++ printableStack (objects Map.! getCODEBLOCK x) objects
+    | isLIST x      = formatStack xs divider objects ++ divider ++ printableStack objects (objects Map.! getLIST x)
+    | isCODEBLOCK x = formatStack xs divider objects ++ divider ++ "{" ++ formatStack (objects Map.! getCODEBLOCK x) ", " objects ++ "}"
     | isERROR x     = formatStack xs divider objects ++ divider ++ show (getERROR x)
     | otherwise     = formatStack xs divider objects

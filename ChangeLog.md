@@ -40,6 +40,8 @@
 
 [0.17.0] **development**: Implemented tail functor
 
-[0.17.1] **development**: Removed useless brackets
+[0.17.1] **formatting**: Removed useless brackets
 
-[0.17.2] **development**: Changed output in StackState to output objects aswell
+[0.17.2] **formatting**: Changed output in StackState to output objects aswell
+
+[0.18.0] **development**: Fixed stack formatter to print code blocks properly

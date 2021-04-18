@@ -41,7 +41,7 @@ modeInteractive stack variables = do
     let (newStack, objects) = parser tokens [] Map.empty
     putStrLn "\n\tBefore compiling:"
     putStrLn $ "\t\tRaw:   " ++ show newStack
-    putStrLn $ "\t\tStack: " ++ printableStack newStack objects
+    putStrLn $ "\t\tStack: " ++ printableStack objects newStack
     -- let execStack = executePrefix newStack variables
     -- putStrLn "\n\tAfter compiling:"
     -- putStrLn $ "\t\tRaw:   " ++ show execStack

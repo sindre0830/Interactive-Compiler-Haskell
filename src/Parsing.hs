@@ -61,7 +61,7 @@ parser (x:xs) stack objects = do
             else do
                 -- update allocated space in map with inner codeBlock
                 let objects = Map.insert key newStack newObjects
-                parser rest (LIST key : stack) objects
+                parser rest (CODEBLOCK key : stack) objects
         _ -> parser xs (typeParser x : stack) objects
 
 -- | Parses codeBlocks.
