@@ -66,7 +66,7 @@ parser (x:xs) stack objects = do
 
 -- | Parses codeBlocks.
 codeBlockParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
-codeBlockParser [] _ objects = ([ERROR (show IncompleteCodeBlock)], [], objects)
+codeBlockParser [] _ objects = ([ERROR IncompleteCodeBlock], [], objects)
 codeBlockParser (x:xs) stack objects = do
     case x of
         "}" -> (stack, xs, objects)
@@ -96,7 +96,7 @@ codeBlockParser (x:xs) stack objects = do
 
 -- | Parses lists.
 listParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
-listParser [] _ objects = ([ERROR (show IncompleteList)], [], objects)
+listParser [] _ objects = ([ERROR IncompleteList], [], objects)
 listParser (x:xs) stack objects = do
     case x of
         "]" -> (stack, xs, objects)
@@ -126,7 +126,7 @@ listParser (x:xs) stack objects = do
 
 -- | Parses strings.
 stringParser :: Tokens -> Data -> (Type, Tokens)
-stringParser [] _ = (ERROR (show IncompleteString), [])
+stringParser [] _ = (ERROR IncompleteString, [])
 stringParser (x:xs) str = do
     case x of
         ['"'] -> (STRING str, xs)

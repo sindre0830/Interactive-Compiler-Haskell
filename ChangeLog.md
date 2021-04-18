@@ -33,3 +33,5 @@
 [0.13.0] **development**: Added printer functionality to stack
 
 [0.14.0] **development**: Added input parser that updates global variable
+
+[0.15.0] **development**: Implemented head functor

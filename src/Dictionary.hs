@@ -88,7 +88,7 @@ type CodeBlock = Key
 
 type Func = Data
 
-type Error = Data
+type Error = ErrorTypes
 
 type Unknown = Data
 
@@ -140,7 +140,7 @@ data ErrorTypes
     | InvalidListType
     | InvalidList
     | InvalidCodeblock
-    | InvalidParamaterAmount
+    | InvalidParameterAmount
     | InvalidType
     | EmptyList
     deriving (Eq, Show)
