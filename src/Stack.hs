@@ -16,10 +16,13 @@ getValidAddress objects index = do
         then getValidAddress objects (index + 1)
     else index
 
+updateObject :: Key -> Stack -> Object -> Object
+updateObject = Map.insert
+
 allocateObject :: Stack -> Object -> Object
-allocateObject object objects = do
+allocateObject stack objects = do
     let key = generateObjectAddress objects
-    Map.insert key object objects
+    Map.insert key stack objects
 
 deallocateObject :: Type -> Object -> Object
 deallocateObject x objects
@@ -40,7 +43,7 @@ formatStack (x:xs) divider objects
     | isSTRING x    = formatStack xs divider objects ++ divider ++ show (getSTRING x)
     | isFUNC x      = formatStack xs divider objects ++ divider ++ getFUNC x
     | isUNKNOWN x   = formatStack xs divider objects ++ divider ++ show (getUNKNOWN x)
-    | isLIST x      = formatStack xs divider objects ++ divider ++ printableStack (objects, (objects Map.! getLIST x))
+    | isLIST x      = formatStack xs divider objects ++ divider ++ printableStack (objects, objects Map.! getLIST x)
     | isCODEBLOCK x = formatStack xs divider objects ++ divider ++ "{" ++ formatStack (objects Map.! getCODEBLOCK x) ", " objects ++ "}"
     | isERROR x     = formatStack xs divider objects ++ divider ++ show (getERROR x)
     | otherwise     = formatStack xs divider objects

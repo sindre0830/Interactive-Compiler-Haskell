@@ -29,6 +29,7 @@ main = do
         -- module Stack
         spec_generateObjectAddress
         spec_getValidAddress
+        spec_updateObject
         spec_allocateObject
         spec_deallocateObject
         spec_printableStack
@@ -190,6 +191,12 @@ spec_getValidAddress = do
         it "getValidAddress Map.empty 0 returns 0" $ do
             getValidAddress Map.empty 0 `shouldBe` 0
 
+spec_updateObject :: Spec
+spec_updateObject = do
+    describe "updateObject tests:" $ do
+        it "updateObject \"0\" [INT 1, INT 2] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1, INT 2])]" $ do
+            updateObject "0" [INT 1, INT 2] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1, INT 2])]
+
 spec_allocateObject :: Spec
 spec_allocateObject = do
     describe "allocateObject tests:" $ do
@@ -199,12 +206,12 @@ spec_allocateObject = do
 spec_deallocateObject :: Spec
 spec_deallocateObject = do
     describe "deallocateObject tests:" $ do
-        it "deallocateObject (LIST \"3\") (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns (Map.fromList [(\"0\", []), (\"2\", []), (\"5\", [])])" $ do
-            deallocateObject (LIST "3") (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` (Map.fromList [("0", []), ("2", []), ("5", [])])
+        it "deallocateObject (LIST \"3\") (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"2\", []), (\"5\", [])]" $ do
+            deallocateObject (LIST "3") (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("2", []), ("5", [])]
         it "deallocateObject (INT 1) Map.empty returns Map.empty" $ do
             deallocateObject (INT 1) Map.empty `shouldBe` Map.empty
-        it "deallocateObject (INT 1) (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.empty" $ do
-            deallocateObject (INT 1) (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])])
+        it "deallocateObject (INT 1) (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]" $ do
+            deallocateObject (INT 1) (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]
 
 spec_printableStack :: Spec
 spec_printableStack = do

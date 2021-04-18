@@ -18,14 +18,10 @@ funcEmpty = do
                                         then ([ERROR InvalidParameterAmount], objects)
                                     else do
                                         let (a:rest) = stack
+                                        let newObjects = deallocateObject a objects
                                         if not $ isLIST a
-                                            then do
-                                                let newObjects = deallocateObject a objects
-                                                (ERROR ExpectedList : rest, newObjects)
-                                        else do
-                                            let key = getLIST a
-                                            let newObjects = Map.delete key objects
-                                            (BOOL (null (objects Map.! key)) : rest, newObjects))
+                                            then (ERROR ExpectedList : rest, newObjects)
+                                        else (BOOL (null (objects Map.! getLIST a)) : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)
 
@@ -36,14 +32,10 @@ funcHead = do
                                         then ([ERROR InvalidParameterAmount], objects)
                                     else do
                                         let (a:rest) = stack
+                                        let newObjects = deallocateObject a objects
                                         if not $ isLIST a
-                                            then do
-                                                let newObjects = deallocateObject a objects
-                                                (ERROR ExpectedList : rest, newObjects)
-                                        else do
-                                            let key = getLIST a
-                                            let newObjects = Map.delete key objects
-                                            (head (objects Map.! key) : rest, newObjects))
+                                            then (ERROR ExpectedList : rest, newObjects)
+                                        else (head (objects Map.! getLIST a) : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)
 
@@ -60,7 +52,7 @@ funcTail = do
                                                 (ERROR ExpectedList : rest, newObjects)
                                         else do
                                             let key = getLIST a
-                                            let newObjects = Map.insert key (tail (objects Map.! key)) objects
+                                            let newObjects = updateObject key (tail (objects Map.! key)) objects
                                             (stack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)
@@ -84,7 +76,7 @@ funcCons = do
                                                 (ERROR ExpectedList : rest, objects)
                                         else do
                                             let key = getLIST a
-                                            let newObjects = Map.insert key (b : (objects Map.! key)) objects
+                                            let newObjects = updateObject key (b : (objects Map.! key)) objects
                                             (a : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)

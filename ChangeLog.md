@@ -57,3 +57,5 @@
 [0.23.0] **development**: Implemented object functionality: generateAddress and deallocate
 
 [0.24.0] **development**: Implemented allocate object
+
+[0.25.0] **development**: Implemented update object
