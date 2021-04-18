@@ -25,7 +25,7 @@ funcHead = do
                                         let newObjects = Map.delete key objects
                                         (head (objects Map.! key) : rest, newObjects))
     put (newObjects, variables, newStack)
-    return newStack
+    return (newObjects, newStack)
 
 funcTail :: StackState
 funcTail = do
@@ -41,4 +41,4 @@ funcTail = do
                                         let newObjects = Map.insert key (tail (objects Map.! key)) objects
                                         (stack, newObjects))
     put (newObjects, variables, newStack)
-    return newStack
+    return (newObjects, newStack)

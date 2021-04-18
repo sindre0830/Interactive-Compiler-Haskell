@@ -41,3 +41,5 @@
 [0.17.0] **development**: Implemented tail functor
 
 [0.17.1] **development**: Removed useless brackets
+
+[0.17.2] **development**: Changed output in StackState to output objects aswell

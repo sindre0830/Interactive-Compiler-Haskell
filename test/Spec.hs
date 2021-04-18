@@ -24,6 +24,7 @@ main = do
         spec_stringParser
         spec_typeParser
         -- module Stack
+        spec_printableStack
         spec_formatStack
 
 -- module compiler
@@ -31,30 +32,29 @@ main = do
 spec_funcHead :: Spec
 spec_funcHead = do
     describe "funcHead tests:" $ do
-        it "evalState funcHead (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns [INT 1]" $ do
-            evalState funcHead (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"]) `shouldBe` [INT 1]
-        it "evalState funcHead (Map.empty, Map.empty, [INT 10]) returns [ERROR ExpectedList]" $ do
-            evalState funcHead (Map.empty, Map.empty, [INT 10]) `shouldBe` [ERROR ExpectedList]
-        it "evalState funcHead (Map.empty, Map.empty, []) returns [ERROR InvalidParameterAmount]" $ do
-            evalState funcHead (Map.empty, Map.empty, []) `shouldBe` [ERROR InvalidParameterAmount]
+        it "evalState funcHead (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns (Map.empty, [INT 1])" $ do
+            evalState funcHead (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"]) `shouldBe` (Map.empty, [INT 1])
+        it "evalState funcHead (Map.empty, Map.empty, [INT 10]) returns (Map.empty, [ERROR ExpectedList])" $ do
+            evalState funcHead (Map.empty, Map.empty, [INT 10]) `shouldBe` (Map.empty, [ERROR ExpectedList])
+        it "evalState funcHead (Map.empty, Map.empty, []) returns (Map.empty, [ERROR InvalidParameterAmount])" $ do
+            evalState funcHead (Map.empty, Map.empty, []) `shouldBe` (Map.empty, [ERROR InvalidParameterAmount])
 
 spec_funcTail :: Spec
 spec_funcTail = do
     describe "funcTail tests:" $ do
-        it "evalState funcTail (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns [LIST \"0\"]" $ do
-            evalState funcTail (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"]) `shouldBe` [LIST "0"]
-        it "evalState funcTail (Map.empty, Map.empty, [INT 10]) returns [ERROR ExpectedList]" $ do
-            evalState funcTail (Map.empty, Map.empty, [INT 10]) `shouldBe` [ERROR ExpectedList]
-        it "evalState funcTail (Map.empty, Map.empty, []) returns [ERROR InvalidParameterAmount]" $ do
-            evalState funcTail (Map.empty, Map.empty, []) `shouldBe` [ERROR InvalidParameterAmount]
-
+        it "evalState funcTail (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns (Map.fromList [\"0\", [INT 2, INT 3]], [LIST \"0\"])" $ do
+            evalState funcTail (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"]) `shouldBe` (Map.fromList [("0", [INT 2, INT 3])], [LIST "0"])
+        it "evalState funcTail (Map.empty, Map.empty, [INT 10]) returns (Map.empty, [ERROR ExpectedList])" $ do
+            evalState funcTail (Map.empty, Map.empty, [INT 10]) `shouldBe` (Map.empty, [ERROR ExpectedList])
+        it "evalState funcTail (Map.empty, Map.empty, []) returns (Map.empty, [ERROR InvalidParameterAmount])" $ do
+            evalState funcTail (Map.empty, Map.empty, []) `shouldBe` (Map.empty, [ERROR InvalidParameterAmount])
 -- module Parsing
 
 spec_parseInput :: Spec
 spec_parseInput = do
     describe "parseInput tests:" $ do
-        it "evalState (parseInput \"1 2 +\") ([], [], []) returns [FUNC \"+\", INT 2, INT 1]" $ do
-            evalState (parseInput "1 2 +") (Map.empty, Map.empty, []) `shouldBe` [FUNC "+", INT 2, INT 1]
+        it "evalState (parseInput \"1 2 +\") (Map.empty, Map.empty, []) returns (Map.empty, [FUNC \"+\", INT 2, INT 1])" $ do
+            evalState (parseInput "1 2 +") (Map.empty, Map.empty, []) `shouldBe` (Map.empty, [FUNC "+", INT 2, INT 1])
 
 spec_tokenize :: Spec
 spec_tokenize = do

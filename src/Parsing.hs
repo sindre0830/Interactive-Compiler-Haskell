@@ -16,7 +16,7 @@ parseInput input = do
     let tokens = tokenize input
     let (newStack, newObjects) = parser tokens stack objects
     put (newObjects, variables, newStack)
-    return newStack
+    return (newObjects, newStack)
 
 -- | Splits string by whitespace.
 tokenize :: String -> Tokens
