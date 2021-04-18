@@ -16,6 +16,11 @@ getValidAddress objects index = do
         then getValidAddress objects (index + 1)
     else index
 
+allocateObject :: Stack -> Object -> Object
+allocateObject object objects = do
+    let key = generateObjectAddress objects
+    Map.insert key object objects
+
 deallocateObject :: Type -> Object -> Object
 deallocateObject x objects
     | isLIST x = Map.delete (getLIST x) objects

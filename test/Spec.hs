@@ -29,6 +29,7 @@ main = do
         -- module Stack
         spec_generateObjectAddress
         spec_getValidAddress
+        spec_allocateObject
         spec_deallocateObject
         spec_printableStack
         spec_formatStack
@@ -188,6 +189,12 @@ spec_getValidAddress = do
             getValidAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) 0 `shouldBe` 4
         it "getValidAddress Map.empty 0 returns 0" $ do
             getValidAddress Map.empty 0 `shouldBe` 0
+
+spec_allocateObject :: Spec
+spec_allocateObject = do
+    describe "allocateObject tests:" $ do
+        it "allocateObject [INT 1] (Map.fromList [(\"0\", []), (\"2\", [])]) returns Map.fromList [(\"0\", []), (\"2\", []), (\"1\", [INT 1])]" $ do
+            allocateObject [INT 1] (Map.fromList [("0", []), ("2", [])]) `shouldBe` Map.fromList [("0", []), ("2", []), ("1", [INT 1])]
 
 spec_deallocateObject :: Spec
 spec_deallocateObject = do

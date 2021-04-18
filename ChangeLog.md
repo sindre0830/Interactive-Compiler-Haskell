@@ -55,3 +55,5 @@
 [0.22.0] **development**: Implemented cons functor and properly deallocates objects
 
 [0.23.0] **development**: Implemented object functionality: generateAddress and deallocate
+
+[0.24.0] **development**: Implemented allocate object
