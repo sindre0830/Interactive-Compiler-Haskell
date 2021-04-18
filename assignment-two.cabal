@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 27b40308f8da693e10eeb66409abb6530b8ca2e1048ff50244861eba8f189232
+-- hash: 2471294cb233d42e2a621ec73ecc2e0527af0641607ce810d7e1e93a948ce6af
 
 name:           assignment-two
-version:        0.18.0
+version:        0.20.0
 description:    Please see the README on GitHub at <https://git.gvk.idi.ntnu.no/course/prog2006/as/sindre0830/assignment-two#readme>
 homepage:       https://github.com/sindre0830/assignment-two#readme
 bug-reports:    https://github.com/sindre0830/assignment-two/issues

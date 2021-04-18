@@ -33,8 +33,8 @@ main = do
 spec_funcHead :: Spec
 spec_funcHead = do
     describe "funcHead tests:" $ do
-        it "evalState funcHead (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns (Map.empty, [INT 1])" $ do
-            evalState funcHead (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"]) `shouldBe` (Map.empty, [INT 1])
+        it "printableStack (evalState funcHead (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"])) returns \"[1]\"" $ do
+            printableStack (evalState funcHead (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"])) `shouldBe` "[1]"
         it "evalState funcHead (Map.empty, Map.empty, [INT 10]) returns (Map.empty, [ERROR ExpectedList])" $ do
             evalState funcHead (Map.empty, Map.empty, [INT 10]) `shouldBe` (Map.empty, [ERROR ExpectedList])
         it "evalState funcHead (Map.empty, Map.empty, []) returns (Map.empty, [ERROR InvalidParameterAmount])" $ do
