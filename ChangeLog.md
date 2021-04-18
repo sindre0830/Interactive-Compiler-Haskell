@@ -45,3 +45,5 @@
 [0.17.2] **formatting**: Changed output in StackState to output objects aswell
 
 [0.18.0] **development**: Fixed stack formatter to print code blocks properly
+
+[0.19.0] **development**: Fixed tail functor where I checked amount of parameters

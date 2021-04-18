@@ -30,7 +30,7 @@ funcHead = do
 funcTail :: StackState
 funcTail = do
     (objects, variables, stack) <- get
-    let (newStack, newObjects) = (if length stack < functors Map.! "Tail"
+    let (newStack, newObjects) = (if length stack < functors Map.! "tail"
                                     then ([ERROR InvalidParameterAmount], objects)
                                 else do
                                     let (a:rest) = stack

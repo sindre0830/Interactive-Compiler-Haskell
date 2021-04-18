@@ -15,6 +15,7 @@ main = do
     hspec $ do
         -- module compiler
         spec_funcHead
+        spec_funcTail
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -42,7 +43,7 @@ spec_funcHead = do
 spec_funcTail :: Spec
 spec_funcTail = do
     describe "funcTail tests:" $ do
-        it "evalState funcTail (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns (Map.fromList [\"0\", [INT 2, INT 3]], [LIST \"0\"])" $ do
+        it "evalState funcTail (Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, [LIST \"0\"]) returns (Map.fromList [(\"0\", [INT 2, INT 3])], [LIST \"0\"])" $ do
             evalState funcTail (Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, [LIST "0"]) `shouldBe` (Map.fromList [("0", [INT 2, INT 3])], [LIST "0"])
         it "evalState funcTail (Map.empty, Map.empty, [INT 10]) returns (Map.empty, [ERROR ExpectedList])" $ do
             evalState funcTail (Map.empty, Map.empty, [INT 10]) `shouldBe` (Map.empty, [ERROR ExpectedList])
@@ -147,8 +148,9 @@ spec_typeParser = do
 
 spec_printableStack :: Spec
 spec_printableStack = do
-        it "printableStack Map.empty [INT 2, STRING \"a string\", INT 1] returns \"[1, \"a string\", 2\"]" $ do
-            printableStack Map.empty [INT 2, STRING "a string", INT 1] `shouldBe` "[1, \"a string\", 2]"
+    describe "printableStack tests:" $ do
+        it "printableStack (Map.empty, [INT 2, STRING \"a string\", INT 1]) returns \"[1, \"a string\", 2\"]" $ do
+            printableStack (Map.empty, [INT 2, STRING "a string", INT 1]) `shouldBe` "[1, \"a string\", 2]"
 
 spec_formatStack :: Spec
 spec_formatStack = do
