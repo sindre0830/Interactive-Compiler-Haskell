@@ -14,6 +14,7 @@ main :: IO ()
 main = do
     hspec $ do
         -- module compiler
+        spec_funcAddition
         spec_funcEmpty
         spec_funcHead
         spec_funcTail
@@ -37,6 +38,22 @@ main = do
         spec_formatStack
 
 -- module compiler
+
+spec_funcAddition :: Spec
+spec_funcAddition = do
+    describe "funcAddition tests:" $ do
+        it "printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2, INT 1])) returns \"[3]\"" $ do
+            printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2, INT 1])) `shouldBe` "[3]"
+        it "printableStack (evalState funcAddition (Map.empty, Map.empty, [FLOAT 2.5, FLOAT 1.5])) returns \"[4.0]\"" $ do
+            printableStack (evalState funcAddition (Map.empty, Map.empty, [FLOAT 2.5, FLOAT 1.5])) `shouldBe` "[4.0]"
+        it "printableStack (evalState funcAddition (Map.empty, Map.empty, [FLOAT 2.5, INT 1])) returns \"[3.5]\"" $ do
+            printableStack (evalState funcAddition (Map.empty, Map.empty, [FLOAT 2.5, INT 1])) `shouldBe` "[3.5]"
+        it "printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2, FLOAT 1.5])) returns \"[3.5]\"" $ do
+            printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2, FLOAT 1.5])) `shouldBe` "[3.5]"
+        it "printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2])) `shouldBe` "[InvalidParameterAmount]"
+        it "printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2, BOOL True])) returns \"[ExpectedNumber]\"" $ do
+            printableStack (evalState funcAddition (Map.empty, Map.empty, [INT 2, BOOL True])) `shouldBe` "[ExpectedNumber]"
 
 spec_funcEmpty :: Spec
 spec_funcEmpty = do

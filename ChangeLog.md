@@ -61,3 +61,5 @@
 [0.25.0] **development**: Implemented update object
 
 [0.26.0] **development**: Implemented append functor
+
+[0.27.0] **development**: Implemented addition functor
