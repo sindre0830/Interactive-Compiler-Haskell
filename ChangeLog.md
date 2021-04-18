@@ -51,3 +51,5 @@
 [0.20.0] **development**: Changed output of one head test to printable stack
 
 [0.21.0] **development**: Implemented empty functor
+
+[0.22.0] **development**: Implemented cons functor and properly deallocates objects
