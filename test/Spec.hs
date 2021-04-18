@@ -18,6 +18,7 @@ main = do
         spec_funcHead
         spec_funcTail
         spec_funcCons
+        spec_funcAppend
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -80,6 +81,18 @@ spec_funcCons = do
             printableStack (evalState funcCons (Map.empty, Map.empty, [INT 10, INT 10])) `shouldBe` "[ExpectedList]"
         it "printableStack (evalState funcCons (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcCons (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcAppend :: Spec
+spec_funcAppend = do
+    describe "funcAppend tests:" $ do
+        it "printableStack (evalState funcAppend (Map.fromList [(\"0\", [INT 2, INT 3]), (\"1\", [INT 1])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[3, 2, 1]]\"" $ do
+            printableStack (evalState funcAppend (Map.fromList [("0", [INT 2, INT 3]), ("1", [INT 1])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[3, 2, 1]]"
+        it "printableStack (evalState funcAppend (Map.fromList [(\"0\", []), (\"1\", [])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[]]\"" $ do
+            printableStack (evalState funcAppend (Map.fromList [("0", []), ("1", [])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[]]"
+        it "printableStack (evalState funcAppend (Map.empty, Map.empty, [INT 10, INT 10])) returns \"[ExpectedList]\"" $ do
+            printableStack (evalState funcAppend (Map.empty, Map.empty, [INT 10, INT 10])) `shouldBe` "[ExpectedList]"
+        it "printableStack (evalState funcAppend (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcAppend (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 

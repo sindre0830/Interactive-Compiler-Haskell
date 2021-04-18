@@ -59,3 +59,5 @@
 [0.24.0] **development**: Implemented allocate object
 
 [0.25.0] **development**: Implemented update object
+
+[0.26.0] **development**: Implemented append functor

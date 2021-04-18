@@ -80,3 +80,29 @@ funcCons = do
                                             (a : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)
+
+funcAppend :: StackState
+funcAppend = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "append"
+                                        then do
+                                            let newObjects  | not $ null stack = do
+                                                                let (a:rest) = stack
+                                                                deallocateObject a objects
+                                                            | otherwise = objects
+                                            ([ERROR InvalidParameterAmount], newObjects)
+                                    else do
+                                        let (b:a:rest) = stack
+                                        if not (isLIST a) || not (isLIST b)
+                                            then do
+                                                let newObjects = deallocateObject a objects
+                                                let objects = deallocateObject b newObjects
+                                                (ERROR ExpectedList : rest, objects)
+                                        else do
+                                            let keyA = getLIST a
+                                            let keyB = getLIST b
+                                            let newObjects = updateObject keyA ((objects Map.! keyB) ++ (objects Map.! keyA)) objects
+                                            let objects = deallocateObject b newObjects
+                                            (a : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, newStack)
