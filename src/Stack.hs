@@ -7,6 +7,21 @@ import qualified Data.Map as Map
 -- local modules
 import Dictionary
 
+generateObjectAddress :: Object -> String 
+generateObjectAddress objects = show $ getValidAddress objects 0
+
+getValidAddress :: Object -> Int -> Int
+getValidAddress objects index = do
+    if Map.member (show index) objects
+        then getValidAddress objects (index + 1)
+    else index
+
+deallocateObject :: Type -> Object -> Object
+deallocateObject x objects
+    | isLIST x = Map.delete (getLIST x) objects
+    | isCODEBLOCK x = Map.delete (getCODEBLOCK x) objects
+    | otherwise = objects
+
 printableStack :: (Object, Stack) -> String 
 printableStack (objects, stack) = "[" ++ (formatStack stack ", " objects) ++ "]"
 

@@ -27,6 +27,9 @@ main = do
         spec_stringParser
         spec_typeParser
         -- module Stack
+        spec_generateObjectAddress
+        spec_getValidAddress
+        spec_deallocateObject
         spec_printableStack
         spec_formatStack
 
@@ -103,9 +106,6 @@ spec_parser = do
             parser ["\"", "a", "string", "\""] [] Map.empty `shouldBe` ([STRING "a string"], Map.empty)
         it "parser [\", \"a\", \"string\", \", \", \"b\", \"string\", \"] [] Map.empty returns ([STRING \"b string\", STRING \"a string\"], Map.empty)" $ do
             parser ["\"", "a", "string", "\"", "\"", "b", "string", "\""] [] Map.empty `shouldBe` ([STRING "b string", STRING "a string"], Map.empty)
-        it "parser (tokenize \"1 2 + { 10 * [ { 1 2 + } 2 ] }\") [] Map.empty returns \
-                \  ([CODEBLOCK \"0\", FUNC \"+\", INT 2, INT 1], Map.fromList [(\"0\", [LIST \"1\", FUNC \"*\", INT 10]), (\"1\", [INT 2, CODEBLOCK \"2\"]), (\"2\", [FUNC \"+\", INT 2, INT 1])])" $ do
-            parser (tokenize "1 2 + { 10 * [ { 1 2 + } 2 ] }") [] Map.empty `shouldBe` ([CODEBLOCK "0", FUNC "+", INT 2, INT 1], Map.fromList [("0", [LIST "1", FUNC "*", INT 10]), ("1", [INT 2, CODEBLOCK "2"]), ("2", [FUNC "+", INT 2, INT 1])])
         it "parser (tokenize \"{\") [] Map.empty returns ([ERROR IncompleteCodeBlock], Map.empty)" $ do
             parser (tokenize "{") [] Map.empty `shouldBe` ([ERROR IncompleteCodeBlock], Map.empty)
         it "parser (tokenize \"[\") [] Map.empty returns ([ERROR IncompleteList], Map.empty)" $ do
@@ -122,14 +122,14 @@ spec_codeBlockParser = do
             codeBlockParser (tokenize "{ } }") [] Map.empty `shouldBe` ([CODEBLOCK "0"], [], Map.fromList [("0", [])])
         it "codeBlockParser (tokenize \"1 { 2 } 3 }\") [] Map.empty returns ([INT 3, CODEBLOCK \"0\", INT 1], [], (Map.fromList [(\"0\", [INT 2])]))" $ do
             codeBlockParser (tokenize "1 { 2 } 3 }") [] Map.empty `shouldBe` ([INT 3, CODEBLOCK "0", INT 1], [], Map.fromList [("0", [INT 2])])
-        it "codeBlockParser (tokenize \"{ { } } { } }\") [] Map.empty returns ([CODEBLOCK \"2\", CODEBLOCK \"0\"], [], (Map.fromList [(\"0\", [CODEBLOCK \"1\"]), (\"1\", []), (\"2\", [])]))" $ do
-            codeBlockParser (tokenize "{ { } } { } }") [] Map.empty `shouldBe` ([CODEBLOCK "2", CODEBLOCK "0"], [], Map.fromList [("0", [CODEBLOCK "1"]), ("1", []), ("2", [])])
+        it "codeBlockParser (tokenize \"{ { } } { } }\") [] Map.empty returns ([CODEBLOCK \"2\", CODEBLOCK \"1\"], [], (Map.fromList [(\"0\", []), (\"1\", [CODEBLOCK \"0\"]), (\"2\", [])]))" $ do
+            codeBlockParser (tokenize "{ { } } { } }") [] Map.empty `shouldBe` ([CODEBLOCK "2", CODEBLOCK "1"], [], Map.fromList [("0", []), ("1", [CODEBLOCK "0"]), ("2", [])])
         it "codeBlockParser (tokenize \"1 \" a string \" 2 }\") [] Map.empty returns ([INT 2, STRING \"a string\", INT 1], [], Map.empty)" $ do
             codeBlockParser (tokenize "1 \" a string \" 2 }") [] Map.empty `shouldBe` ([INT 2, STRING "a string", INT 1], [], Map.empty)
-        it "codeBlockParser (tokenize \"1 2 [] }\") [] Map.empty returns ({LIST 0, INT 2, INT 1},[], Map.empty)" $ do
+        it "codeBlockParser (tokenize \"1 2 [ ] }\") [] Map.empty returns ({LIST 0, INT 2, INT 1},[], Map.empty)" $ do
             codeBlockParser (tokenize "1 2 [ ] }") [] Map.empty `shouldBe` ([LIST "0", INT 2, INT 1], [], Map.fromList [("0", [])])
-        it "codeBlockParser (tokenize \"1 2 [ 4 { } ] }\") [] Map.empty returns ({LIST 0, INT 2, INT 1}, [], Map.empty)" $ do
-            codeBlockParser (tokenize "1 2 [ 4 { } ] }") [] Map.empty `shouldBe` ([LIST "0", INT 2, INT 1], [], Map.fromList [("0", [CODEBLOCK "1", INT 4]), ("1", [])])
+        it "codeBlockParser (tokenize \"1 2 [ 4 { } ] }\") [] Map.empty returns ({LIST 1, INT 2, INT 1}, [], Map.fromList [(\"0\", []), (\"1\", [CODEBLOCK \"0\", INT 4])])" $ do
+            codeBlockParser (tokenize "1 2 [ 4 { } ] }") [] Map.empty `shouldBe` ([LIST "1", INT 2, INT 1], [], Map.fromList [("0", []), ("1", [CODEBLOCK "0", INT 4])])
 
 spec_listParser :: Spec
 spec_listParser = do
@@ -142,8 +142,8 @@ spec_listParser = do
             listParser (tokenize "[ ] ]") [] Map.empty `shouldBe` ([LIST "0"], [], Map.fromList [("0", [])])
         it "listParser (tokenize \"1 [ 2 ] 3 ]\") [] Map.empty returns ([INT 3, LIST \"0\", INT 1], [], (Map.fromList [(\"0\", [INT 2])]))" $ do
             listParser (tokenize "1 [ 2 ] 3 ]") [] Map.empty `shouldBe` ([INT 3, LIST "0", INT 1], [], Map.fromList [("0", [INT 2])])
-        it "listParser (tokenize \"[ [ ] ] [ ] ]\") [] Map.empty returns ([LIST \"2\", LIST \"0\"], [], (Map.fromList [(\"0\", [LIST \"1\"]), (\"1\", []), (\"2\", [])]))" $ do
-            listParser (tokenize "[ [ ] ] [ ] ]") [] Map.empty `shouldBe` ([LIST "2", LIST "0"], [], Map.fromList [("0", [LIST "1"]), ("1", []), ("2", [])])
+        it "listParser (tokenize \"[ [ ] ] [ ] ]\") [] Map.empty returns ([LIST \"2\", LIST \"1\"], [], (Map.fromList [(\"0\", []), (\"1\", [LIST \"0\"]), (\"2\", [])]))" $ do
+            listParser (tokenize "[ [ ] ] [ ] ]") [] Map.empty `shouldBe` ([LIST "2", LIST "1"], [], Map.fromList [("0", []), ("1", [LIST "0"]), ("2", [])])
         it "listParser (tokenize \"1 \" a string \" 2 ]\") [] Map.empty returns ([INT 2, STRING \"a string\", INT 1], [], Map.empty)" $ do
             listParser (tokenize "1 \" a string \" 2 ]") [] Map.empty `shouldBe` ([INT 2, STRING "a string", INT 1], [], Map.empty)
         it "listParser (tokenize \"1 { 2 } 3 ]\") [] Map.empty returns ([INT 3, CODEBLOCK \"0\", INT 1], [], (Map.fromList [(\"0\", [INT 2])]))" $ do
@@ -172,6 +172,32 @@ spec_typeParser = do
             typeParser "abc" `shouldBe` UNKNOWN "abc"
 
 -- module Stack
+
+spec_generateObjectAddress :: Spec
+spec_generateObjectAddress = do
+    describe "generateObjectAddress tests:" $ do
+        it "generateObjectAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) returns \"4\"" $ do
+            generateObjectAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) `shouldBe` "4"
+        it "generateObjectAddress Map.empty returns \"0\"" $ do
+            generateObjectAddress Map.empty `shouldBe` "0"
+
+spec_getValidAddress :: Spec
+spec_getValidAddress = do
+    describe "getValidAddress tests:" $ do
+        it "getValidAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) 0 returns 4" $ do
+            getValidAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) 0 `shouldBe` 4
+        it "getValidAddress Map.empty 0 returns 0" $ do
+            getValidAddress Map.empty 0 `shouldBe` 0
+
+spec_deallocateObject :: Spec
+spec_deallocateObject = do
+    describe "deallocateObject tests:" $ do
+        it "deallocateObject (LIST \"3\") (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns (Map.fromList [(\"0\", []), (\"2\", []), (\"5\", [])])" $ do
+            deallocateObject (LIST "3") (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` (Map.fromList [("0", []), ("2", []), ("5", [])])
+        it "deallocateObject (INT 1) Map.empty returns Map.empty" $ do
+            deallocateObject (INT 1) Map.empty `shouldBe` Map.empty
+        it "deallocateObject (INT 1) (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.empty" $ do
+            deallocateObject (INT 1) (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])])
 
 spec_printableStack :: Spec
 spec_printableStack = do

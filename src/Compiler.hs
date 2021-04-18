@@ -9,7 +9,7 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
-import Parsing
+import Stack
 
 funcEmpty :: StackState
 funcEmpty = do
@@ -64,12 +64,6 @@ funcTail = do
                                             (stack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)
-
-deallocateObject :: Type -> Object -> Object
-deallocateObject x objects
-    | isLIST x = Map.delete (getLIST x) objects
-    | isCODEBLOCK x = Map.delete (getCODEBLOCK x) objects
-    | otherwise = objects
 
 funcCons :: StackState
 funcCons = do

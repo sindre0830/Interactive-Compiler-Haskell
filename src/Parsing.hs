@@ -9,6 +9,7 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
+import Stack
 
 parseInput :: String -> StackState
 parseInput input = do
@@ -31,35 +32,25 @@ parser (x:xs) stack objects = do
             let (value, rest) = stringParser xs ""
             parser rest (value : stack) objects
         ['['] -> do
-            -- allocate space in map
-            let key = show (Map.size objects)
-            let updatedObjects = Map.insert key [] objects
             -- parse list
-            let (newStack, rest, newObjects) = listParser xs [] updatedObjects
+            let (newStack, rest, newObjects) = listParser xs [] objects
             -- check if list is valid
             if isERROR $ head newStack
-                then do
-                    -- deallocate space from map and push error to stack
-                    let newObjects = Map.delete key objects 
-                    parser rest (head newStack : stack) newObjects
+                then parser rest (head newStack : stack) newObjects
             else do
-                -- update allocated space in map with inner list
+                -- update map with inner list
+                let key = generateObjectAddress newObjects
                 let objects = Map.insert key newStack newObjects
                 parser rest (LIST key : stack) objects
         ['{'] -> do
-            -- allocate space in map
-            let key = show (Map.size objects)
-            let updatedObjects = Map.insert key [] objects
             -- parse codeBlock
-            let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
+            let (newStack, rest, newObjects) = codeBlockParser xs [] objects
             -- check if codeBlock is valid
             if isERROR $ head newStack
-                then do
-                    -- deallocate space from map and push error to stack
-                    let newObjects = Map.delete key objects 
-                    parser rest (head newStack : stack) newObjects
+                then parser rest (head newStack : stack) newObjects
             else do
-                -- update allocated space in map with inner codeBlock
+                -- update map with inner codeBlock
+                let key = generateObjectAddress newObjects
                 let objects = Map.insert key newStack newObjects
                 parser rest (CODEBLOCK key : stack) objects
         _ -> parser xs (typeParser x : stack) objects
@@ -71,21 +62,17 @@ codeBlockParser (x:xs) stack objects = do
     case x of
         "}" -> (stack, xs, objects)
         "{" -> do
-            -- allocate space in map
-            let key = show (Map.size objects)
-            let updatedObjects = Map.insert key [] objects
             -- get inner codeBlock
-            let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
-            -- update allocated space in map with inner codeBlock
+            let (newStack, rest, newObjects) = codeBlockParser xs [] objects
+            -- update map with inner list
+            let key = generateObjectAddress newObjects
             let objects = Map.insert key newStack newObjects
             codeBlockParser rest (CODEBLOCK key : stack) objects
         "[" -> do
-            -- allocate space in map
-            let key = show (Map.size objects)
-            let updatedObjects = Map.insert key [] objects
             -- get inner list
-            let (newStack, rest, newObjects) = listParser xs [] updatedObjects
-            -- update allocated space in map with inner list
+            let (newStack, rest, newObjects) = listParser xs [] objects
+            -- update map with inner codeBlock
+            let key = generateObjectAddress newObjects
             let objects = Map.insert key newStack newObjects
             codeBlockParser rest (LIST key : stack) objects
         ['"'] -> do
@@ -101,21 +88,17 @@ listParser (x:xs) stack objects = do
     case x of
         "]" -> (stack, xs, objects)
         "[" -> do
-            -- allocate space in map
-            let key = show (Map.size objects)
-            let updatedObjects = Map.insert key [] objects
             -- get inner list
-            let (newStack, rest, newObjects) = listParser xs [] updatedObjects
-            -- update allocated space in map with inner list
+            let (newStack, rest, newObjects) = listParser xs [] objects
+            -- update map with inner list
+            let key = generateObjectAddress newObjects
             let objects = Map.insert key newStack newObjects
             listParser rest (LIST key : stack) objects
         "{" -> do
-            -- allocate space in map
-            let key = show (Map.size objects)
-            let updatedObjects = Map.insert key [] objects
             -- get inner codeBlock
-            let (newStack, rest, newObjects) = codeBlockParser xs [] updatedObjects
-            -- update allocated space in map with inner codeBlock
+            let (newStack, rest, newObjects) = codeBlockParser xs [] objects
+            -- update map with inner codeBlock
+            let key = generateObjectAddress newObjects
             let objects = Map.insert key newStack newObjects
             listParser rest (CODEBLOCK key : stack) objects
         ['"'] -> do
