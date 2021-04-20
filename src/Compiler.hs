@@ -20,6 +20,7 @@ executeStack (x:xs) = do
         then (case getFUNC x of
             "+" -> funcAddition
             "-" -> funcSubtraction
+            "&&" -> funcAND
             "empty" -> funcEmpty
             "head" -> funcHead
             "tail" -> funcTail
@@ -75,6 +76,21 @@ funcSubtraction = do
                                         (newStack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack) 
+
+funcAND :: StackState
+funcAND = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "&&"
+                                        then ([ERROR InvalidParameterAmount], objects)
+                                    else do
+                                        let (b:a:rest) = stack
+                                        let newObjects = deallocateObject b objects
+                                        let objects = deallocateObject a newObjects
+                                        if not (isBOOL a) || not (isBOOL b)
+                                            then (ERROR ExpectedBool : rest, newObjects)
+                                        else (BOOL (getBOOL a && getBOOL b) : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
 
 funcEmpty :: StackState
 funcEmpty = do

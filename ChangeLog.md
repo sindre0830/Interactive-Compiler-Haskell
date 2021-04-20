@@ -75,3 +75,5 @@ Fucked up last commit by send all files that eren't relevant
 [0.28.3] **fix**: Fixed arguments being wrong way around
 
 [0.29.0] **development**: Implemented subtraction functor
+
+[0.30.0] **development**: Implemented AND functor
