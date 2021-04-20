@@ -17,20 +17,33 @@ executeStack [] = do
     return (objects, reverse stack)
 executeStack (x:xs) = do
     if isFUNC x
-        then (case getFUNC x of
-            "+" -> funcAddition
-            "-" -> funcSubtraction
-            "&&" -> funcAND
-            "==" -> funcEqual
-            "empty" -> funcEmpty
-            "head" -> funcHead
-            "tail" -> funcTail
-            "cons" -> funcCons
-            "append" -> funcAppend) >> executeStack xs
+        then (
+            case getFUNC x of
+                -- Arithmetic
+                "+" -> funcAddition
+                "-" -> funcSubtraction
+                -- Bool
+                "&&" -> funcAND
+                -- Comparison
+                "==" -> funcEqual
+                -- Stack
+                -- String
+                -- List
+                "empty" -> funcEmpty
+                "head" -> funcHead
+                "tail" -> funcTail
+                "cons" -> funcCons
+                "append" -> funcAppend
+                -- Length
+                -- Code block
+                -- Control flow
+            ) >> executeStack xs
         else do
             (objects, variables, stack) <- get
             put (objects, variables, x : stack)
             executeStack xs
+
+{- Arithmetic -}
 
 funcAddition :: StackState
 funcAddition = do
@@ -78,6 +91,8 @@ funcSubtraction = do
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 
+{- Bool -}
+
 funcAND :: StackState
 funcAND = do
     (objects, variables, stack) <- get
@@ -93,6 +108,8 @@ funcAND = do
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 
+{- Comparison -}
+
 funcEqual :: StackState
 funcEqual = do
     (objects, variables, stack) <- get
@@ -105,6 +122,12 @@ funcEqual = do
                                         (BOOL (a == b) : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
+
+{- Stack -}
+
+{- String -}
+
+{- List -}
 
 funcEmpty :: StackState
 funcEmpty = do
@@ -208,3 +231,9 @@ funcAppend = do
                                             (b : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
+
+{- Length -}
+
+{- Code block -}
+
+{- Control flow -}

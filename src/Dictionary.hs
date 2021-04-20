@@ -107,16 +107,24 @@ type FuncInfo = Map Key Int
 -- | List of functors and their amount of parameters.
 functors :: FuncInfo
 functors = Map.fromList [
-        ("+", 2), ("-", 2), ("*", 2), ("/", 2), ("div", 2), 
+        -- Arithmetic
+        ("+", 2), ("-", 2), ("*", 2), ("/", 2), ("div", 2),
+        -- Bool
         ("&&", 2), ("||", 2), ("not", 1), 
+        -- Comparison
         ("==", 1), ("<", 2), (">", 2), 
+        -- Stack
         ("pop", 1), ("dup", 1), ("swap", 2),
-        ("length", 1),
+        -- String
         ("parseInteger", 1), ("parseFloat", 1), ("words", 1),
+        -- List
         ("empty", 1), ("head", 1), ("tail", 1), ("cons", 2), ("append", 2),
+        -- Length
+        ("length", 1),
+        -- Code block
         ("exec", 1),
-        ("if", 3),
-        ("map", 2), ("each", 2), ("foldl", 3)
+        -- Control flow
+        ("if", 3), ("map", 2), ("each", 2), ("foldl", 3)
     ]
 
 data ErrorTypes

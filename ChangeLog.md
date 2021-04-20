@@ -66,16 +66,18 @@
 
 [0.28.0] **development**: Fixed parse error when checking for errors in empty stacks
 
-Fucked up last commit by send all files that eren't relevant
+Fucked up last commit by commiting all files that weren't ready
 
 [0.28.1] **fix**: Fixed crashes in last commit where head and tail was used on empty stack
 
-[0.28.2] **fix**: Fixed issue with psotfix before prefix
+[0.28.2] **fix**: Fixed issue with postfix before prefix
 
-[0.28.3] **fix**: Fixed arguments being wrong way around
+[0.28.3] **fix**: Fixed arguments being the wrong way around
 
 [0.29.0] **development**: Implemented subtraction functor
 
 [0.30.0] **development**: Implemented AND functor
 
 [0.31.0] **development**: Implemented equal functor
+
+[0.31.1] **formatting**: split functors by subject
