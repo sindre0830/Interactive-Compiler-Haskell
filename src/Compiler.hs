@@ -19,6 +19,7 @@ executeStack (x:xs) = do
     if isFUNC x
         then (case getFUNC x of
             "+" -> funcAddition
+            "-" -> funcSubtraction
             "empty" -> funcEmpty
             "head" -> funcHead
             "tail" -> funcTail
@@ -45,12 +46,35 @@ funcAddition = do
                                                                         let newObjects = deallocateObject a objects
                                                                         (ERROR ExpectedNumber : rest, deallocateObject b newObjects)
                                                                     | isINT a && isFLOAT b = (FLOAT (fromIntegral (getINT a) + getFLOAT b) : rest, objects)
-                                                                    | isINT b && isFLOAT a = (FLOAT (fromIntegral (getINT b) + getFLOAT a) : rest, objects)
+                                                                    | isFLOAT a && isINT b = (FLOAT (getFLOAT a + fromIntegral (getINT b)) : rest, objects)
                                                                     | isINT a && isINT b = (INT (getINT a + getINT b) : rest, objects)
                                                                     | isFLOAT a && isFLOAT b = (FLOAT (getFLOAT a + getFLOAT b) : rest, objects)
                                         (newStack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
+
+funcSubtraction :: StackState
+funcSubtraction = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "-"
+                                        then do
+                                            let newObjects  | not $ null stack = do
+                                                                let (a:rest) = stack
+                                                                deallocateObject a objects
+                                                            | otherwise = objects
+                                            ([ERROR InvalidParameterAmount], newObjects)
+                                    else do
+                                        let (b:a:rest) = stack
+                                        let (newStack, newObjects)  | not (isINT a || isFLOAT a) || not (isINT b || isFLOAT b) = do
+                                                                        let newObjects = deallocateObject a objects
+                                                                        (ERROR ExpectedNumber : rest, deallocateObject b newObjects)
+                                                                    | isINT a && isFLOAT b = (FLOAT (fromIntegral (getINT a) - getFLOAT b) : rest, objects)
+                                                                    | isFLOAT a && isINT b = (FLOAT (getFLOAT a - fromIntegral (getINT b)) : rest, objects)
+                                                                    | isINT a && isINT b = (INT (getINT a - getINT b) : rest, objects)
+                                                                    | isFLOAT a && isFLOAT b = (FLOAT (getFLOAT a - getFLOAT b) : rest, objects)
+                                        (newStack, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack) 
 
 funcEmpty :: StackState
 funcEmpty = do
