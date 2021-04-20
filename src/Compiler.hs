@@ -14,7 +14,7 @@ import Stack
 executeStack :: Stack -> StackState
 executeStack [] = do
     (objects, variables, stack) <- get
-    return (objects, stack)
+    return (objects, reverse stack)
 executeStack (x:xs) = do
     if isFUNC x
         then (case getFUNC x of
@@ -30,7 +30,7 @@ executeStack (x:xs) = do
             "append" -> funcAppend) >> executeStack xs
         else do
             (objects, variables, stack) <- get
-            put (objects, variables, stack ++ [x])
+            put (objects, variables, x : stack)
             executeStack xs
 
 funcAddition :: StackState
@@ -54,7 +54,7 @@ funcAddition = do
                                                                     | isFLOAT a && isFLOAT b = (FLOAT (getFLOAT a + getFLOAT b) : rest, objects)
                                         (newStack, newObjects))
     put (newObjects, variables, newStack)
-    return (newObjects, newStack)
+    return (newObjects, reverse newStack)
 
 funcEmpty :: StackState
 funcEmpty = do
@@ -68,7 +68,7 @@ funcEmpty = do
                                             then (ERROR ExpectedList : rest, newObjects)
                                         else (BOOL (null (objects Map.! getLIST a)) : rest, newObjects))
     put (newObjects, variables, newStack)
-    return (newObjects, newStack)
+    return (newObjects, reverse newStack)
 
 funcHead :: StackState
 funcHead = do
@@ -86,7 +86,7 @@ funcHead = do
                                                 then (rest, newObjects)
                                             else (head list : rest, newObjects))
     put (newObjects, variables, newStack)
-    return (newObjects, newStack)
+    return (newObjects, reverse newStack)
 
 funcTail :: StackState
 funcTail = do
@@ -107,7 +107,7 @@ funcTail = do
                                                                 else updateObject key (tail list) objects)
                                             (stack, newObjects))
     put (newObjects, variables, newStack)
-    return (newObjects, newStack)
+    return (newObjects, reverse newStack)
 
 funcCons :: StackState
 funcCons = do
@@ -131,7 +131,7 @@ funcCons = do
                                             let newObjects = updateObject key (b : (objects Map.! key)) objects
                                             (a : rest, newObjects))
     put (newObjects, variables, newStack)
-    return (newObjects, newStack)
+    return (newObjects, reverse newStack)
 
 funcAppend :: StackState
 funcAppend = do
@@ -157,4 +157,4 @@ funcAppend = do
                                             let objects = deallocateObject b newObjects
                                             (a : rest, newObjects))
     put (newObjects, variables, newStack)
-    return (newObjects, newStack)
+    return (newObjects, reverse newStack)

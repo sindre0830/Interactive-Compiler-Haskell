@@ -90,8 +90,8 @@ spec_funcTail = do
 spec_funcCons :: Spec
 spec_funcCons = do
     describe "funcCons tests:" $ do
-        it "printableStack (evalState funcCons (Map.fromList [(\"0\", [INT 2, INT 3])], Map.empty, [INT 1, LIST \"0\"])) returns \"[[3, 2, 1]]\"" $ do
-            printableStack (evalState funcCons (Map.fromList [("0", [INT 2, INT 3])], Map.empty, [INT 1, LIST "0"])) `shouldBe` "[[3, 2, 1]]"
+        it "printableStack (evalState funcCons (Map.fromList [(\"0\", [INT 2, INT 3])], Map.empty, [INT 1, LIST \"0\"])) returns \"[[1, 2, 3]]\"" $ do
+            printableStack (evalState funcCons (Map.fromList [("0", [INT 2, INT 3])], Map.empty, [INT 1, LIST "0"])) `shouldBe` "[[1, 2, 3]]"
         it "printableStack (evalState funcCons (Map.fromList [(\"0\", []), (\"1\", [])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[[]]]\"" $ do
             printableStack (evalState funcCons (Map.fromList [("0", []), ("1", [])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[[]]]"
         it "printableStack (evalState funcCons (Map.empty, Map.empty, [INT 10, INT 10])) returns \"[ExpectedList]\"" $ do
@@ -102,8 +102,8 @@ spec_funcCons = do
 spec_funcAppend :: Spec
 spec_funcAppend = do
     describe "funcAppend tests:" $ do
-        it "printableStack (evalState funcAppend (Map.fromList [(\"0\", [INT 2, INT 3]), (\"1\", [INT 1])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[3, 2, 1]]\"" $ do
-            printableStack (evalState funcAppend (Map.fromList [("0", [INT 2, INT 3]), ("1", [INT 1])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[3, 2, 1]]"
+        it "printableStack (evalState funcAppend (Map.fromList [(\"0\", [INT 2, INT 3]), (\"1\", [INT 1])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[1, 2, 3]]\"" $ do
+            printableStack (evalState funcAppend (Map.fromList [("0", [INT 2, INT 3]), ("1", [INT 1])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[1, 2, 3]]"
         it "printableStack (evalState funcAppend (Map.fromList [(\"0\", []), (\"1\", [])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[]]\"" $ do
             printableStack (evalState funcAppend (Map.fromList [("0", []), ("1", [])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[]]"
         it "printableStack (evalState funcAppend (Map.empty, Map.empty, [INT 10, INT 10])) returns \"[ExpectedList]\"" $ do
@@ -116,8 +116,8 @@ spec_funcAppend = do
 spec_parseInput :: Spec
 spec_parseInput = do
     describe "parseInput tests:" $ do
-        it "evalState (parseInput \"1 2 +\") (Map.empty, Map.empty, []) returns (Map.empty, [FUNC \"+\", INT 2, INT 1])" $ do
-            evalState (parseInput "1 2 +") (Map.empty, Map.empty, []) `shouldBe` (Map.empty, [FUNC "+", INT 2, INT 1])
+        it "evalState (parseInput \"1 2 +\") (Map.empty, Map.empty, []) returns (Map.empty, [INT 1, INT 2, FUNC \"+\"])" $ do
+            evalState (parseInput "1 2 +") (Map.empty, Map.empty, []) `shouldBe` (Map.empty, [INT 1, INT 2, FUNC "+"])
 
 spec_tokenize :: Spec
 spec_tokenize = do
@@ -128,16 +128,16 @@ spec_tokenize = do
 spec_parser :: Spec
 spec_parser = do
     describe "parser tests:" $ do
-        it "parser [\"1\", \"2\", \"+\"] [] Map.empty returns ([FUNC \"+\", INT 2, INT 1], Map.empty)" $ do
-            parser ["1", "2", "+"] [] Map.empty `shouldBe` ([FUNC "+", INT 2, INT 1], Map.empty)
-        it "parser [\"1\", \", \"a\", \"string\", \"] [] Map.empty returns ([STRING \"a string\", INT 1], Map.empty)" $ do
-            parser ["1", "\"", "a", "string", "\""] [] Map.empty `shouldBe` ([STRING "a string", INT 1], Map.empty)
-        it "parser [\", \"a\", \"string\", \", \"1\"] [] Map.empty returns ([INT 1, STRING \"a string\"], Map.empty)" $ do
-            parser ["\"", "a", "string", "\"", "1"] [] Map.empty `shouldBe` ([INT 1, STRING "a string"], Map.empty)
+        it "parser [\"1\", \"2\", \"+\"] [] Map.empty returns ([INT 1, INT 2, FUNC \"+\"], Map.empty)" $ do
+            parser ["1", "2", "+"] [] Map.empty `shouldBe` ([INT 1, INT 2, FUNC "+"], Map.empty)
+        it "parser [\"1\", \", \"a\", \"string\", \"] [] Map.empty returns ([INT 1, STRING \"a string\"], Map.empty)" $ do
+            parser ["1", "\"", "a", "string", "\""] [] Map.empty `shouldBe` ([INT 1, STRING "a string"], Map.empty)
+        it "parser [\", \"a\", \"string\", \", \"1\"] [] Map.empty returns ([STRING \"a string\", INT 1], Map.empty)" $ do
+            parser ["\"", "a", "string", "\"", "1"] [] Map.empty `shouldBe` ([STRING "a string", INT 1], Map.empty)
         it "parser [\", \"a\", \"string\", \"] [] Map.empty returns ([STRING \"a string\"], Map.empty)" $ do
             parser ["\"", "a", "string", "\""] [] Map.empty `shouldBe` ([STRING "a string"], Map.empty)
-        it "parser [\", \"a\", \"string\", \", \", \"b\", \"string\", \"] [] Map.empty returns ([STRING \"b string\", STRING \"a string\"], Map.empty)" $ do
-            parser ["\"", "a", "string", "\"", "\"", "b", "string", "\""] [] Map.empty `shouldBe` ([STRING "b string", STRING "a string"], Map.empty)
+        it "parser [\", \"a\", \"string\", \", \", \"b\", \"string\", \"] [] Map.empty returns ([STRING \"a string\", STRING \"b string\"], Map.empty)" $ do
+            parser ["\"", "a", "string", "\"", "\"", "b", "string", "\""] [] Map.empty `shouldBe` ([STRING "a string", STRING "b string"], Map.empty)
         it "parser (tokenize \"{\") [] Map.empty returns ([ERROR IncompleteCodeBlock], Map.empty)" $ do
             parser (tokenize "{") [] Map.empty `shouldBe` ([ERROR IncompleteCodeBlock], Map.empty)
         it "parser (tokenize \"[\") [] Map.empty returns ([ERROR IncompleteList], Map.empty)" $ do
@@ -160,8 +160,8 @@ spec_codeBlockParser = do
             codeBlockParser (tokenize "1 \" a string \" 2 }") [] Map.empty `shouldBe` ([INT 2, STRING "a string", INT 1], [], Map.empty)
         it "codeBlockParser (tokenize \"1 2 [ ] }\") [] Map.empty returns ({LIST 0, INT 2, INT 1},[], Map.empty)" $ do
             codeBlockParser (tokenize "1 2 [ ] }") [] Map.empty `shouldBe` ([LIST "0", INT 2, INT 1], [], Map.fromList [("0", [])])
-        it "codeBlockParser (tokenize \"1 2 [ 4 { } ] }\") [] Map.empty returns ({LIST 1, INT 2, INT 1}, [], Map.fromList [(\"0\", []), (\"1\", [CODEBLOCK \"0\", INT 4])])" $ do
-            codeBlockParser (tokenize "1 2 [ 4 { } ] }") [] Map.empty `shouldBe` ([LIST "1", INT 2, INT 1], [], Map.fromList [("0", []), ("1", [CODEBLOCK "0", INT 4])])
+        it "codeBlockParser (tokenize \"1 2 [ 4 { } ] }\") [] Map.empty returns ({LIST 1, INT 2, INT 1}, [], Map.fromList [(\"0\", []), (\"1\", [INT 4, CODEBLOCK \"0\"])])" $ do
+            codeBlockParser (tokenize "1 2 [ 4 { } ] }") [] Map.empty `shouldBe` ([LIST "1", INT 2, INT 1], [], Map.fromList [("0", []), ("1", [INT 4, CODEBLOCK "0"])])
 
 spec_listParser :: Spec
 spec_listParser = do
@@ -246,11 +246,11 @@ spec_deallocateObject = do
 spec_printableStack :: Spec
 spec_printableStack = do
     describe "printableStack tests:" $ do
-        it "printableStack (Map.empty, [INT 2, STRING \"a string\", INT 1]) returns \"[1, \"a string\", 2\"]" $ do
-            printableStack (Map.empty, [INT 2, STRING "a string", INT 1]) `shouldBe` "[1, \"a string\", 2]"
+        it "printableStack (Map.empty, [INT 2, STRING \"a string\", INT 1]) returns \"[2, \"a string\", 1\"]" $ do
+            printableStack (Map.empty, [INT 2, STRING "a string", INT 1]) `shouldBe` "[2, \"a string\", 1]"
 
 spec_formatStack :: Spec
 spec_formatStack = do
     describe "formatStack tests:" $ do
-        it "formatStack [INT 2, STRING \"a string\", INT 1] \", \" Map.empty returns \"1, \"a string\", 2\"" $ do
-            formatStack [INT 2, STRING "a string", INT 1] ", " Map.empty `shouldBe` "1, \"a string\", 2"
+        it "formatStack [INT 2, STRING \"a string\", INT 1] \", \" Map.empty returns \"2, \"a string\", 1\"" $ do
+            formatStack [INT 2, STRING "a string", INT 1] ", " Map.empty `shouldBe` "2, \"a string\", 1"

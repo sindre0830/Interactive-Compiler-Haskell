@@ -37,13 +37,13 @@ formatStack :: Stack -> Divider -> Object -> String
 formatStack [] _ _ = []
 formatStack (x:xs) divider objects
     | null xs && not (null divider) = formatStack [x] "" objects
-    | isINT x       = formatStack xs divider objects ++ divider ++ show (getINT x)
-    | isFLOAT x     = formatStack xs divider objects ++ divider ++ show (getFLOAT x)
-    | isBOOL x      = formatStack xs divider objects ++ divider ++ show (getBOOL x)
-    | isSTRING x    = formatStack xs divider objects ++ divider ++ show (getSTRING x)
-    | isFUNC x      = formatStack xs divider objects ++ divider ++ getFUNC x
-    | isUNKNOWN x   = formatStack xs divider objects ++ divider ++ show (getUNKNOWN x)
-    | isLIST x      = formatStack xs divider objects ++ divider ++ printableStack (objects, objects Map.! getLIST x)
-    | isCODEBLOCK x = formatStack xs divider objects ++ divider ++ "{" ++ formatStack (objects Map.! getCODEBLOCK x) ", " objects ++ "}"
-    | isERROR x     = formatStack xs divider objects ++ divider ++ show (getERROR x)
+    | isINT x       = show (getINT x) ++ divider ++ formatStack xs divider objects
+    | isFLOAT x     = show (getFLOAT x) ++ divider ++ formatStack xs divider objects
+    | isBOOL x      = show (getBOOL x) ++ divider ++ formatStack xs divider objects
+    | isSTRING x    = show (getSTRING x) ++ divider ++ formatStack xs divider objects
+    | isFUNC x      = getFUNC x ++ divider ++ formatStack xs divider objects
+    | isUNKNOWN x   = show (getUNKNOWN x) ++ divider ++ formatStack xs divider objects
+    | isLIST x      = printableStack (objects, objects Map.! getLIST x) ++ divider ++ formatStack xs divider objects
+    | isCODEBLOCK x = "{" ++ (formatStack (objects Map.! getCODEBLOCK x) ", " objects) ++ "}" ++ divider ++ formatStack xs divider objects
+    | isERROR x     = show (getERROR x) ++ divider ++ formatStack xs divider objects
     | otherwise     = formatStack xs divider objects

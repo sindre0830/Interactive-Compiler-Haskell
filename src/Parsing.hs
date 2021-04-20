@@ -25,7 +25,7 @@ tokenize = words
 
 -- ! parses tokens to stack and list of objects.
 parser :: Tokens -> Stack -> Object -> (Stack, Object)
-parser [] stack objects = (stack, objects)
+parser [] stack objects = (reverse stack, objects)
 parser (x:xs) stack objects = do
     case x of
         ['"'] -> do
@@ -40,7 +40,7 @@ parser (x:xs) stack objects = do
             else do
                 -- update map with inner list
                 let key = generateObjectAddress newObjects
-                let objects = Map.insert key newStack newObjects
+                let objects = Map.insert key (reverse newStack) newObjects
                 parser rest (LIST key : stack) objects
         ['{'] -> do
             -- parse codeBlock
@@ -51,7 +51,7 @@ parser (x:xs) stack objects = do
             else do
                 -- update map with inner codeBlock
                 let key = generateObjectAddress newObjects
-                let objects = Map.insert key newStack newObjects
+                let objects = Map.insert key (reverse newStack) newObjects
                 parser rest (CODEBLOCK key : stack) objects
         _ -> parser xs (typeParser x : stack) objects
 
@@ -66,14 +66,14 @@ codeBlockParser (x:xs) stack objects = do
             let (newStack, rest, newObjects) = codeBlockParser xs [] objects
             -- update map with inner list
             let key = generateObjectAddress newObjects
-            let objects = Map.insert key newStack newObjects
+            let objects = Map.insert key (reverse newStack) newObjects
             codeBlockParser rest (CODEBLOCK key : stack) objects
         "[" -> do
             -- get inner list
             let (newStack, rest, newObjects) = listParser xs [] objects
             -- update map with inner codeBlock
             let key = generateObjectAddress newObjects
-            let objects = Map.insert key newStack newObjects
+            let objects = Map.insert key (reverse newStack) newObjects
             codeBlockParser rest (LIST key : stack) objects
         ['"'] -> do
             let (value, rest) = stringParser xs []
@@ -92,14 +92,14 @@ listParser (x:xs) stack objects = do
             let (newStack, rest, newObjects) = listParser xs [] objects
             -- update map with inner list
             let key = generateObjectAddress newObjects
-            let objects = Map.insert key newStack newObjects
+            let objects = Map.insert key (reverse newStack) newObjects
             listParser rest (LIST key : stack) objects
         "{" -> do
             -- get inner codeBlock
             let (newStack, rest, newObjects) = codeBlockParser xs [] objects
             -- update map with inner codeBlock
             let key = generateObjectAddress newObjects
-            let objects = Map.insert key newStack newObjects
+            let objects = Map.insert key (reverse newStack) newObjects
             listParser rest (CODEBLOCK key : stack) objects
         ['"'] -> do
             let (value, rest) = stringParser xs []

@@ -40,15 +40,14 @@ modeInteractive stack variables = do
     readInput
     input <- getLine
     let tokens = tokenize input
-    let (newStack, objects) = parser tokens [] Map.empty
+    let (beforeStack, objects) = parser tokens [] Map.empty
     putStrLn "\n\tBefore compiling:"
-    putStrLn $ "\t\tRaw:   " ++ show newStack
-    putStrLn $ "\t\tStack: " ++ printableStack (objects, newStack)
-    let stack = reverse newStack
-    let (newObjects, newStack) = evalState (executeStack stack) (objects, Map.empty, [])
+    putStrLn $ "\t\tRaw:   " ++ show beforeStack
+    putStrLn $ "\t\tStack: " ++ printableStack (objects, beforeStack)
+    let (newObjects, afterstack) = evalState (executeStack beforeStack) (objects, Map.empty, [])
     putStrLn "\n\tAfter compiling:"
-    putStrLn $ "\t\tRaw:   " ++ show newStack
-    putStrLn $ "\t\tStack: " ++ printableStack (newObjects, newStack) ++ "\n"
+    putStrLn $ "\t\tRaw:   " ++ show afterstack
+    putStrLn $ "\t\tStack: " ++ printableStack (newObjects, afterstack) ++ "\n"
     modeInteractive [] variables
 
 modeCompiler :: Variable -> IO ()
