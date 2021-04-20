@@ -38,6 +38,8 @@ executeStack (x:xs) = do
                 "dup"   -> funcDup
                 "swap"  -> funcSwap
                 -- String
+                "parseInteger"  -> funcParseInteger
+                "parseFloat"    -> funcParseFloat
                 -- List
                 "empty"     -> funcEmpty
                 "head"      -> funcHead
@@ -278,6 +280,38 @@ funcSwap = do
     return (newObjects, reverse newStack)
 
 {- String -}
+
+funcParseInteger :: StackState
+funcParseInteger = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "parseInteger"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        let newObjects = deallocateObject a objects
+                                        if not $ isSTRING a
+                                            then (ERROR ExpectedString : rest, newObjects)
+                                        else if isJust (readMaybe (getSTRING a) :: Maybe Int)
+                                            then (INT (fromJust (readMaybe (getSTRING a) :: Maybe Int)) : rest, newObjects)
+                                        else (ERROR ExpectedStringOfInteger : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcParseFloat :: StackState
+funcParseFloat = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "parseFloat"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        let newObjects = deallocateObject a objects
+                                        if not $ isSTRING a
+                                            then (ERROR ExpectedString : rest, newObjects)
+                                        else if isJust (readMaybe (getSTRING a) :: Maybe Float)
+                                            then (FLOAT (fromJust (readMaybe (getSTRING a) :: Maybe Float)) : rest, newObjects)
+                                        else (ERROR ExpectedStringOfFloat : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
 
 {- List -}
 

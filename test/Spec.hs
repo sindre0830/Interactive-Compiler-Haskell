@@ -28,6 +28,8 @@ main = do
         spec_funcPop
         spec_funcDup
         spec_funcSwap
+        spec_funcParseInteger
+        spec_funcParseFloat
         spec_funcEmpty
         spec_funcHead
         spec_funcTail
@@ -241,6 +243,34 @@ spec_funcSwap = do
             printableStack (evalState funcSwap (Map.empty, Map.empty, [BOOL True, INT 5])) `shouldBe` "[True, 5]"
         it "printableStack (evalState funcSwap (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcSwap (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcParseInteger :: Spec
+spec_funcParseInteger = do
+    describe "funcParseInteger tests:" $ do
+        it "printableStack (evalState funcParseInteger (Map.empty, Map.empty, [STRING \"100\"])) returns \"[100]\"" $ do
+            printableStack (evalState funcParseInteger (Map.empty, Map.empty, [STRING "100"])) `shouldBe` "[100]"
+        it "printableStack (evalState funcParseInteger (Map.empty, Map.empty, [STRING \"100.0\"])) returns \"[ExpectedStringOfInteger]\"" $ do
+            printableStack (evalState funcParseInteger (Map.empty, Map.empty, [STRING "100.0"])) `shouldBe` "[ExpectedStringOfInteger]"
+        it "printableStack (evalState funcParseInteger (Map.empty, Map.empty, [STRING \"abc\"])) returns \"[ExpectedStringOfInteger]\"" $ do
+            printableStack (evalState funcParseInteger (Map.empty, Map.empty, [STRING "abc"])) `shouldBe` "[ExpectedStringOfInteger]"
+        it "printableStack (evalState funcParseInteger (Map.empty, Map.empty, [INT 5])) returns \"[ExpectedString]\"" $ do
+            printableStack (evalState funcParseInteger (Map.empty, Map.empty, [INT 5])) `shouldBe` "[ExpectedString]"
+        it "printableStack (evalState funcParseInteger (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcParseInteger (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcParseFloat :: Spec
+spec_funcParseFloat = do
+    describe "funcParseFloat tests:" $ do
+        it "printableStack (evalState funcParseFloat (Map.empty, Map.empty, [STRING \"100.5\"])) returns \"[100.5]\"" $ do
+            printableStack (evalState funcParseFloat (Map.empty, Map.empty, [STRING "100.5"])) `shouldBe` "[100.5]"
+        it "printableStack (evalState funcParseFloat (Map.empty, Map.empty, [STRING \"100\"])) returns \"[100.0]\"" $ do
+            printableStack (evalState funcParseFloat (Map.empty, Map.empty, [STRING "100"])) `shouldBe` "[100.0]"
+        it "printableStack (evalState funcParseFloat (Map.empty, Map.empty, [STRING \"abc\"])) returns \"[ExpectedStringOfFloat]\"" $ do
+            printableStack (evalState funcParseFloat (Map.empty, Map.empty, [STRING "abc"])) `shouldBe` "[ExpectedStringOfFloat]"
+        it "printableStack (evalState funcParseFloat (Map.empty, Map.empty, [FLOAT 5.0])) returns \"[ExpectedString]\"" $ do
+            printableStack (evalState funcParseFloat (Map.empty, Map.empty, [FLOAT 5.0])) `shouldBe` "[ExpectedString]"
+        it "printableStack (evalState funcParseFloat (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcParseFloat (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 spec_funcEmpty :: Spec
 spec_funcEmpty = do
