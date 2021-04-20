@@ -36,6 +36,7 @@ executeStack (x:xs) = do
                 -- Stack
                 "pop"   -> funcPop
                 "dup"   -> funcDup
+                "swap"  -> funcSwap
                 -- String
                 -- List
                 "empty"     -> funcEmpty
@@ -262,6 +263,17 @@ funcDup = do
                                                                         (CODEBLOCK key : stack, newObjects)
                                                                     | otherwise = (a : stack, objects)
                                         (newStack, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcSwap :: StackState
+funcSwap = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "swap"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (b:a:rest) = stack
+                                        (a:b:rest, objects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 

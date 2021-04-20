@@ -27,6 +27,7 @@ main = do
         spec_funcGreater
         spec_funcPop
         spec_funcDup
+        spec_funcSwap
         spec_funcEmpty
         spec_funcHead
         spec_funcTail
@@ -232,6 +233,14 @@ spec_funcDup = do
             printableStack (evalState funcDup (Map.empty, Map.empty, [BOOL True])) `shouldBe` "[True, True]"
         it "printableStack (evalState funcDup (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcDup (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcSwap :: Spec
+spec_funcSwap = do
+    describe "funcSwap tests:" $ do
+        it "printableStack (evalState funcSwap (Map.empty, Map.empty, [BOOL True, INT 5])) returns \"[True, 5]\"" $ do
+            printableStack (evalState funcSwap (Map.empty, Map.empty, [BOOL True, INT 5])) `shouldBe` "[True, 5]"
+        it "printableStack (evalState funcSwap (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcSwap (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 spec_funcEmpty :: Spec
 spec_funcEmpty = do

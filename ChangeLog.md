@@ -95,3 +95,5 @@ Fucked up last commit by commiting all files that weren't ready
 [0.36.0] **development**: Implemented less and greater functors
 
 [0.37.0] **development**: Implemented pop and dup functors
+
+[0.38.0] **development**: Implemented swap functor
