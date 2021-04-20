@@ -65,3 +65,7 @@
 [0.27.0] **development**: Implemented addition functor
 
 [0.28.0] **development**: Fixed parse error when checking for errors in empty stacks
+
+Fucked up last commit by send all files that eren't relevant
+
+[0.28.1] **fix**: Fixed crashes in last commit where head and tail was used on empty stack

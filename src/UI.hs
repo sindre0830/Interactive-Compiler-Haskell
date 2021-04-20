@@ -44,11 +44,11 @@ modeInteractive stack variables = do
     putStrLn "\n\tBefore compiling:"
     putStrLn $ "\t\tRaw:   " ++ show newStack
     putStrLn $ "\t\tStack: " ++ printableStack (objects, newStack)
-    -- let stack = reverse newStack
-    -- let (newObjects, newStack) = evalState (executeStack stack) (objects, Map.empty, [])
-    -- putStrLn "\n\tAfter compiling:"
-    -- putStrLn $ "\t\tRaw:   " ++ show newStack
-    -- putStrLn $ "\t\tStack: " ++ printableStack (newObjects, newStack) ++ "\n"
+    let stack = reverse newStack
+    let (newObjects, newStack) = evalState (executeStack stack) (objects, Map.empty, [])
+    putStrLn "\n\tAfter compiling:"
+    putStrLn $ "\t\tRaw:   " ++ show newStack
+    putStrLn $ "\t\tStack: " ++ printableStack (newObjects, newStack) ++ "\n"
     modeInteractive [] variables
 
 modeCompiler :: Variable -> IO ()

@@ -19,21 +19,14 @@ executeStack (x:xs) = do
     if isFUNC x
         then (case getFUNC x of
             "+" -> funcAddition
-            -- [ ] empty -> crashes
             "empty" -> funcEmpty
             -- [ 1 2 3 ] head -> 3
-            -- [ ] head -> crashes
             "head" -> funcHead
             -- [ 1 2 3 ] tail -> [1, 2]
-            -- [ ] tail -> crashes
             "tail" -> funcTail
-            -- 1 [ ] cons -> crashes
-            -- [ ] [ 2 3 ] cons -> crashes
             -- 1 [ 2 3 ] cons -> [2, 3, 1]
             "cons" -> funcCons
             -- [ 1 ] [ 2 ] append -> [2, 1]
-            -- [ 1 ] [ ] append -> crashes
-            -- [ ] [ 2 ] append -> crashes              MIGHT BE PRINT
             "append" -> funcAppend) >> executeStack xs
         else do
             (objects, variables, stack) <- get
@@ -87,7 +80,11 @@ funcHead = do
                                         let newObjects = deallocateObject a objects
                                         if not $ isLIST a
                                             then (ERROR ExpectedList : rest, newObjects)
-                                        else (head (objects Map.! getLIST a) : rest, newObjects))
+                                        else do
+                                            let list = objects Map.! getLIST a
+                                            if null list
+                                                then (rest, newObjects)
+                                            else (head list : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)
 
@@ -104,7 +101,10 @@ funcTail = do
                                                 (ERROR ExpectedList : rest, newObjects)
                                         else do
                                             let key = getLIST a
-                                            let newObjects = updateObject key (tail (objects Map.! key)) objects
+                                            let list = objects Map.! key
+                                            let newObjects =   (if null list
+                                                                    then objects
+                                                                else updateObject key (tail list) objects)
                                             (stack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, newStack)
