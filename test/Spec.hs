@@ -16,6 +16,7 @@ main = do
         -- module compiler
         spec_funcAddition
         spec_funcSubtraction
+        spec_funcMultiplication
         spec_funcAND
         spec_funcEqual
         spec_funcEmpty
@@ -73,6 +74,22 @@ spec_funcSubtraction = do
             printableStack (evalState funcSubtraction (Map.empty, Map.empty, [INT 2])) `shouldBe` "[InvalidParameterAmount]"
         it "printableStack (evalState funcSubtraction (Map.empty, Map.empty, [INT 2, BOOL True])) returns \"[ExpectedNumber]\"" $ do
             printableStack (evalState funcSubtraction (Map.empty, Map.empty, [INT 2, BOOL True])) `shouldBe` "[ExpectedNumber]"
+
+spec_funcMultiplication :: Spec
+spec_funcMultiplication = do
+    describe "funcMultiplication tests:" $ do
+        it "printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, INT 1])) returns \"[2]\"" $ do
+            printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, INT 1])) `shouldBe` "[2]"
+        it "printableStack (evalState funcMultiplication (Map.empty, Map.empty, [FLOAT 2.5, FLOAT 1.5])) returns \"[3.75]\"" $ do
+            printableStack (evalState funcMultiplication (Map.empty, Map.empty, [FLOAT 2.5, FLOAT 1.5])) `shouldBe` "[3.75]"
+        it "printableStack (evalState funcMultiplication (Map.empty, Map.empty, [FLOAT 2.5, INT 1])) returns \"[2.5]\"" $ do
+            printableStack (evalState funcMultiplication (Map.empty, Map.empty, [FLOAT 2.5, INT 1])) `shouldBe` "[2.5]"
+        it "printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, FLOAT 1.5])) returns \"[3.0]\"" $ do
+            printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, FLOAT 1.5])) `shouldBe` "[3.0]"
+        it "printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2])) `shouldBe` "[InvalidParameterAmount]"
+        it "printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, BOOL True])) returns \"[ExpectedNumber]\"" $ do
+            printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, BOOL True])) `shouldBe` "[ExpectedNumber]"
 
 spec_funcAND :: Spec
 spec_funcAND = do
