@@ -17,6 +17,8 @@ main = do
         spec_funcAddition
         spec_funcSubtraction
         spec_funcMultiplication
+        spec_funcDivisionFloat
+        spec_funcDivisionInteger
         spec_funcAND
         spec_funcEqual
         spec_funcEmpty
@@ -90,6 +92,38 @@ spec_funcMultiplication = do
             printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2])) `shouldBe` "[InvalidParameterAmount]"
         it "printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, BOOL True])) returns \"[ExpectedNumber]\"" $ do
             printableStack (evalState funcMultiplication (Map.empty, Map.empty, [INT 2, BOOL True])) `shouldBe` "[ExpectedNumber]"
+
+spec_funcDivisionFloat :: Spec
+spec_funcDivisionFloat = do
+    describe "funcDivisionFloat tests:" $ do
+        it "printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2, INT 10])) returns \"[5.0]\"" $ do
+            printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2, INT 10])) `shouldBe` "[5.0]"
+        it "printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [FLOAT 2.0, FLOAT 10.0])) returns \"[5.0]\"" $ do
+            printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [FLOAT 2.0, FLOAT 10.0])) `shouldBe` "[5.0]"
+        it "printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [FLOAT 2.0, INT 10])) returns \"[5.0]\"" $ do
+            printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [FLOAT 2.0, INT 10])) `shouldBe` "[5.0]"
+        it "printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2, FLOAT 10.0])) returns \"[5.0]\"" $ do
+            printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2, FLOAT 10.0])) `shouldBe` "[5.0]"
+        it "printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2])) `shouldBe` "[InvalidParameterAmount]"
+        it "printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2, BOOL True])) returns \"[ExpectedNumber]\"" $ do
+            printableStack (evalState funcDivisionFloat (Map.empty, Map.empty, [INT 2, BOOL True])) `shouldBe` "[ExpectedNumber]"
+
+spec_funcDivisionInteger :: Spec
+spec_funcDivisionInteger = do
+    describe "funcDivisionInteger tests:" $ do
+        it "printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2, INT 10])) returns \"[5]\"" $ do
+            printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2, INT 10])) `shouldBe` "[5]"
+        it "printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [FLOAT 2.0, FLOAT 10.0])) returns \"[5]\"" $ do
+            printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [FLOAT 2.0, FLOAT 10.0])) `shouldBe` "[5]"
+        it "printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [FLOAT 2.0, INT 10])) returns \"[5]\"" $ do
+            printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [FLOAT 2.0, INT 10])) `shouldBe` "[5]"
+        it "printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2, FLOAT 10.0])) returns \"[5]\"" $ do
+            printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2, FLOAT 10.0])) `shouldBe` "[5]"
+        it "printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2])) `shouldBe` "[InvalidParameterAmount]"
+        it "printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2, BOOL True])) returns \"[ExpectedNumber]\"" $ do
+            printableStack (evalState funcDivisionInteger (Map.empty, Map.empty, [INT 2, BOOL True])) `shouldBe` "[ExpectedNumber]"
 
 spec_funcAND :: Spec
 spec_funcAND = do
