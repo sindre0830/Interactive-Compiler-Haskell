@@ -23,10 +23,10 @@ getValidAddress objects index = do
 updateObject :: Key -> Stack -> Object -> Object
 updateObject = Map.insert
 
-allocateObject :: Stack -> Object -> Object
+allocateObject :: Stack -> Object -> (Object, String)
 allocateObject stack objects = do
     let key = generateObjectAddress objects
-    Map.insert key stack objects
+    (Map.insert key stack objects, key)
 
 deallocateObject :: Type -> Object -> Object
 deallocateObject x objects

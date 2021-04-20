@@ -34,6 +34,8 @@ executeStack (x:xs) = do
                 "<"     -> funcLess
                 ">"     -> funcGreater
                 -- Stack
+                "pop"   -> funcPop
+                "dup"   -> funcDup
                 -- String
                 -- List
                 "empty"     -> funcEmpty
@@ -230,6 +232,38 @@ funcGreater = do
     return (newObjects, reverse newStack)
 
 {- Stack -}
+
+funcPop :: StackState
+funcPop = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "pop"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        let newObjects = deallocateObject a objects
+                                        (rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcDup :: StackState
+funcDup = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "dup"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        let (newStack, newObjects)  | isLIST a = do
+                                                                        let object = objects Map.! getLIST a
+                                                                        let (newObjects, key) = allocateObject object objects
+                                                                        (LIST key : stack, newObjects)
+                                                                    | isCODEBLOCK a = do
+                                                                        let object = objects Map.! getCODEBLOCK a
+                                                                        let (newObjects, key) = allocateObject object objects
+                                                                        (CODEBLOCK key : stack, newObjects)
+                                                                    | otherwise = (a : stack, objects)
+                                        (newStack, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
 
 {- String -}
 

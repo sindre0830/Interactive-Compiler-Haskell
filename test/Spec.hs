@@ -25,6 +25,8 @@ main = do
         spec_funcEqual
         spec_funcLess
         spec_funcGreater
+        spec_funcPop
+        spec_funcDup
         spec_funcEmpty
         spec_funcHead
         spec_funcTail
@@ -215,6 +217,22 @@ spec_funcGreater = do
         it "printableStack (evalState funcGreater (Map.empty, Map.empty, [INT 2, BOOL True])) returns \"[ExpectedNumber]\"" $ do
             printableStack (evalState funcGreater (Map.empty, Map.empty, [INT 2, BOOL True])) `shouldBe` "[ExpectedNumber]"
 
+spec_funcPop :: Spec
+spec_funcPop = do
+    describe "funcPop tests:" $ do
+        it "printableStack (evalState funcPop (Map.empty, Map.empty, [BOOL True])) returns \"[]\"" $ do
+            printableStack (evalState funcPop (Map.empty, Map.empty, [BOOL True])) `shouldBe` "[]"
+        it "printableStack (evalState funcPop (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcPop (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcDup :: Spec
+spec_funcDup = do
+    describe "funcDup tests:" $ do
+        it "printableStack (evalState funcDup (Map.empty, Map.empty, [BOOL True])) returns \"[True, True]\"" $ do
+            printableStack (evalState funcDup (Map.empty, Map.empty, [BOOL True])) `shouldBe` "[True, True]"
+        it "printableStack (evalState funcDup (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcDup (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
 spec_funcEmpty :: Spec
 spec_funcEmpty = do
     describe "funcEmpty tests:" $ do
@@ -390,8 +408,8 @@ spec_updateObject = do
 spec_allocateObject :: Spec
 spec_allocateObject = do
     describe "allocateObject tests:" $ do
-        it "allocateObject [INT 1] (Map.fromList [(\"0\", []), (\"2\", [])]) returns Map.fromList [(\"0\", []), (\"2\", []), (\"1\", [INT 1])]" $ do
-            allocateObject [INT 1] (Map.fromList [("0", []), ("2", [])]) `shouldBe` Map.fromList [("0", []), ("2", []), ("1", [INT 1])]
+        it "allocateObject [INT 1] (Map.fromList [(\"0\", []), (\"2\", [])]) returns (Map.fromList [(\"0\", []), (\"2\", []), (\"1\", [INT 1])], \"1\")" $ do
+            allocateObject [INT 1] (Map.fromList [("0", []), ("2", [])]) `shouldBe` (Map.fromList [("0", []), ("2", []), ("1", [INT 1])], "1")
 
 spec_deallocateObject :: Spec
 spec_deallocateObject = do
