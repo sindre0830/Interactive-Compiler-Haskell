@@ -99,3 +99,5 @@ Fucked up last commit by commiting all files that weren't ready
 [0.38.0] **development**: Implemented swap functor
 
 [0.39.0] **development**: Implemented parseInteger and parseFloat functors
+
+[0.40.0] **development**: Implemented words functor

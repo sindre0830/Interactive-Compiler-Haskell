@@ -40,6 +40,7 @@ executeStack (x:xs) = do
                 -- String
                 "parseInteger"  -> funcParseInteger
                 "parseFloat"    -> funcParseFloat
+                "words"         -> funcWords
                 -- List
                 "empty"     -> funcEmpty
                 "head"      -> funcHead
@@ -310,6 +311,20 @@ funcParseFloat = do
                                         else if isJust (readMaybe (getSTRING a) :: Maybe Float)
                                             then (FLOAT (fromJust (readMaybe (getSTRING a) :: Maybe Float)) : rest, newObjects)
                                         else (ERROR ExpectedStringOfFloat : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcWords :: StackState
+funcWords = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "words"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        let newObjects = deallocateObject a objects
+                                        if not $ isSTRING a
+                                            then (ERROR ExpectedString : rest, newObjects)
+                                        else (map STRING (reverse $ words $ getSTRING a) ++ rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 

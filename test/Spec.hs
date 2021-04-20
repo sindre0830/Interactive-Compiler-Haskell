@@ -30,6 +30,7 @@ main = do
         spec_funcSwap
         spec_funcParseInteger
         spec_funcParseFloat
+        spec_funcWords
         spec_funcEmpty
         spec_funcHead
         spec_funcTail
@@ -271,6 +272,20 @@ spec_funcParseFloat = do
             printableStack (evalState funcParseFloat (Map.empty, Map.empty, [FLOAT 5.0])) `shouldBe` "[ExpectedString]"
         it "printableStack (evalState funcParseFloat (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcParseFloat (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcWords :: Spec
+spec_funcWords = do
+    describe "funcWords tests:" $ do
+        it "printableStack (evalState funcWords (Map.empty, Map.empty, [STRING \"a b c\"])) returns \"[\"a\", \"b\", \"c\"]\"" $ do
+            printableStack (evalState funcWords (Map.empty, Map.empty, [STRING "a b c"])) `shouldBe` "[\"a\", \"b\", \"c\"]"
+        it "printableStack (evalState funcWords (Map.empty, Map.empty, [STRING \"a\"])) returns \"[\"a\"]\"" $ do
+            printableStack (evalState funcWords (Map.empty, Map.empty, [STRING "a"])) `shouldBe` "[\"a\"]"
+        it "printableStack (evalState funcWords (Map.empty, Map.empty, [STRING \"\"])) returns \"[]\"" $ do
+            printableStack (evalState funcWords (Map.empty, Map.empty, [STRING ""])) `shouldBe` "[]"
+        it "printableStack (evalState funcWords (Map.empty, Map.empty, [FLOAT 5.0])) returns \"[ExpectedString]\"" $ do
+            printableStack (evalState funcWords (Map.empty, Map.empty, [FLOAT 5.0])) `shouldBe` "[ExpectedString]"
+        it "printableStack (evalState funcWords (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcWords (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 spec_funcEmpty :: Spec
 spec_funcEmpty = do
