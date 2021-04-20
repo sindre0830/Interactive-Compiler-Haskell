@@ -2,6 +2,8 @@ module Dictionary
     ( module Dictionary
     ) where
 -- foreign modules
+import Text.Read ( readMaybe )
+import Data.Maybe ( fromJust, isJust )
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Monad.State.Lazy
@@ -18,6 +20,9 @@ type Token = String
 data EitherN a b c d e f g h i
     = INT a | FLOAT b | BOOL c | STRING d | FUNC e | UNKNOWN f | LIST g | CODEBLOCK h | ERROR i
     deriving (Eq, Show)
+
+convertFloat :: Integral a => EitherN a b c d e f g h i -> Float
+convertFloat (INT a) = fromIntegral a
 
 getINT :: EitherN a b c d e f g h i -> a
 getINT (INT a) = a

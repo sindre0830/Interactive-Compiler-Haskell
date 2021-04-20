@@ -58,13 +58,12 @@ funcAddition = do
                                             ([ERROR InvalidParameterAmount], newObjects)
                                     else do
                                         let (b:a:rest) = stack
-                                        let (newStack, newObjects)  | not (isINT a || isFLOAT a) || not (isINT b || isFLOAT b) = do
-                                                                        let newObjects = deallocateObject a objects
-                                                                        (ERROR ExpectedNumber : rest, deallocateObject b newObjects)
-                                                                    | isINT a && isFLOAT b = (FLOAT (fromIntegral (getINT a) + getFLOAT b) : rest, objects)
-                                                                    | isFLOAT a && isINT b = (FLOAT (getFLOAT a + fromIntegral (getINT b)) : rest, objects)
-                                                                    | isINT a && isINT b = (INT (getINT a + getINT b) : rest, objects)
-                                                                    | isFLOAT a && isFLOAT b = (FLOAT (getFLOAT a + getFLOAT b) : rest, objects)
+                                        let newObjects = deallocateObject b (deallocateObject a objects)
+                                        let newStack    | isINT a && isINT b        = INT      (getINT a       + getINT b)         : rest
+                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a + getFLOAT b)       : rest
+                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     + convertFloat b)   : rest
+                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     + getFLOAT b)       : rest
+                                                        | otherwise = ERROR ExpectedNumber : rest
                                         (newStack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
@@ -81,13 +80,12 @@ funcSubtraction = do
                                             ([ERROR InvalidParameterAmount], newObjects)
                                     else do
                                         let (b:a:rest) = stack
-                                        let (newStack, newObjects)  | not (isINT a || isFLOAT a) || not (isINT b || isFLOAT b) = do
-                                                                        let newObjects = deallocateObject a objects
-                                                                        (ERROR ExpectedNumber : rest, deallocateObject b newObjects)
-                                                                    | isINT a && isFLOAT b = (FLOAT (fromIntegral (getINT a) - getFLOAT b) : rest, objects)
-                                                                    | isFLOAT a && isINT b = (FLOAT (getFLOAT a - fromIntegral (getINT b)) : rest, objects)
-                                                                    | isINT a && isINT b = (INT (getINT a - getINT b) : rest, objects)
-                                                                    | isFLOAT a && isFLOAT b = (FLOAT (getFLOAT a - getFLOAT b) : rest, objects)
+                                        let newObjects = deallocateObject b (deallocateObject a objects)
+                                        let newStack    | isINT a && isINT b        = INT      (getINT a       - getINT b)         : rest
+                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a - getFLOAT b)       : rest
+                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     - convertFloat b)   : rest
+                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     - getFLOAT b)       : rest
+                                                        | otherwise = ERROR ExpectedNumber : rest
                                         (newStack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
@@ -104,13 +102,12 @@ funcMultiplication = do
                                             ([ERROR InvalidParameterAmount], newObjects)
                                     else do
                                         let (b:a:rest) = stack
-                                        let (newStack, newObjects)  | not (isINT a || isFLOAT a) || not (isINT b || isFLOAT b) = do
-                                                                        let newObjects = deallocateObject a objects
-                                                                        (ERROR ExpectedNumber : rest, deallocateObject b newObjects)
-                                                                    | isINT a && isFLOAT b = (FLOAT (fromIntegral (getINT a) * getFLOAT b) : rest, objects)
-                                                                    | isFLOAT a && isINT b = (FLOAT (getFLOAT a * fromIntegral (getINT b)) : rest, objects)
-                                                                    | isINT a && isINT b = (INT (getINT a * getINT b) : rest, objects)
-                                                                    | isFLOAT a && isFLOAT b = (FLOAT (getFLOAT a * getFLOAT b) : rest, objects)
+                                        let newObjects = deallocateObject b (deallocateObject a objects)
+                                        let newStack    | isINT a && isINT b        = INT      (getINT a       * getINT b)         : rest
+                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a * getFLOAT b)       : rest
+                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     * convertFloat b)   : rest
+                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     * getFLOAT b)       : rest
+                                                        | otherwise = ERROR ExpectedNumber : rest
                                         (newStack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)

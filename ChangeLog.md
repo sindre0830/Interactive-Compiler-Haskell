@@ -80,6 +80,8 @@ Fucked up last commit by commiting all files that weren't ready
 
 [0.31.0] **development**: Implemented equal functor
 
-[0.31.1] **formatting**: split functors by subject
+[0.31.1] **formatting**: Split functors by subject
 
 [0.32.0] **development**: Implemented multiplication functor
+
+[0.32.1] **formatting**: Reformatted arithmetic functors
