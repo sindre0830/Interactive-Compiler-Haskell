@@ -26,7 +26,9 @@ executeStack (x:xs) = do
                 "/"     -> funcDivisionFloat
                 "div"   -> funcDivisionInteger
                 -- Bool
-                "&&" -> funcAND
+                "&&"    -> funcAND
+                "||"    -> funcOR
+                "not"   -> funcNOT
                 -- Comparison
                 "==" -> funcEqual
                 -- Stack
@@ -142,11 +144,38 @@ funcAND = do
                                         then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
-                                        let newObjects = deallocateObject b objects
-                                        let objects = deallocateObject a newObjects
+                                        let newObjects = deallocateObject a (deallocateObject b objects)
                                         if not (isBOOL a) || not (isBOOL b)
                                             then (ERROR ExpectedBool : rest, newObjects)
                                         else (BOOL (getBOOL a && getBOOL b) : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcOR :: StackState
+funcOR = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "||"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (b:a:rest) = stack
+                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                        if not (isBOOL a) || not (isBOOL b)
+                                            then (ERROR ExpectedBool : rest, newObjects)
+                                        else (BOOL (getBOOL a || getBOOL b) : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcNOT :: StackState
+funcNOT = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "not"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        let newObjects = deallocateObject a objects
+                                        if not (isBOOL a)
+                                            then (ERROR ExpectedBool : rest, newObjects)
+                                        else (BOOL (not $ getBOOL a) : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 
