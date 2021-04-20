@@ -48,6 +48,7 @@ executeStack (x:xs) = do
                 "cons"      -> funcCons
                 "append"    -> funcAppend
                 -- Length
+                "length"    -> funcLength
                 -- Code block
                 -- Control flow
             ) >> executeStack xs
@@ -424,6 +425,20 @@ funcAppend = do
     return (newObjects, reverse newStack)
 
 {- Length -}
+
+funcLength :: StackState
+funcLength = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "length"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        let newStack    | isSTRING a = INT (length $ getSTRING a) : rest
+                                                        | isLIST a = INT (length $ objects Map.! getLIST a) : rest
+                                                        | otherwise = ERROR ExpectedList : rest
+                                        (newStack, deallocateObject a objects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
 
 {- Code block -}
 

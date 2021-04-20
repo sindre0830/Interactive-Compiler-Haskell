@@ -36,6 +36,7 @@ main = do
         spec_funcTail
         spec_funcCons
         spec_funcAppend
+        spec_funcLength
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -342,6 +343,20 @@ spec_funcAppend = do
             printableStack (evalState funcAppend (Map.empty, Map.empty, [INT 10, INT 10])) `shouldBe` "[ExpectedList]"
         it "printableStack (evalState funcAppend (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcAppend (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcLength :: Spec
+spec_funcLength = do
+    describe "funcLength tests:" $ do
+        it "printableStack (evalState funcLength (Map.empty, Map.empty, [STRING \"a b c\"])) returns \"[5]\"" $ do
+            printableStack (evalState funcLength (Map.empty, Map.empty, [STRING "a b c"])) `shouldBe` "[5]"
+        it "printableStack (evalState funcLength (Map.fromList [(\"0\", [INT 1, INT 2])], Map.empty, [LIST \"0\"])) returns \"[2]\"" $ do
+            printableStack (evalState funcLength (Map.fromList [("0", [INT 1, INT 2])], Map.empty, [LIST "0"])) `shouldBe` "[2]"
+        it "printableStack (evalState funcLength (Map.empty, Map.empty, [STRING \"\"])) returns \"[0]\"" $ do
+            printableStack (evalState funcLength (Map.empty, Map.empty, [STRING ""])) `shouldBe` "[0]"
+        it "printableStack (evalState funcLength (Map.empty, Map.empty, [FLOAT 5.0])) returns \"[ExpectedList]\"" $ do
+            printableStack (evalState funcLength (Map.empty, Map.empty, [FLOAT 5.0])) `shouldBe` "[ExpectedList]"
+        it "printableStack (evalState funcLength (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcLength (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 
