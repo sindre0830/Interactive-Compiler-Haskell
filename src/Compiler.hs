@@ -20,13 +20,9 @@ executeStack (x:xs) = do
         then (case getFUNC x of
             "+" -> funcAddition
             "empty" -> funcEmpty
-            -- [ 1 2 3 ] head -> 3
             "head" -> funcHead
-            -- [ 1 2 3 ] tail -> [1, 2]
             "tail" -> funcTail
-            -- 1 [ 2 3 ] cons -> [2, 3, 1]
             "cons" -> funcCons
-            -- [ 1 ] [ 2 ] append -> [2, 1]
             "append" -> funcAppend) >> executeStack xs
         else do
             (objects, variables, stack) <- get
@@ -121,15 +117,15 @@ funcCons = do
                                             ([ERROR InvalidParameterAmount], newObjects)
                                     else do
                                         let (b:a:rest) = stack
-                                        if not $ isLIST a
+                                        if not $ isLIST b
                                             then do
-                                                let newObjects = deallocateObject a objects
-                                                let objects = deallocateObject b newObjects
+                                                let newObjects = deallocateObject b objects
+                                                let objects = deallocateObject a newObjects
                                                 (ERROR ExpectedList : rest, objects)
                                         else do
-                                            let key = getLIST a
-                                            let newObjects = updateObject key (b : (objects Map.! key)) objects
-                                            (a : rest, newObjects))
+                                            let key = getLIST b
+                                            let newObjects = updateObject key (a : (objects Map.! key)) objects
+                                            (b : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 
@@ -153,8 +149,8 @@ funcAppend = do
                                         else do
                                             let keyA = getLIST a
                                             let keyB = getLIST b
-                                            let newObjects = updateObject keyA ((objects Map.! keyB) ++ (objects Map.! keyA)) objects
-                                            let objects = deallocateObject b newObjects
-                                            (a : rest, newObjects))
+                                            let newObjects = updateObject keyB ((objects Map.! keyA) ++ (objects Map.! keyB)) objects
+                                            let objects = deallocateObject a newObjects
+                                            (b : rest, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)

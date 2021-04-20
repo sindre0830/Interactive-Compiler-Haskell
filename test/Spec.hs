@@ -90,8 +90,8 @@ spec_funcTail = do
 spec_funcCons :: Spec
 spec_funcCons = do
     describe "funcCons tests:" $ do
-        it "printableStack (evalState funcCons (Map.fromList [(\"0\", [INT 2, INT 3])], Map.empty, [INT 1, LIST \"0\"])) returns \"[[1, 2, 3]]\"" $ do
-            printableStack (evalState funcCons (Map.fromList [("0", [INT 2, INT 3])], Map.empty, [INT 1, LIST "0"])) `shouldBe` "[[1, 2, 3]]"
+        it "printableStack (evalState funcCons (Map.fromList [(\"0\", [INT 2, INT 3])], Map.empty, [LIST \"0\", INT 1])) returns \"[[1, 2, 3]]\"" $ do
+            printableStack (evalState funcCons (Map.fromList [("0", [INT 2, INT 3])], Map.empty, [LIST "0", INT 1])) `shouldBe` "[[1, 2, 3]]"
         it "printableStack (evalState funcCons (Map.fromList [(\"0\", []), (\"1\", [])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[[]]]\"" $ do
             printableStack (evalState funcCons (Map.fromList [("0", []), ("1", [])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[[]]]"
         it "printableStack (evalState funcCons (Map.empty, Map.empty, [INT 10, INT 10])) returns \"[ExpectedList]\"" $ do
@@ -102,8 +102,8 @@ spec_funcCons = do
 spec_funcAppend :: Spec
 spec_funcAppend = do
     describe "funcAppend tests:" $ do
-        it "printableStack (evalState funcAppend (Map.fromList [(\"0\", [INT 2, INT 3]), (\"1\", [INT 1])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[1, 2, 3]]\"" $ do
-            printableStack (evalState funcAppend (Map.fromList [("0", [INT 2, INT 3]), ("1", [INT 1])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[1, 2, 3]]"
+        it "printableStack (evalState funcAppend (Map.fromList [(\"0\", [INT 2, INT 3]), (\"1\", [INT 1])], Map.empty, [LIST \"0\", LIST \"1\"])) returns \"[[1, 2, 3]]\"" $ do
+            printableStack (evalState funcAppend (Map.fromList [("0", [INT 2, INT 3]), ("1", [INT 1])], Map.empty, [LIST "0", LIST "1"])) `shouldBe` "[[1, 2, 3]]"
         it "printableStack (evalState funcAppend (Map.fromList [(\"0\", []), (\"1\", [])], Map.empty, [LIST \"1\", LIST \"0\"])) returns \"[[]]\"" $ do
             printableStack (evalState funcAppend (Map.fromList [("0", []), ("1", [])], Map.empty, [LIST "1", LIST "0"])) `shouldBe` "[[]]"
         it "printableStack (evalState funcAppend (Map.empty, Map.empty, [INT 10, INT 10])) returns \"[ExpectedList]\"" $ do
