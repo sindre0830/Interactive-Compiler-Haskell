@@ -11,6 +11,35 @@ import Control.Monad.State.Lazy
 import Dictionary
 import Stack
 
+executeStack :: Stack -> StackState
+executeStack [] = do
+    (objects, variables, stack) <- get
+    return (objects, stack)
+executeStack (x:xs) = do
+    if isFUNC x
+        then (case getFUNC x of
+            "+" -> funcAddition
+            -- [ ] empty -> crashes
+            "empty" -> funcEmpty
+            -- [ 1 2 3 ] head -> 3
+            -- [ ] head -> crashes
+            "head" -> funcHead
+            -- [ 1 2 3 ] tail -> [1, 2]
+            -- [ ] tail -> crashes
+            "tail" -> funcTail
+            -- 1 [ ] cons -> crashes
+            -- [ ] [ 2 3 ] cons -> crashes
+            -- 1 [ 2 3 ] cons -> [2, 3, 1]
+            "cons" -> funcCons
+            -- [ 1 ] [ 2 ] append -> [2, 1]
+            -- [ 1 ] [ ] append -> crashes
+            -- [ ] [ 2 ] append -> crashes              MIGHT BE PRINT
+            "append" -> funcAppend) >> executeStack xs
+        else do
+            (objects, variables, stack) <- get
+            put (objects, variables, stack ++ [x])
+            executeStack xs
+
 funcAddition :: StackState
 funcAddition = do
     (objects, variables, stack) <- get

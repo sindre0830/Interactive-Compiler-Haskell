@@ -35,7 +35,7 @@ parser (x:xs) stack objects = do
             -- parse list
             let (newStack, rest, newObjects) = listParser xs [] objects
             -- check if list is valid
-            if isERROR $ head newStack
+            if not (null newStack) && isERROR (head newStack)
                 then parser rest (head newStack : stack) newObjects
             else do
                 -- update map with inner list
@@ -46,7 +46,7 @@ parser (x:xs) stack objects = do
             -- parse codeBlock
             let (newStack, rest, newObjects) = codeBlockParser xs [] objects
             -- check if codeBlock is valid
-            if isERROR $ head newStack
+            if not (null newStack) && isERROR (head newStack)
                 then parser rest (head newStack : stack) newObjects
             else do
                 -- update map with inner codeBlock

@@ -63,3 +63,5 @@
 [0.26.0] **development**: Implemented append functor
 
 [0.27.0] **development**: Implemented addition functor
+
+[0.28.0] **development**: Fixed parse error when checking for errors in empty stacks

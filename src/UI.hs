@@ -6,10 +6,12 @@ import System.IO ( hFlush, stdout )
 import Data.Char ( toLower )
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
 import Stack
 import Parsing
+import Compiler
 
 readInput :: IO ()
 readInput = do
@@ -42,10 +44,11 @@ modeInteractive stack variables = do
     putStrLn "\n\tBefore compiling:"
     putStrLn $ "\t\tRaw:   " ++ show newStack
     putStrLn $ "\t\tStack: " ++ printableStack (objects, newStack)
-    -- let execStack = executePrefix newStack variables
+    -- let stack = reverse newStack
+    -- let (newObjects, newStack) = evalState (executeStack stack) (objects, Map.empty, [])
     -- putStrLn "\n\tAfter compiling:"
-    -- putStrLn $ "\t\tRaw:   " ++ show execStack
-    -- putStrLn $ "\t\tStack: " ++ printableStack execStack variables ++ "\n"
+    -- putStrLn $ "\t\tRaw:   " ++ show newStack
+    -- putStrLn $ "\t\tStack: " ++ printableStack (newObjects, newStack) ++ "\n"
     modeInteractive [] variables
 
 modeCompiler :: Variable -> IO ()
