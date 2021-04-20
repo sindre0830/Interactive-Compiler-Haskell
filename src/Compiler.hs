@@ -30,7 +30,9 @@ executeStack (x:xs) = do
                 "||"    -> funcOR
                 "not"   -> funcNOT
                 -- Comparison
-                "==" -> funcEqual
+                "=="    -> funcEqual
+                "<"     -> funcLess
+                ">"     -> funcGreater
                 -- Stack
                 -- String
                 -- List
@@ -188,9 +190,42 @@ funcEqual = do
                                         then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
-                                        let newObjects = deallocateObject b objects
-                                        let objects = deallocateObject a newObjects
+                                        let newObjects = deallocateObject a (deallocateObject b objects)
                                         (BOOL (a == b) : rest, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcLess :: StackState
+funcLess = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "<"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (b:a:rest) = stack
+                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                        let newStack    | isINT a && isINT b        = BOOL  (getINT a       < getINT b)         : rest
+                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a < getFLOAT b)       : rest
+                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     < convertFloat b)   : rest
+                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     < getFLOAT b)       : rest
+                                                        | otherwise = ERROR ExpectedNumber : rest
+                                        (newStack, newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+funcGreater :: StackState
+funcGreater = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! ">"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (b:a:rest) = stack
+                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                        let newStack    | isINT a && isINT b        = BOOL  (getINT a       > getINT b)         : rest
+                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a > getFLOAT b)       : rest
+                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     > convertFloat b)   : rest
+                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     > getFLOAT b)       : rest
+                                                        | otherwise = ERROR ExpectedNumber : rest
+                                        (newStack, newObjects))
     put (newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 

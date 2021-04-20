@@ -91,3 +91,5 @@ Fucked up last commit by commiting all files that weren't ready
 [0.34.0] **development**: Moved stack deallocation to it's own function
 
 [0.35.0] **development**: Implemented OR and NOT functors
+
+[0.36.0] **development**: Implemented less and greater functors
