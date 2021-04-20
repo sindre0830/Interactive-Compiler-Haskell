@@ -52,12 +52,7 @@ funcAddition :: StackState
 funcAddition = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "+"
-                                        then do
-                                            let newObjects  | not $ null stack = do
-                                                                let (a:rest) = stack
-                                                                deallocateObject a objects
-                                                            | otherwise = objects
-                                            ([ERROR InvalidParameterAmount], newObjects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject b (deallocateObject a objects)
@@ -74,12 +69,7 @@ funcSubtraction :: StackState
 funcSubtraction = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "-"
-                                        then do
-                                            let newObjects  | not $ null stack = do
-                                                                let (a:rest) = stack
-                                                                deallocateObject a objects
-                                                            | otherwise = objects
-                                            ([ERROR InvalidParameterAmount], newObjects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject b (deallocateObject a objects)
@@ -96,12 +86,7 @@ funcMultiplication :: StackState
 funcMultiplication = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "*"
-                                        then do
-                                            let newObjects  | not $ null stack = do
-                                                                let (a:rest) = stack
-                                                                deallocateObject a objects
-                                                            | otherwise = objects
-                                            ([ERROR InvalidParameterAmount], newObjects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject b (deallocateObject a objects)
@@ -117,13 +102,8 @@ funcMultiplication = do
 funcDivisionFloat :: StackState
 funcDivisionFloat = do
     (objects, variables, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "*"
-                                        then do
-                                            let newObjects  | not $ null stack = do
-                                                                let (a:rest) = stack
-                                                                deallocateObject a objects
-                                                            | otherwise = objects
-                                            ([ERROR InvalidParameterAmount], newObjects)
+    let (newStack, newObjects) =   (if length stack < functors Map.! "/"
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject b (deallocateObject a objects)
@@ -139,13 +119,8 @@ funcDivisionFloat = do
 funcDivisionInteger :: StackState
 funcDivisionInteger = do
     (objects, variables, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "*"
-                                        then do
-                                            let newObjects  | not $ null stack = do
-                                                                let (a:rest) = stack
-                                                                deallocateObject a objects
-                                                            | otherwise = objects
-                                            ([ERROR InvalidParameterAmount], newObjects)
+    let (newStack, newObjects) =   (if length stack < functors Map.! "div"
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject b (deallocateObject a objects)
@@ -164,7 +139,7 @@ funcAND :: StackState
 funcAND = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "&&"
-                                        then ([ERROR InvalidParameterAmount], objects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject b objects
@@ -181,7 +156,7 @@ funcEqual :: StackState
 funcEqual = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "=="
-                                        then ([ERROR InvalidParameterAmount], objects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject b objects
@@ -200,7 +175,7 @@ funcEmpty :: StackState
 funcEmpty = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "empty"
-                                        then ([ERROR InvalidParameterAmount], objects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (a:rest) = stack
                                         let newObjects = deallocateObject a objects
@@ -214,7 +189,7 @@ funcHead :: StackState
 funcHead = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "head"
-                                        then ([ERROR InvalidParameterAmount], objects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (a:rest) = stack
                                         let newObjects = deallocateObject a objects
@@ -232,7 +207,7 @@ funcTail :: StackState
 funcTail = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "tail"
-                                        then ([ERROR InvalidParameterAmount], objects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (a:rest) = stack
                                         if not $ isLIST a
@@ -253,12 +228,7 @@ funcCons :: StackState
 funcCons = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "cons"
-                                        then do
-                                            let newObjects  | not $ null stack = do
-                                                                let (a:rest) = stack
-                                                                deallocateObject a objects
-                                                            | otherwise = objects
-                                            ([ERROR InvalidParameterAmount], newObjects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         if not $ isLIST b
@@ -277,12 +247,7 @@ funcAppend :: StackState
 funcAppend = do
     (objects, variables, stack) <- get
     let (newStack, newObjects) =   (if length stack < functors Map.! "append"
-                                        then do
-                                            let newObjects  | not $ null stack = do
-                                                                let (a:rest) = stack
-                                                                deallocateObject a objects
-                                                            | otherwise = objects
-                                            ([ERROR InvalidParameterAmount], newObjects)
+                                        then deallocateStack stack objects
                                     else do
                                         let (b:a:rest) = stack
                                         if not (isLIST a) || not (isLIST b)

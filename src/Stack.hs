@@ -7,6 +7,10 @@ import qualified Data.Map as Map
 -- local modules
 import Dictionary
 
+deallocateStack :: Stack -> Object -> (Stack, Object)
+deallocateStack [] objects = ([ERROR InvalidParameterAmount], objects)
+deallocateStack (x:xs) objects = deallocateStack xs (deallocateObject x objects)
+
 generateObjectAddress :: Object -> String 
 generateObjectAddress objects = show $ getValidAddress objects 0
 
