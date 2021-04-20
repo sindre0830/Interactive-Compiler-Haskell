@@ -17,6 +17,7 @@ main = do
         spec_funcAddition
         spec_funcSubtraction
         spec_funcAND
+        spec_funcEqual
         spec_funcEmpty
         spec_funcHead
         spec_funcTail
@@ -86,6 +87,20 @@ spec_funcAND = do
             printableStack (evalState funcAND (Map.empty, Map.empty, [BOOL False, INT 10])) `shouldBe` "[ExpectedBool]"
         it "printableStack (evalState funcAND (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcAND (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcEqual :: Spec
+spec_funcEqual = do
+    describe "funcEqual tests:" $ do
+        it "printableStack (evalState funcEqual (Map.empty, Map.empty, [BOOL True, BOOL True])) returns \"[True]\"" $ do
+            printableStack (evalState funcEqual (Map.empty, Map.empty, [BOOL True, BOOL True])) `shouldBe` "[True]"
+        it "printableStack (evalState funcEqual (Map.empty, Map.empty, [BOOL False, BOOL False])) returns \"[True]\"" $ do
+            printableStack (evalState funcEqual (Map.empty, Map.empty, [BOOL False, BOOL False])) `shouldBe` "[True]"
+        it "printableStack (evalState funcEqual (Map.empty, Map.empty, [BOOL False, BOOL True])) returns \"[False]\"" $ do
+            printableStack (evalState funcEqual (Map.empty, Map.empty, [BOOL False, BOOL True])) `shouldBe` "[False]"
+        it "printableStack (evalState funcEqual (Map.empty, Map.empty, [INT 10, INT 10])) returns \"[True]\"" $ do
+            printableStack (evalState funcEqual (Map.empty, Map.empty, [INT 10, INT 10])) `shouldBe` "[True]"
+        it "printableStack (evalState funcEqual (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcEqual (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 spec_funcEmpty :: Spec
 spec_funcEmpty = do

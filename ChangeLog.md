@@ -77,3 +77,5 @@ Fucked up last commit by send all files that eren't relevant
 [0.29.0] **development**: Implemented subtraction functor
 
 [0.30.0] **development**: Implemented AND functor
+
+[0.31.0] **development**: Implemented equal functor
