@@ -50,6 +50,7 @@ executeStack (x:xs) = do
                 -- Length
                 "length"    -> funcLength
                 -- Code block
+                "exec"  -> funcExec
                 -- Control flow
             ) >> executeStack xs
         else do
@@ -441,5 +442,21 @@ funcLength = do
     return (newObjects, reverse newStack)
 
 {- Code block -}
+
+funcExec :: StackState
+funcExec = do
+    (objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "exec"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (a:rest) = stack
+                                        if not $ isCODEBLOCK a
+                                            then (ERROR ExpectedCodeblock : rest, deallocateObject a objects)
+                                        else do
+                                            let object = objects Map.! getCODEBLOCK a
+                                            let (newObjects, newStack) = evalState (executeStack object) (objects, variables, [])
+                                            ((reverse newStack) ++ rest, deallocateObject a newObjects))
+    put (newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
 
 {- Control flow -}

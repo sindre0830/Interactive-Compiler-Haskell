@@ -37,6 +37,7 @@ main = do
         spec_funcCons
         spec_funcAppend
         spec_funcLength
+        spec_funcExec
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -357,6 +358,16 @@ spec_funcLength = do
             printableStack (evalState funcLength (Map.empty, Map.empty, [FLOAT 5.0])) `shouldBe` "[ExpectedList]"
         it "printableStack (evalState funcLength (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcLength (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcExec :: Spec
+spec_funcExec = do
+    describe "funcExec tests:" $ do
+        it "printableStack (evalState funcExec (Map.fromList [(\"0\", [INT 1, INT 2, INT 3, FUNC \"+\"])], Map.empty, [CODEBLOCK \"0\"])) returns \"[1, 5]\"" $ do
+            printableStack (evalState funcExec (Map.fromList [("0", [INT 1, INT 2, INT 3, FUNC "+"])], Map.empty, [CODEBLOCK "0"])) `shouldBe` "[1, 5]"
+        it "printableStack (evalState funcExec (Map.empty, Map.empty, [FLOAT 5.0])) returns \"[ExpectedCodeblock]\"" $ do
+            printableStack (evalState funcExec (Map.empty, Map.empty, [FLOAT 5.0])) `shouldBe` "[ExpectedCodeblock]"
+        it "printableStack (evalState funcExec (Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcExec (Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 

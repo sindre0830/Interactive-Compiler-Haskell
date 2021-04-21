@@ -103,3 +103,5 @@ Fucked up last commit by commiting all files that weren't ready
 [0.40.0] **development**: Implemented words functor
 
 [0.41.0] **development**: Implemented length functor
+
+[0.42.0] **development**: Implemented simple version of exec functor
