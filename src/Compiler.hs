@@ -58,6 +58,7 @@ executeStack = do
                     "exec"  -> funcExec
                     -- Control flow
                     "if"    -> funcIf
+                    "map"   -> funcMap
                 ) >> executeStack
             else do
                 put (xs, objects, variables, x : stack)
@@ -493,3 +494,30 @@ funcIf = do
                                                         (object ++ buffer, rest, newObjects))
     put (newBuffer, newObjects, variables, newStack)
     return (newObjects, reverse newStack)
+
+funcMap :: StackState
+funcMap = do
+    (buffer, objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "map"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (b:a:rest) = stack
+                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                        if not (isLIST a)
+                                            then (ERROR ExpectedList : rest, newObjects)
+                                        else if not (isCODEBLOCK b)
+                                            then (ERROR ExpectedCodeblock : rest, newObjects)
+                                        else do
+                                            let block = objects Map.! getCODEBLOCK b
+                                            let list = objects Map.! getLIST a
+                                            let (newList, newObjects) = mapOf list block ([], objects)
+                                            let objects = updateObject (getLIST a) newList (deallocateObject b newObjects)
+                                            (a : rest, objects))
+    put (buffer, newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+mapOf :: Stack -> Stack -> (Stack, Object) -> (Stack, Object)
+mapOf [] _ (stack, objects) = (stack, objects)
+mapOf (x:xs) block (stack, objects) = do
+    let (newObjects, newStack) = evalState executeStack (block, objects, Map.empty, [x])
+    mapOf xs block (stack ++ newStack, newObjects)

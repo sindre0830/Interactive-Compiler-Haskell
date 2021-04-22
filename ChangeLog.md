@@ -111,3 +111,5 @@ Fucked up last commit by commiting all files that weren't ready
 [0.44.0] **development**: Added possiblity to use equal functor on lists and code blocks
 
 [0.45.0] **development**: Implemented if functor
+
+[0.46.0] **development**: Implemented map functor
