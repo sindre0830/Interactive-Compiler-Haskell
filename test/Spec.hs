@@ -38,6 +38,7 @@ main = do
         spec_funcAppend
         spec_funcLength
         spec_funcExec
+        spec_funcIf
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -370,6 +371,18 @@ spec_funcExec = do
             printableStack (evalState funcExec ([], Map.empty, Map.empty, [FLOAT 5.0])) `shouldBe` "[ExpectedCodeblock]"
         it "printableStack (evalState funcExec ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcExec ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcIf :: Spec
+spec_funcIf = do
+    describe "funcIf tests:" $ do
+        it "printableStack (evalState funcIf ([], Map.fromList [(\"0\", [FUNC \"+\"]), (\"1\", [FUNC \"*\"])], Map.empty, [CODEBLOCK \"1\", CODEBLOCK \"0\", BOOL True])) returns \"[]\"" $ do
+            printableStack (evalState funcIf ([], Map.fromList [("0", [FUNC "+"]), ("1", [FUNC "*"])], Map.empty, [CODEBLOCK "1", CODEBLOCK "0", BOOL True])) `shouldBe` "[]"
+        it "printableStack (evalState funcIf ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0, FLOAT 5.0])) returns \"[ExpectedBool]\"" $ do
+            printableStack (evalState funcIf ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0, FLOAT 5.0])) `shouldBe` "[ExpectedBool]"
+        it "printableStack (evalState funcIf ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0, BOOL True])) returns \"[ExpectedCodeblock]\"" $ do
+            printableStack (evalState funcIf ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0, BOOL True])) `shouldBe` "[ExpectedCodeblock]"
+        it "printableStack (evalState funcIf ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcIf ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 

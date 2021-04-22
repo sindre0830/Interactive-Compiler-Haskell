@@ -57,6 +57,7 @@ executeStack = do
                     -- Code block
                     "exec"  -> funcExec
                     -- Control flow
+                    "if"    -> funcIf
                 ) >> executeStack
             else do
                 put (xs, objects, variables, x : stack)
@@ -468,3 +469,27 @@ funcExec = do
     return (newObjects, reverse newStack)
 
 {- Control flow -}
+
+funcIf :: StackState
+funcIf = do
+    (buffer, objects, variables, stack) <- get
+    let (newBuffer, newStack, newObjects) =    (if length stack < functors Map.! "if"
+                                                    then do
+                                                        let (newStack, newObjects) = deallocateStack stack objects
+                                                        (buffer, newStack, newObjects)
+                                                else do
+                                                    let (c:b:a:rest) = stack
+                                                    let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
+                                                    if not $ isBOOL a
+                                                        then (buffer, ERROR ExpectedBool : rest, newObjects)
+                                                    else if not (isCODEBLOCK b) || not (isCODEBLOCK c)
+                                                        then (buffer, ERROR ExpectedCodeblock : rest, newObjects)
+                                                    else if getBOOL a
+                                                        then do
+                                                            let object = objects Map.! getCODEBLOCK b
+                                                            (object ++ buffer, rest, newObjects)
+                                                    else do
+                                                        let object = objects Map.! getCODEBLOCK c
+                                                        (object ++ buffer, rest, newObjects))
+    put (newBuffer, newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
