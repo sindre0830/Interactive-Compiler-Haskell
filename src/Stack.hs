@@ -35,7 +35,7 @@ deallocateObject x objects
     | otherwise = objects
 
 printableStack :: (Object, Stack) -> String 
-printableStack (objects, stack) = "[" ++ (formatStack stack ", " objects) ++ "]"
+printableStack (objects, stack) = "[" ++ formatStack stack ", " objects ++ "]"
 
 formatStack :: Stack -> Divider -> Object -> String
 formatStack [] _ _ = []
@@ -48,6 +48,6 @@ formatStack (x:xs) divider objects
     | isFUNC x      = getFUNC x ++ divider ++ formatStack xs divider objects
     | isUNKNOWN x   = show (getUNKNOWN x) ++ divider ++ formatStack xs divider objects
     | isLIST x      = printableStack (objects, objects Map.! getLIST x) ++ divider ++ formatStack xs divider objects
-    | isCODEBLOCK x = "{" ++ (formatStack (objects Map.! getCODEBLOCK x) ", " objects) ++ "}" ++ divider ++ formatStack xs divider objects
+    | isCODEBLOCK x = "{" ++ formatStack (objects Map.! getCODEBLOCK x) ", " objects ++ "}" ++ divider ++ formatStack xs divider objects
     | isERROR x     = show (getERROR x) ++ divider ++ formatStack xs divider objects
     | otherwise     = formatStack xs divider objects

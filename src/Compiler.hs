@@ -203,7 +203,10 @@ funcEqual = do
                                     else do
                                         let (b:a:rest) = stack
                                         let newObjects = deallocateObject a (deallocateObject b objects)
-                                        (BOOL (a == b) : rest, newObjects))
+                                        let newStack    | isLIST a && isLIST b = BOOL (objects Map.! getLIST a == objects Map.! getLIST b)
+                                                        | isCODEBLOCK a && isCODEBLOCK b = BOOL (objects Map.! getCODEBLOCK a == objects Map.! getCODEBLOCK b)
+                                                        | otherwise = BOOL (a == b)
+                                        (newStack : rest, newObjects))
     put (buffer, newObjects, variables, newStack)
     return (newObjects, reverse newStack)
 

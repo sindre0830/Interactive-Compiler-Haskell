@@ -188,6 +188,8 @@ spec_funcEqual = do
             printableStack (evalState funcEqual ([], Map.empty, Map.empty, [BOOL False, BOOL True])) `shouldBe` "[False]"
         it "printableStack (evalState funcEqual ([], Map.empty, Map.empty, [INT 10, INT 10])) returns \"[True]\"" $ do
             printableStack (evalState funcEqual ([], Map.empty, Map.empty, [INT 10, INT 10])) `shouldBe` "[True]"
+        it "printableStack (evalState funcEqual ([], Map.fromList [(\"0\", [INT 1]), (\"1\", [INT 1])], Map.empty, [LIST \"0\", LIST \"1\"])) returns \"[True]\"" $ do
+            printableStack (evalState funcEqual ([], Map.fromList [("0", [INT 1]), ("1", [INT 1])], Map.empty, [LIST "0", LIST "1"])) `shouldBe` "[True]"
         it "printableStack (evalState funcEqual ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcEqual ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
