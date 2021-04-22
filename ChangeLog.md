@@ -34,82 +34,84 @@
 
 [0.14.0] **development**: Added input parser that updates global variable
 
-[0.15.0] **development**: Implemented head functor
+[1.0.0] **milestone**: Implimented parser
 
-[0.16.0] **development**: Fixed memory garbage by deallocating list before removing pointer
+[1.1.0] **development**: Implemented head functor
 
-[0.17.0] **development**: Implemented tail functor
+[1.2.0] **development**: Fixed memory garbage by deallocating list before removing pointer
 
-[0.17.1] **formatting**: Removed useless brackets
+[1.3.0] **development**: Implemented tail functor
 
-[0.17.2] **formatting**: Changed output in StackState to output objects aswell
+[1.3.1] **formatting**: Removed useless brackets
 
-[0.18.0] **development**: Fixed stack formatter to print code blocks properly
+[1.3.2] **formatting**: Changed output in StackState to output objects aswell
 
-[0.19.0] **development**: Fixed tail functor where I checked amount of parameters
+[1.4.0] **development**: Fixed stack formatter to print code blocks properly
 
-[0.20.0] **development**: Changed output of one head test to printable stack
+[1.5.0] **development**: Fixed tail functor where I checked amount of parameters
 
-[0.21.0] **development**: Implemented empty functor
+[1.6.0] **development**: Changed output of one head test to printable stack
 
-[0.22.0] **development**: Implemented cons functor and properly deallocates objects
+[1.7.0] **development**: Implemented empty functor
 
-[0.23.0] **development**: Implemented object functionality: generateAddress and deallocate
+[1.8.0] **development**: Implemented cons functor and properly deallocates objects
 
-[0.24.0] **development**: Implemented allocate object
+[1.9.0] **development**: Implemented object functionality: generateAddress and deallocate
 
-[0.25.0] **development**: Implemented update object
+[1.10.0] **development**: Implemented allocate object
 
-[0.26.0] **development**: Implemented append functor
+[1.11.0] **development**: Implemented update object
 
-[0.27.0] **development**: Implemented addition functor
+[1.12.0] **development**: Implemented append functor
 
-[0.28.0] **development**: Fixed parse error when checking for errors in empty stacks
+[1.13.0] **development**: Implemented addition functor
 
-Fucked up last commit by commiting all files that weren't ready
+[1.14.0] **development**: Fixed parse error when checking for errors in empty stacks
 
-[0.28.1] **fix**: Fixed crashes in last commit where head and tail was used on empty stack
+Fucked up last commit by commiting files that weren't ready
 
-[0.28.2] **fix**: Fixed issue with postfix before prefix
+[1.14.1] **fix**: Fixed crashes in last commit where head and tail was used on empty stack
 
-[0.28.3] **fix**: Fixed arguments being the wrong way around
+[1.14.2] **fix**: Fixed issue with postfix before prefix
 
-[0.29.0] **development**: Implemented subtraction functor
+[1.14.3] **fix**: Fixed arguments being the wrong way around
 
-[0.30.0] **development**: Implemented AND functor
+[1.15.0] **development**: Implemented subtraction functor
 
-[0.31.0] **development**: Implemented equal functor
+[1.16.0] **development**: Implemented AND functor
 
-[0.31.1] **formatting**: Split functors by subject
+[1.17.0] **development**: Implemented equal functor
 
-[0.32.0] **development**: Implemented multiplication functor
+[1.17.1] **formatting**: Split functors by subject
 
-[0.32.1] **formatting**: Reformatted arithmetic functors
+[1.18.0] **development**: Implemented multiplication functor
 
-[0.33.0] **development**: Implemented division functors
+[1.18.1] **formatting**: Reformatted arithmetic functors
 
-[0.34.0] **development**: Moved stack deallocation to it's own function
+[1.19.0] **development**: Implemented division functors
 
-[0.35.0] **development**: Implemented OR and NOT functors
+[1.20.0] **development**: Moved stack deallocation to it's own function
 
-[0.36.0] **development**: Implemented less and greater functors
+[1.21.0] **development**: Implemented OR and NOT functors
 
-[0.37.0] **development**: Implemented pop and dup functors
+[1.22.0] **development**: Implemented less and greater functors
 
-[0.38.0] **development**: Implemented swap functor
+[1.23.0] **development**: Implemented pop and dup functors
 
-[0.39.0] **development**: Implemented parseInteger and parseFloat functors
+[1.24.0] **development**: Implemented swap functor
 
-[0.40.0] **development**: Implemented words functor
+[1.25.0] **development**: Implemented parseInteger and parseFloat functors
 
-[0.41.0] **development**: Implemented length functor
+[1.26.0] **development**: Implemented words functor
 
-[0.42.0] **development**: Implemented simple version of exec functor
+[1.27.0] **development**: Implemented length functor
 
-[0.43.0] **development**: Moved stack input to State monad so exec can manipulate the buffer directly
+[1.28.0] **development**: Implemented simple version of exec functor
 
-[0.44.0] **development**: Added possiblity to use equal functor on lists and code blocks
+[1.29.0] **development**: Moved stack input to State monad so exec can manipulate the buffer directly
 
-[0.45.0] **development**: Implemented if functor
+[1.30.0] **development**: Added possiblity to use equal functor on lists and code blocks
 
-[0.46.0] **development**: Implemented map functor
+[1.31.0] **development**: Implemented if functor
+
+[1.32.0] **development**: Implemented map functor
