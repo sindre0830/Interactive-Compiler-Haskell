@@ -13,10 +13,10 @@ import Stack
 
 parseInput :: String -> StackState
 parseInput input = do
-    (objects, variables, stack) <- get
+    (buffer, objects, variables, stack) <- get
     let tokens = tokenize input
     let (newStack, newObjects) = parser tokens stack objects
-    put (newObjects, variables, newStack)
+    put (newStack, newObjects, variables, [])
     return (newObjects, newStack)
 
 -- | Splits string by whitespace.

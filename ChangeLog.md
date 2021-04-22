@@ -105,3 +105,5 @@ Fucked up last commit by commiting all files that weren't ready
 [0.41.0] **development**: Implemented length functor
 
 [0.42.0] **development**: Implemented simple version of exec functor
+
+[0.43.0] **development**: Moved stack input to State monad so exec can manipulate the buffer directly
