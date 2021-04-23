@@ -141,6 +141,7 @@ data ErrorTypes
     | ExpectedNumber
     | ExpectedEnumerable
     | ExpectedCodeblock
+    | ExpectedFunctor
     | ExpectedList
     | ExpectedVariable
     | ExpectedString

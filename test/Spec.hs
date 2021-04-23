@@ -41,6 +41,7 @@ main = do
         spec_funcIf
         spec_funcMap
         spec_funcEach
+        spec_funcFoldl
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -409,6 +410,20 @@ spec_funcEach = do
             printableStack (evalState funcEach ([], Map.fromList [("1", [INT 3, INT 2, INT 1])], Map.empty, [FLOAT 5.0, LIST "0"])) `shouldBe` "[ExpectedCodeblock]"
         it "printableStack (evalState funcEach ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcEach ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcFoldl :: Spec
+spec_funcFoldl = do
+    describe "funcFoldl tests:" $ do
+        it "printableStack (evalState funcFoldl ([], Map.fromList [(\"0\", [FUNC \"+\"]), (\"1\", [INT 3, INT 2, INT 1])], Map.empty, [CODEBLOCK \"0\", INT 0, LIST \"1\"])) returns \"[6]\"" $ do
+            printableStack (evalState funcFoldl ([], Map.fromList [("0", [FUNC "+"]), ("1", [INT 3, INT 2, INT 1])], Map.empty, [CODEBLOCK "0", INT 0, LIST "1"])) `shouldBe` "[6]"
+        it "printableStack (evalState funcFoldl ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0, FLOAT 5.0])) returns \"[ExpectedList]\"" $ do
+            printableStack (evalState funcFoldl ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0, FLOAT 5.0])) `shouldBe` "[ExpectedList]"
+        it "printableStack (evalState funcFoldl ([], Map.fromList [(\"1\", [INT 3, INT 2, INT 1])], Map.empty, [FLOAT 5.0, FUNC \"+\", LIST \"0\"])) returns \"[InvalidType]\"" $ do
+            printableStack (evalState funcFoldl ([], Map.fromList [("1", [INT 3, INT 2, INT 1])], Map.empty, [FLOAT 5.0, FUNC "+", LIST "0"])) `shouldBe` "[InvalidType]"
+        it "printableStack (evalState funcFoldl ([], Map.fromList [(\"1\", [INT 3, INT 2, INT 1])], Map.empty, [FLOAT 5.0, INT 0, LIST \"0\"])) returns \"[ExpectedCodeblock]\"" $ do
+            printableStack (evalState funcFoldl ([], Map.fromList [("1", [INT 3, INT 2, INT 1])], Map.empty, [FLOAT 5.0, INT 0, LIST "0"])) `shouldBe` "[ExpectedCodeblock]"
+        it "printableStack (evalState funcFoldl ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcFoldl ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 

@@ -117,3 +117,5 @@ Fucked up last commit by commiting files that weren't ready
 [1.32.0] **development**: Implemented map functor
 
 [1.33.0] **development**: Implemented each functor
+
+[1.34.0] **development**: Implemented foldl functor

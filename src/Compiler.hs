@@ -60,6 +60,7 @@ executeStack = do
                     "if"    -> funcIf
                     "map"   -> funcMap
                     "each"  -> funcEach
+                    "foldl" -> funcFoldl
                 ) >> executeStack
             else do
                 put (xs, objects, variables, x : stack)
@@ -542,3 +543,35 @@ funcEach = do
                                                         (newList ++ rest, objects))
     put (buffer, newObjects, variables, newStack)
     return (newObjects, reverse newStack)
+
+funcFoldl :: StackState
+funcFoldl = do
+    (buffer, objects, variables, stack) <- get
+    let (newStack, newObjects) =   (if length stack < functors Map.! "foldl"
+                                        then deallocateStack stack objects
+                                    else do
+                                        let (c:b:a:rest) = stack
+                                        let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
+                                        if not (isLIST a)
+                                            then (ERROR ExpectedList : rest, newObjects)
+                                        else if isCODEBLOCK b || isFUNC b
+                                            then (ERROR InvalidType : rest, newObjects)
+                                        else if not (isCODEBLOCK c)
+                                            then (ERROR ExpectedCodeblock : rest, newObjects)
+                                        else do
+                                            let block = objects Map.! getCODEBLOCK c
+                                            if length block /= 1 || not (isFUNC (head block))
+                                                then (ERROR ExpectedFunctor : rest, newObjects)
+                                            else do
+                                                let list = objects Map.! getLIST a
+                                                let (newValue, newObjects) = foldlOf (tail list) block (head list, objects)
+                                                let objects = deallocateObject a (deallocateObject b (deallocateObject c newObjects))
+                                                (newValue : rest, objects))
+    put (buffer, newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+foldlOf :: Stack -> Stack -> (Type, Object) -> (Type, Object)
+foldlOf [] _ (value, objects) = (value, objects)
+foldlOf (x:xs) block (value, objects) = do
+    let (newObjects, newValue) = evalState executeStack (block, objects, Map.empty, value : [x])
+    foldlOf xs block (head newValue, newObjects)
