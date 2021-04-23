@@ -43,6 +43,7 @@ main = do
         spec_funcEach
         spec_funcFoldl
         spec_funcTimes
+        spec_funcLoop
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -437,6 +438,18 @@ spec_funcTimes = do
             printableStack (evalState funcTimes ([], Map.empty, Map.empty, [FLOAT 5.0, INT 1])) `shouldBe` "[ExpectedCodeblock]"
         it "printableStack (evalState funcTimes ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcTimes ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcLoop :: Spec
+spec_funcLoop = do
+    describe "funcLoop tests:" $ do
+        it "printableStack (evalState funcLoop ([], Map.fromList [(\"0\", [FUNC \"dup\", INT 4, FUNC \"dup\"]), (\"1\", [FUNC \"dup\", INT 1, FUNC \"+\"])], Map.empty, [CODEBLOCK \"1\", CODEBLOCK \"0\"], INT 1)) returns \"[]\"" $ do
+            printableStack (evalState funcLoop ([], Map.fromList [("0", [FUNC "dup", INT 4, FUNC ">"]), ("1", [FUNC "dup", INT 1, FUNC "+"])], Map.empty, [CODEBLOCK "1", CODEBLOCK "0", INT 1])) `shouldBe` "[]"
+        it "printableStack (evalState funcLoop ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0])) returns \"[ExpectedCodeblock]\"" $ do
+            printableStack (evalState funcLoop ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0])) `shouldBe` "[ExpectedCodeblock]"
+        it "printableStack (evalState funcLoop ([], Map.fromList [(\"0\", [FUNC \"dup\", INT 4, FUNC \"dup\"])], Map.empty, [FLOAT 5.0, CODEBLOCK \"0\"])) returns \"[ExpectedCodeblock]\"" $ do
+            printableStack (evalState funcLoop ([], Map.fromList [("0", [FUNC "dup", INT 4, FUNC ">"])], Map.empty, [FLOAT 5.0, CODEBLOCK "0"])) `shouldBe` "[ExpectedCodeblock]"
+        it "printableStack (evalState funcLoop ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcLoop ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 

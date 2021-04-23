@@ -62,6 +62,7 @@ executeStack = do
                     "each"  -> funcEach
                     "foldl" -> funcFoldl
                     "times" -> funcTimes
+                    "loop"  -> funcLoop
                 ) >> executeStack
             else do
                 put (xs, objects, variables, x : stack)
@@ -600,5 +601,36 @@ funcTimes = do
 
 loopN :: Int -> Stack -> Stack
 loopN 0 _ = []
-loopN i block = do
-    block ++ loopN (i - 1) block
+loopN i block = block ++ loopN (i - 1) block
+
+funcLoop :: StackState
+funcLoop = do
+    (buffer, objects, variables, stack) <- get
+    let (newBuffer, newStack, newObjects) =    (if length stack < functors Map.! "loop"
+                                                    then do
+                                                        let (newStack, newObjects) = deallocateStack stack objects
+                                                        (buffer, newStack, newObjects)
+                                                else do
+                                                    let (b:a:rest) = stack
+                                                    let newObjects = deallocateObject a (deallocateObject b objects)
+                                                    if not (isCODEBLOCK a) || not (isCODEBLOCK b)
+                                                        then (buffer, ERROR ExpectedCodeblock : rest, newObjects)
+                                                    else do
+                                                        let break = objects Map.! getCODEBLOCK a
+                                                        let block = objects Map.! getCODEBLOCK b
+                                                        let (objects, newBuffer) = loop break block (newObjects, rest)
+                                                        (newBuffer ++ buffer, [], objects))
+    put (newBuffer, newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+loop :: Stack -> Stack -> (Object, Stack) -> (Object, Stack)
+loop break block (objects, stack) = do
+    let (_, newStack) = evalState executeStack (break, objects, Map.empty, reverse stack)
+    let (bool:rest) = reverse newStack
+    if not (isBOOL bool)
+        then (objects, [ERROR ExpectedBool])
+    else if getBOOL bool
+        then (objects, stack)
+    else do
+        let (newObjects, newStack) = evalState executeStack (block, objects, Map.empty, reverse stack)
+        loop break block (newObjects, newStack)

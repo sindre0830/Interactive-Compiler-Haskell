@@ -123,3 +123,5 @@ Fucked up last commit by commiting files that weren't ready
 [1.35.0] **development**: Fixed foldl to use given value as starting point
 
 [1.36.0] **development**: Implemented times functor
+
+[1.37.0] **development**: Implemented loop functor
