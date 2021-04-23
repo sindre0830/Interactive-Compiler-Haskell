@@ -42,6 +42,7 @@ main = do
         spec_funcMap
         spec_funcEach
         spec_funcFoldl
+        spec_funcTimes
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -424,6 +425,18 @@ spec_funcFoldl = do
             printableStack (evalState funcFoldl ([], Map.fromList [("1", [INT 3, INT 2, INT 1])], Map.empty, [FLOAT 5.0, INT 0, LIST "0"])) `shouldBe` "[ExpectedCodeblock]"
         it "printableStack (evalState funcFoldl ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcFoldl ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcTimes :: Spec
+spec_funcTimes = do
+    describe "funcTimes tests:" $ do
+        it "printableStack (evalState funcTimes ([], Map.fromList [(\"0\", [INT 10, INT 10, FUNC \"*\"])], Map.empty, [CODEBLOCK \"0\", INT 4])) returns \"[]\"" $ do
+            printableStack (evalState funcTimes ([], Map.fromList [("0", [INT 10, INT 10, FUNC "*"])], Map.empty, [CODEBLOCK "0", INT 4])) `shouldBe` "[]"
+        it "printableStack (evalState funcTimes ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0])) returns \"[ExpectedPositiveInteger]\"" $ do
+            printableStack (evalState funcTimes ([], Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0])) `shouldBe` "[ExpectedPositiveInteger]"
+        it "printableStack (evalState funcTimes ([], Map.empty, Map.empty, [FLOAT 5.0, INT 1])) returns \"[ExpectedCodeblock]\"" $ do
+            printableStack (evalState funcTimes ([], Map.empty, Map.empty, [FLOAT 5.0, INT 1])) `shouldBe` "[ExpectedCodeblock]"
+        it "printableStack (evalState funcTimes ([], Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcTimes ([], Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 

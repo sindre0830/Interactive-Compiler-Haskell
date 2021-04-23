@@ -129,7 +129,7 @@ functors = Map.fromList [
         -- Code block
         ("exec", 1),
         -- Control flow
-        ("if", 3), ("map", 2), ("each", 2), ("foldl", 3)
+        ("if", 3), ("map", 2), ("each", 2), ("foldl", 3), ("loop", 2), ("times", 2)
     ]
 
 data ErrorTypes
@@ -145,6 +145,7 @@ data ErrorTypes
     | ExpectedList
     | ExpectedVariable
     | ExpectedString
+    | ExpectedPositiveInteger
     | DivisionByZero
     | ProgramFinishedWithMultipleValues
     | NumberConversionError    

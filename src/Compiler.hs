@@ -61,6 +61,7 @@ executeStack = do
                     "map"   -> funcMap
                     "each"  -> funcEach
                     "foldl" -> funcFoldl
+                    "times" -> funcTimes
                 ) >> executeStack
             else do
                 put (xs, objects, variables, x : stack)
@@ -575,3 +576,29 @@ foldlOf [] _ (value, objects) = (value, objects)
 foldlOf (x:xs) block (value, objects) = do
     let (newObjects, newValue) = evalState executeStack (block, objects, Map.empty, x : [value])
     foldlOf xs block (head newValue, newObjects)
+
+funcTimes :: StackState
+funcTimes = do
+    (buffer, objects, variables, stack) <- get
+    let (newBuffer, newStack, newObjects) =    (if length stack < functors Map.! "times"
+                                                    then do
+                                                        let (newStack, newObjects) = deallocateStack stack objects
+                                                        (buffer, newStack, newObjects)
+                                                else do
+                                                    let (b:a:rest) = stack
+                                                    let newObject = deallocateObject a (deallocateObject b objects)
+                                                    if not (isINT a) || getINT a < 0
+                                                        then (buffer, ERROR ExpectedPositiveInteger : rest, newObject)
+                                                    else if not $ isCODEBLOCK b
+                                                        then (buffer, ERROR ExpectedCodeblock : rest, newObject)
+                                                    else do
+                                                        let block = objects Map.! getCODEBLOCK b
+                                                        let newBuffer = loopN (getINT a) block
+                                                        (newBuffer ++ buffer, rest, newObject))
+    put (newBuffer, newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
+
+loopN :: Int -> Stack -> Stack
+loopN 0 _ = []
+loopN i block = do
+    block ++ loopN (i - 1) block
