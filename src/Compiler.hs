@@ -564,8 +564,8 @@ funcFoldl = do
                                                 then (ERROR ExpectedFunctor : rest, newObjects)
                                             else do
                                                 let list = objects Map.! getLIST a
-                                                let (newValue, newObjects) = foldlOf (tail list) block (head list, objects)
-                                                let objects = deallocateObject a (deallocateObject b (deallocateObject c newObjects))
+                                                let (newValue, newObjects) = foldlOf list block (b, objects)
+                                                let objects = deallocateObject a (deallocateObject c newObjects)
                                                 (newValue : rest, objects))
     put (buffer, newObjects, variables, newStack)
     return (newObjects, reverse newStack)
@@ -573,5 +573,5 @@ funcFoldl = do
 foldlOf :: Stack -> Stack -> (Type, Object) -> (Type, Object)
 foldlOf [] _ (value, objects) = (value, objects)
 foldlOf (x:xs) block (value, objects) = do
-    let (newObjects, newValue) = evalState executeStack (block, objects, Map.empty, value : [x])
+    let (newObjects, newValue) = evalState executeStack (block, objects, Map.empty, x : [value])
     foldlOf xs block (head newValue, newObjects)

@@ -119,3 +119,5 @@ Fucked up last commit by commiting files that weren't ready
 [1.33.0] **development**: Implemented each functor
 
 [1.34.0] **development**: Implemented foldl functor
+
+[1.35.0] **development**: Fixed foldl to use given value as starting point
