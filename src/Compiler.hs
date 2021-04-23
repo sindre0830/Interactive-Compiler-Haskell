@@ -59,6 +59,7 @@ executeStack = do
                     -- Control flow
                     "if"    -> funcIf
                     "map"   -> funcMap
+                    "each"  -> funcEach
                 ) >> executeStack
             else do
                 put (xs, objects, variables, x : stack)
@@ -521,3 +522,23 @@ mapOf [] _ (stack, objects) = (stack, objects)
 mapOf (x:xs) block (stack, objects) = do
     let (newObjects, newStack) = evalState executeStack (block, objects, Map.empty, [x])
     mapOf xs block (stack ++ newStack, newObjects)
+
+funcEach :: StackState
+funcEach = do
+    (buffer, objects, variables, stack) <- get
+    let (newStack, newObjects) =    (if length stack < functors Map.! "each"
+                                                    then deallocateStack stack objects
+                                                else do
+                                                    let (b:a:rest) = stack
+                                                    let newObjects = deallocateObject a (deallocateObject b objects)
+                                                    if not (isLIST a)
+                                                        then (ERROR ExpectedList : rest, newObjects)
+                                                    else if not (isCODEBLOCK b)
+                                                        then (ERROR ExpectedCodeblock : rest, newObjects)
+                                                    else do
+                                                        let list = objects Map.! getLIST a
+                                                        let block = objects Map.! getCODEBLOCK b
+                                                        let (newList, objects) = mapOf list block ([], newObjects)
+                                                        (newList ++ rest, objects))
+    put (buffer, newObjects, variables, newStack)
+    return (newObjects, reverse newStack)
