@@ -65,10 +65,15 @@ executeStack = do
                     "loop"  -> funcLoop
                     -- Assignment
                     ":="    -> funcSetVariable
+                    "fun"   -> funcSetFunction
                 ) >> executeStack
         else if isUNKNOWN x && Map.member (getUNKNOWN x) variables
             then do
                 put (xs, objects, variables, functions, (variables Map.! getUNKNOWN x) : stack)
+                executeStack 
+        else if isUNKNOWN x && Map.member (getUNKNOWN x) functions
+            then do
+                put ((functions Map.! getUNKNOWN x) ++ xs, objects, variables, functions, stack)
                 executeStack 
         else do
             put (xs, objects, variables, functions, x : stack)
@@ -657,4 +662,24 @@ funcSetVariable = do
                                                         let newVariables = Map.insert (getUNKNOWN a) b variables
                                                         (rest, newObjects, newVariables))
     put (buffer, newObjects, newVariables, functions, newStack)
+    return (newObjects, reverse newStack)
+
+funcSetFunction :: StackState
+funcSetFunction = do
+    (buffer, objects, variables, functions, stack) <- get
+    let (newStack, newObjects, newFunctions) = (if length stack < functors Map.! "fun"
+                                                    then do
+                                                        let (newStack, newObjects) = deallocateStack stack objects
+                                                        (newStack, newObjects, functions)
+                                                else do
+                                                    let (b:a:rest) = stack
+                                                    let newObjects = deallocateObject a (deallocateObject b objects)
+                                                    if not (isUNKNOWN a)
+                                                        then (ERROR ExpectedUnknown : rest, newObjects, functions)
+                                                    else if not (isCODEBLOCK b)
+                                                        then (ERROR ExpectedCodeblock : rest, newObjects, functions)
+                                                    else do
+                                                        let newFunctions = Map.insert (getUNKNOWN a) (objects Map.! getCODEBLOCK b) functions
+                                                        (rest, newObjects, newFunctions))
+    put (buffer, newObjects, variables, newFunctions, newStack)
     return (newObjects, reverse newStack)

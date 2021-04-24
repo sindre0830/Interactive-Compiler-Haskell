@@ -45,6 +45,7 @@ main = do
         spec_funcTimes
         spec_funcLoop
         spec_funcSetVariable
+        spec_funcSetFunction
         -- module Parsing
         spec_parseInput
         spec_tokenize
@@ -461,6 +462,18 @@ spec_funcSetVariable = do
             printableStack (evalState funcSetVariable ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0])) `shouldBe` "[ExpectedUnknown]"
         it "printableStack (evalState funcSetVariable ([], Map.empty, Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcSetVariable ([], Map.empty, Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcSetFunction :: Spec
+spec_funcSetFunction = do
+    describe "funcSetFunction tests:" $ do
+        it "printableStack (evalState funcSetFunction ([], Map.fromList [(\"0\", [FUNC \"+\"])], Map.empty, Map.empty, [CODEBLOCK \"0\", UNKNOWN \"a\"])) returns \"[]\"" $ do
+            printableStack (evalState funcSetFunction ([], Map.fromList [("0", [FUNC "+"])], Map.empty, Map.empty, [CODEBLOCK "0", UNKNOWN "a"])) `shouldBe` "[]"
+        it "printableStack (evalState funcSetFunction ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0])) returns \"[ExpectedUnknown]\"" $ do
+            printableStack (evalState funcSetFunction ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0])) `shouldBe` "[ExpectedUnknown]"
+        it "printableStack (evalState funcSetFunction ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, UNKNOWN \"a\"])) returns \"[ExpectedCodeblock]\"" $ do
+            printableStack (evalState funcSetFunction ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, UNKNOWN "a"])) `shouldBe` "[ExpectedCodeblock]"
+        it "printableStack (evalState funcSetFunction ([], Map.empty, Map.empty, Map.empty, [])) returns \"[InvalidParameterAmount]\"" $ do
+            printableStack (evalState funcSetFunction ([], Map.empty, Map.empty, Map.empty, [])) `shouldBe` "[InvalidParameterAmount]"
 
 -- module Parsing
 
