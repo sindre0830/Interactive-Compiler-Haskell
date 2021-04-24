@@ -63,10 +63,16 @@ executeStack = do
                     "foldl" -> funcFoldl
                     "times" -> funcTimes
                     "loop"  -> funcLoop
+                    -- Assignment
+                    ":="    -> funcSetVariable
                 ) >> executeStack
-            else do
-                put (xs, objects, variables, functions, x : stack)
-                executeStack
+        else if isUNKNOWN x && Map.member (getUNKNOWN x) variables
+            then do
+                put (xs, objects, variables, functions, (variables Map.! getUNKNOWN x) : stack)
+                executeStack 
+        else do
+            put (xs, objects, variables, functions, x : stack)
+            executeStack
 
 {- Arithmetic -}
 
@@ -634,3 +640,21 @@ loop break block (objects, stack) = do
     else do
         let (newObjects, newStack) = evalState executeStack (block, objects, Map.empty, Map.empty, reverse stack)
         loop break block (newObjects, newStack)
+
+funcSetVariable :: StackState
+funcSetVariable = do
+    (buffer, objects, variables, functions, stack) <- get
+    let (newStack, newObjects, newVariables) = (if length stack < functors Map.! ":="
+                                                    then do
+                                                        let (newStack, newObjects) = deallocateStack stack objects
+                                                        (newStack, newObjects, variables)
+                                                else do
+                                                    let (b:a:rest) = stack
+                                                    let newObjects = deallocateObject a objects
+                                                    if not (isUNKNOWN a)
+                                                        then (ERROR ExpectedUnknown : rest, deallocateObject b newObjects, variables)
+                                                    else do
+                                                        let newVariables = Map.insert (getUNKNOWN a) b variables
+                                                        (rest, newObjects, newVariables))
+    put (buffer, newObjects, newVariables, functions, newStack)
+    return (newObjects, reverse newStack)

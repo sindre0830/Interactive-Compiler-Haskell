@@ -131,7 +131,9 @@ functors = Map.fromList [
         -- Code block
         ("exec", 1),
         -- Control flow
-        ("if", 3), ("map", 2), ("each", 2), ("foldl", 3), ("loop", 2), ("times", 2)
+        ("if", 3), ("map", 2), ("each", 2), ("foldl", 3), ("loop", 2), ("times", 2),
+        -- Assignment
+        (":=", 2), ("fun", 2)
     ]
 
 data ErrorTypes
@@ -143,6 +145,7 @@ data ErrorTypes
     | ExpectedNumber
     | ExpectedEnumerable
     | ExpectedCodeblock
+    | ExpectedUnknown
     | ExpectedFunctor
     | ExpectedList
     | ExpectedVariable

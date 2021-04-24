@@ -46,7 +46,7 @@ formatStack (x:xs) divider objects
     | isBOOL x      = show (getBOOL x) ++ divider ++ formatStack xs divider objects
     | isSTRING x    = show (getSTRING x) ++ divider ++ formatStack xs divider objects
     | isFUNC x      = getFUNC x ++ divider ++ formatStack xs divider objects
-    | isUNKNOWN x   = show (getUNKNOWN x) ++ divider ++ formatStack xs divider objects
+    | isUNKNOWN x   = getUNKNOWN x ++ divider ++ formatStack xs divider objects
     | isLIST x      = printableStack (objects, objects Map.! getLIST x) ++ divider ++ formatStack xs divider objects
     | isCODEBLOCK x = "{" ++ formatStack (objects Map.! getCODEBLOCK x) ", " objects ++ "}" ++ divider ++ formatStack xs divider objects
     | isERROR x     = show (getERROR x) ++ divider ++ formatStack xs divider objects

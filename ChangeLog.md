@@ -127,3 +127,5 @@ Fucked up last commit by commiting files that weren't ready
 [1.37.0] **development**: Implemented loop functor
 
 [1.38.0] **development**: Added functions map to state
+
+[1.39.0] **development**: Implemented assignments of variables
