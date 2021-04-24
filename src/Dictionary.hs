@@ -103,9 +103,11 @@ type Stack = [Type]
 
 type Variable = Map Key Type
 
+type Function = Map Key Stack
+
 type Object = Map Key Stack
 
-type StackState = State (Stack, Object, Variable, Stack) (Object, Stack)
+type StackState = State (Stack, Object, Variable, Function, Stack) (Object, Stack)
 
 type FuncInfo = Map Key Int
 

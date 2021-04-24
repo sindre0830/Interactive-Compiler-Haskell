@@ -44,7 +44,7 @@ modeInteractive stack variables = do
     putStrLn "\n\tBefore compiling:"
     putStrLn $ "\t\tRaw:   " ++ show beforeStack
     putStrLn $ "\t\tStack: " ++ printableStack (objects, beforeStack)
-    let (newObjects, afterstack) = evalState executeStack (beforeStack, objects, Map.empty, [])
+    let (newObjects, afterstack) = evalState executeStack (beforeStack, objects, Map.empty, Map.empty, [])
     putStrLn "\n\tAfter compiling:"
     putStrLn $ "\t\tRaw:   " ++ show afterstack
     putStrLn $ "\t\tStack: " ++ printableStack (newObjects, afterstack) ++ "\n"
