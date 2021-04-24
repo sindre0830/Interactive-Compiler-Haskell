@@ -2,7 +2,7 @@ module UI
     ( menu
     ) where
 -- foreign modules
-import System.IO ( hFlush, stdout )
+import System.IO
 import Data.Char ( toLower )
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -31,8 +31,7 @@ menu = do
     else if cmd == "compiler"
         then do
             putStrLn "Starting compiler mode..."
-            let variables = Map.empty
-            modeCompiler variables
+            modeCompiler
     else menu
 
 modeInteractive :: Stack -> Variable -> IO ()
@@ -50,11 +49,19 @@ modeInteractive stack variables = do
     putStrLn $ "\t\tStack: " ++ printableStack (newObjects, afterstack) ++ "\n"
     modeInteractive [] variables
 
-modeCompiler :: Variable -> IO ()
-modeCompiler variables = do
-    readInput
-    input <- getLine
-    modeCompiler variables
+modeCompiler :: IO ()
+modeCompiler = do
+    handle <- openFile "documents/test.txt" ReadMode
+    contents <- hGetContents handle
+    let tokens = tokenize contents
+    let (beforeStack, objects) = parser tokens [] Map.empty
+    putStrLn "\n\tBefore compiling:"
+    putStrLn $ "\t\tRaw:   " ++ show beforeStack
+    putStrLn $ "\t\tStack: " ++ printableStack (objects, beforeStack)
+    let (newObjects, afterstack) = evalState executeStack (beforeStack, objects, Map.empty, Map.empty, [])
+    putStrLn "\n\tAfter compiling:"
+    putStrLn $ "\t\tRaw:   " ++ show afterstack
+    putStrLn $ "\t\tStack: " ++ printableStack (newObjects, afterstack) ++ "\n"
 
 -- | Converts string to lowercase.
 stringToLower :: String -> String
