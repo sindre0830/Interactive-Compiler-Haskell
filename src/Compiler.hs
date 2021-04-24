@@ -70,24 +70,31 @@ executeStack = do
         else if isUNKNOWN x && Map.member (getUNKNOWN x) variables
             then do
                 let value = variables Map.! getUNKNOWN x
-                let (newValue, newObjects)  | isLIST value = do
-                                                let list = objects Map.! getLIST value
-                                                let (newObjects, key) = allocateObject list objects
-                                                (LIST key, newObjects)
-                                            | isCODEBLOCK value = do
-                                                let block = objects Map.! getCODEBLOCK value
-                                                let (newObjects, key) = allocateObject block objects
-                                                (CODEBLOCK key, newObjects)
-                                            | otherwise = (value, objects)
-                put (xs, newObjects, variables, functions, newValue : stack)
+                let (newValue, newObjects) = duplicateStack [value] ([], objects)
+                put (xs, newObjects, variables, functions, head newValue : stack)
                 executeStack 
         else if isUNKNOWN x && Map.member (getUNKNOWN x) functions
             then do
-                put ((functions Map.! getUNKNOWN x) ++ xs, objects, variables, functions, stack)
+                let value = functions Map.! getUNKNOWN x
+                let (newValue, newObjects) = duplicateStack value ([], objects)
+                put (newValue ++ xs, newObjects, variables, functions, stack)
                 executeStack 
         else do
             put (xs, objects, variables, functions, x : stack)
             executeStack
+
+duplicateStack :: Stack -> (Stack, Object) -> (Stack, Object)
+duplicateStack [] (stack, objects) = (stack, objects)
+duplicateStack (x:xs) (stack, objects)  
+    | isLIST x = do
+        let list = objects Map.! getLIST x
+        let (newObjects, key) = allocateObject list objects
+        duplicateStack xs (LIST key : stack, newObjects)
+    | isCODEBLOCK x = do
+        let block = objects Map.! getCODEBLOCK x
+        let (newObjects, key) = allocateObject block objects
+        duplicateStack xs (CODEBLOCK key : stack, newObjects)
+    | otherwise = duplicateStack xs (x : stack, objects)
 
 {- Arithmetic -}
 

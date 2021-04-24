@@ -133,3 +133,5 @@ Fucked up last commit by commiting files that weren't ready
 [1.40.0] **development**: Implemented assignments of functions
 
 [1.41.0] **development**: Fixed objects being duplicated in assignments
+
+[1.42.0] **development**: Fixed functions to properly duplicate objects
