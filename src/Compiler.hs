@@ -69,7 +69,17 @@ executeStack = do
                 ) >> executeStack
         else if isUNKNOWN x && Map.member (getUNKNOWN x) variables
             then do
-                put (xs, objects, variables, functions, (variables Map.! getUNKNOWN x) : stack)
+                let value = variables Map.! getUNKNOWN x
+                let (newValue, newObjects)  | isLIST value = do
+                                                let list = objects Map.! getLIST value
+                                                let (newObjects, key) = allocateObject list objects
+                                                (LIST key, newObjects)
+                                            | isCODEBLOCK value = do
+                                                let block = objects Map.! getCODEBLOCK value
+                                                let (newObjects, key) = allocateObject block objects
+                                                (CODEBLOCK key, newObjects)
+                                            | otherwise = (value, objects)
+                put (xs, newObjects, variables, functions, newValue : stack)
                 executeStack 
         else if isUNKNOWN x && Map.member (getUNKNOWN x) functions
             then do

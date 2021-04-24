@@ -131,3 +131,5 @@ Fucked up last commit by commiting files that weren't ready
 [1.39.0] **development**: Implemented assignments of variables
 
 [1.40.0] **development**: Implemented assignments of functions
+
+[1.41.0] **development**: Fixed objects being duplicated in assignments
