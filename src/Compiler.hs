@@ -13,16 +13,16 @@ import Stack
 
 executeStack :: StackState
 executeStack = do
-    (buffer, objects, variables, functions, stack) <- get
-    if null buffer
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    if null inpStack
         then do
-           put (buffer, objects, variables, functions, stack) 
-           return (objects, reverse stack)
+           put (inpStack, objects, variables, functions, outStack, readInp)
+           return (inpStack, objects, variables, functions, outStack, readInp)
     else do
-        let (x:xs) = buffer
+        let (x:xs) = inpStack
         if isFUNC x
             then ( do
-                put (xs, objects, variables, functions, stack)
+                put (xs, objects, variables, functions, outStack, readInp)
                 case getFUNC x of
                     -- Arithmetic
                     "+"     -> funcAddition
@@ -71,19 +71,19 @@ executeStack = do
             then do
                 let value = variables Map.! getUNKNOWN x
                 let (newValue, newObjects) = duplicateStack [value] ([], objects)
-                put (xs, newObjects, variables, functions, head newValue : stack)
+                put (xs, newObjects, variables, functions, head newValue : outStack, readInp)
                 executeStack 
         else if isUNKNOWN x && Map.member (getUNKNOWN x) functions
             then do
                 let value = functions Map.! getUNKNOWN x
                 let (newValue, newObjects) = duplicateStack value ([], objects)
-                put (newValue ++ xs, newObjects, variables, functions, stack)
+                put (newValue ++ xs, newObjects, variables, functions, outStack, readInp)
                 executeStack 
         else do
-            put (xs, objects, variables, functions, x : stack)
+            put (xs, objects, variables, functions, x : outStack, readInp)
             executeStack
 
-duplicateStack :: Stack -> (Stack, Object) -> (Stack, Object)
+duplicateStack :: Stack -> (Stack, Objects) -> (Stack, Objects)
 duplicateStack [] (stack, objects) = (stack, objects)
 duplicateStack (x:xs) (stack, objects)  
     | isLIST x = do
@@ -100,603 +100,637 @@ duplicateStack (x:xs) (stack, objects)
 
 funcAddition :: StackState
 funcAddition = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "+"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject b (deallocateObject a objects)
-                                        let newStack    | isINT a && isINT b        = INT      (getINT a       + getINT b)         : rest
-                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a + getFLOAT b)       : rest
-                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     + convertFloat b)   : rest
-                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     + getFLOAT b)       : rest
-                                                        | otherwise = ERROR ExpectedNumber : rest
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "+"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject b (deallocateObject a objects)
+                                            let value   | isINT a && isINT b        = INT      (getINT a       + getINT b)
+                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a + getFLOAT b)
+                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     + convertFloat b)
+                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     + getFLOAT b)
+                                                        | otherwise = ERROR ExpectedNumber
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcSubtraction :: StackState
 funcSubtraction = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "-"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject b (deallocateObject a objects)
-                                        let newStack    | isINT a && isINT b        = INT      (getINT a       - getINT b)         : rest
-                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a - getFLOAT b)       : rest
-                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     - convertFloat b)   : rest
-                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     - getFLOAT b)       : rest
-                                                        | otherwise = ERROR ExpectedNumber : rest
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "-"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject b (deallocateObject a objects)
+                                            let value   | isINT a && isINT b        = INT      (getINT a       - getINT b)
+                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a - getFLOAT b)
+                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     - convertFloat b)
+                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     - getFLOAT b)
+                                                        | otherwise = ERROR ExpectedNumber
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcMultiplication :: StackState
 funcMultiplication = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "*"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject b (deallocateObject a objects)
-                                        let newStack    | isINT a && isINT b        = INT      (getINT a       * getINT b)         : rest
-                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a * getFLOAT b)       : rest
-                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     * convertFloat b)   : rest
-                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     * getFLOAT b)       : rest
-                                                        | otherwise = ERROR ExpectedNumber : rest
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "*"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject b (deallocateObject a objects)
+                                            let value   | isINT a && isINT b        = INT      (getINT a       * getINT b)
+                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a * getFLOAT b)
+                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     * convertFloat b)
+                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     * getFLOAT b)
+                                                        | otherwise = ERROR ExpectedNumber
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcDivisionFloat :: StackState
 funcDivisionFloat = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "/"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject b (deallocateObject a objects)
-                                        let newStack    | isINT a && isINT b        = FLOAT    (convertFloat a / convertFloat b)   : rest
-                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a / getFLOAT b)       : rest
-                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     / convertFloat b)   : rest
-                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     / getFLOAT b)       : rest
-                                                        | otherwise = ERROR ExpectedNumber : rest
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "/"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject b (deallocateObject a objects)
+                                            let value   | isINT a && isINT b        = FLOAT    (convertFloat a / convertFloat b)
+                                                        | isINT a && isFLOAT b      = FLOAT    (convertFloat a / getFLOAT b)
+                                                        | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     / convertFloat b)
+                                                        | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     / getFLOAT b)
+                                                        | otherwise = ERROR ExpectedNumber
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcDivisionInteger :: StackState
 funcDivisionInteger = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "div"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject b (deallocateObject a objects)
-                                        let newStack    | isINT a && isINT b        = INT           (getINT a   `div` getINT b)         : rest
-                                                        | isINT a && isFLOAT b      = INT   (floor  (convertFloat a / getFLOAT b))      : rest
-                                                        | isFLOAT a && isINT b      = INT   (floor  (getFLOAT a     / convertFloat b))  : rest
-                                                        | isFLOAT a && isFLOAT b    = INT   (floor  (getFLOAT a     / getFLOAT b))      : rest
-                                                        | otherwise = ERROR ExpectedNumber : rest
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "div"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject b (deallocateObject a objects)
+                                            let value   | isINT a && isINT b        = INT           (getINT a   `div` getINT b)
+                                                        | isINT a && isFLOAT b      = INT   (floor  (convertFloat a / getFLOAT b))
+                                                        | isFLOAT a && isINT b      = INT   (floor  (getFLOAT a     / convertFloat b))
+                                                        | isFLOAT a && isFLOAT b    = INT   (floor  (getFLOAT a     / getFLOAT b))
+                                                        | otherwise = ERROR ExpectedNumber
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- Bool -}
 
 funcAND :: StackState
 funcAND = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "&&"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                        if not (isBOOL a) || not (isBOOL b)
-                                            then (ERROR ExpectedBool : rest, newObjects)
-                                        else (BOOL (getBOOL a && getBOOL b) : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "&&"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject a (deallocateObject b objects)
+                                            let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
+                                                        | otherwise = BOOL (getBOOL a && getBOOL b)
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcOR :: StackState
 funcOR = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "||"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                        if not (isBOOL a) || not (isBOOL b)
-                                            then (ERROR ExpectedBool : rest, newObjects)
-                                        else (BOOL (getBOOL a || getBOOL b) : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "||"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject a (deallocateObject b objects)
+                                            let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
+                                                        | otherwise = BOOL (getBOOL a || getBOOL b)
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcNOT :: StackState
 funcNOT = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "not"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newObjects = deallocateObject a objects
-                                        if not (isBOOL a)
-                                            then (ERROR ExpectedBool : rest, newObjects)
-                                        else (BOOL (not $ getBOOL a) : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "not"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            let value   | not (isBOOL a) = ERROR ExpectedBool
+                                                        | otherwise = BOOL (not $ getBOOL a)
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- Comparison -}
 
 funcEqual :: StackState
 funcEqual = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "=="
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                        let newStack    | isLIST a && isLIST b = BOOL (objects Map.! getLIST a == objects Map.! getLIST b)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "=="
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject a (deallocateObject b objects)
+                                            let value   | isLIST a && isLIST b = BOOL (objects Map.! getLIST a == objects Map.! getLIST b)
                                                         | isCODEBLOCK a && isCODEBLOCK b = BOOL (objects Map.! getCODEBLOCK a == objects Map.! getCODEBLOCK b)
                                                         | otherwise = BOOL (a == b)
-                                        (newStack : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcLess :: StackState
 funcLess = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "<"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                        let newStack    | isINT a && isINT b        = BOOL  (getINT a       < getINT b)         : rest
-                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a < getFLOAT b)       : rest
-                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     < convertFloat b)   : rest
-                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     < getFLOAT b)       : rest
-                                                        | otherwise = ERROR ExpectedNumber : rest
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "<"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject a (deallocateObject b objects)
+                                            let value   | isINT a && isINT b        = BOOL  (getINT a       < getINT b)
+                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a < getFLOAT b)
+                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     < convertFloat b)
+                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     < getFLOAT b)
+                                                        | otherwise = ERROR ExpectedNumber
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcGreater :: StackState
 funcGreater = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! ">"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                        let newStack    | isINT a && isINT b        = BOOL  (getINT a       > getINT b)         : rest
-                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a > getFLOAT b)       : rest
-                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     > convertFloat b)   : rest
-                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     > getFLOAT b)       : rest
-                                                        | otherwise = ERROR ExpectedNumber : rest
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! ">"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            let newObjects = deallocateObject a (deallocateObject b objects)
+                                            let value   | isINT a && isINT b        = BOOL  (getINT a       > getINT b)
+                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a > getFLOAT b)
+                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     > convertFloat b)
+                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     > getFLOAT b)
+                                                        | otherwise = ERROR ExpectedNumber
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- Stack -}
 
 funcPop :: StackState
 funcPop = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "pop"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newObjects = deallocateObject a objects
-                                        (rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "pop"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            (rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcDup :: StackState
 funcDup = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "dup"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let (newStack, newObjects)  | isLIST a = do
-                                                                        let object = objects Map.! getLIST a
-                                                                        let (newObjects, key) = allocateObject object objects
-                                                                        (LIST key : stack, newObjects)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "dup"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let (value, newObjects) | isLIST a = do
+                                                                        let list = objects Map.! getLIST a
+                                                                        let (newObjects, key) = allocateObject list objects
+                                                                        (LIST key, newObjects)
                                                                     | isCODEBLOCK a = do
-                                                                        let object = objects Map.! getCODEBLOCK a
-                                                                        let (newObjects, key) = allocateObject object objects
-                                                                        (CODEBLOCK key : stack, newObjects)
-                                                                    | otherwise = (a : stack, objects)
-                                        (newStack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                                                        let block = objects Map.! getCODEBLOCK a
+                                                                        let (newObjects, key) = allocateObject block objects
+                                                                        (CODEBLOCK key, newObjects)
+                                                                    | otherwise = (a, objects)
+                                            (value : outStack, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcSwap :: StackState
 funcSwap = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "swap"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        (a:b:rest, objects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "swap"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (b:a:rest) = outStack
+                                            (a:b:rest, objects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- String -}
 
 funcParseInteger :: StackState
 funcParseInteger = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "parseInteger"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newObjects = deallocateObject a objects
-                                        if not $ isSTRING a
-                                            then (ERROR ExpectedString : rest, newObjects)
-                                        else if isJust (readMaybe (getSTRING a) :: Maybe Int)
-                                            then (INT (fromJust (readMaybe (getSTRING a) :: Maybe Int)) : rest, newObjects)
-                                        else (ERROR ExpectedStringOfInteger : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "parseInteger"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            let value   | not (isSTRING a) = ERROR ExpectedString
+                                                        | isJust (readMaybe (getSTRING a) :: Maybe Int) = INT (fromJust (readMaybe (getSTRING a) :: Maybe Int))
+                                                        | otherwise = ERROR ExpectedStringOfInteger
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcParseFloat :: StackState
 funcParseFloat = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "parseFloat"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newObjects = deallocateObject a objects
-                                        if not $ isSTRING a
-                                            then (ERROR ExpectedString : rest, newObjects)
-                                        else if isJust (readMaybe (getSTRING a) :: Maybe Float)
-                                            then (FLOAT (fromJust (readMaybe (getSTRING a) :: Maybe Float)) : rest, newObjects)
-                                        else (ERROR ExpectedStringOfFloat : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "parseFloat"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            let value   | not (isSTRING a) = ERROR ExpectedString
+                                                        | isJust (readMaybe (getSTRING a) :: Maybe Float) = FLOAT (fromJust (readMaybe (getSTRING a) :: Maybe Float))
+                                                        | otherwise = ERROR ExpectedStringOfFloat
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcWords :: StackState
 funcWords = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "words"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newObjects = deallocateObject a objects
-                                        if not $ isSTRING a
-                                            then (ERROR ExpectedString : rest, newObjects)
-                                        else (map STRING (reverse $ words $ getSTRING a) ++ rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "words"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            let values  | not (isSTRING a) = [ERROR ExpectedString]
+                                                        | otherwise = map STRING (reverse $ words $ getSTRING a)
+                                            (values ++ rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- List -}
 
 funcEmpty :: StackState
 funcEmpty = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "empty"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newObjects = deallocateObject a objects
-                                        if not $ isLIST a
-                                            then (ERROR ExpectedList : rest, newObjects)
-                                        else (BOOL (null (objects Map.! getLIST a)) : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "empty"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            let value   | not (isLIST a) = ERROR ExpectedList
+                                                        | otherwise = BOOL (null (objects Map.! getLIST a))
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcHead :: StackState
 funcHead = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "head"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newObjects = deallocateObject a objects
-                                        if not $ isLIST a
-                                            then (ERROR ExpectedList : rest, newObjects)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "head"
+                                            then deallocateStack outStack objects
                                         else do
-                                            let list = objects Map.! getLIST a
-                                            if null list
-                                                then (rest, newObjects)
-                                            else (head list : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            if not (isLIST a)
+                                                then (ERROR ExpectedList : rest, newObjects)
+                                            else do
+                                                let list = objects Map.! getLIST a
+                                                if null list
+                                                    then (rest, newObjects)
+                                                else (head list : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcTail :: StackState
 funcTail = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "tail"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        if not $ isLIST a
-                                            then do
-                                                let newObjects = deallocateObject a objects
-                                                (ERROR ExpectedList : rest, newObjects)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "tail"
+                                            then deallocateStack outStack objects
                                         else do
-                                            let key = getLIST a
-                                            let list = objects Map.! key
-                                            let newObjects =   (if null list
-                                                                    then objects
-                                                                else updateObject key (tail list) objects)
-                                            (stack, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                            let (a:rest) = outStack
+                                            if not (isLIST a)
+                                                then do
+                                                    let newObjects = deallocateObject a objects
+                                                    (ERROR ExpectedList : rest, newObjects)
+                                            else do
+                                                let key = getLIST a
+                                                let list = objects Map.! key
+                                                let newObjects  | null list = objects
+                                                                | otherwise = updateObject key (tail list) objects
+                                                (outStack, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcCons :: StackState
 funcCons = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "cons"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        if not $ isLIST b
-                                            then do
-                                                let newObjects = deallocateObject b objects
-                                                let objects = deallocateObject a newObjects
-                                                (ERROR ExpectedList : rest, objects)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "cons"
+                                            then deallocateStack outStack objects
                                         else do
-                                            let key = getLIST b
-                                            let newObjects = updateObject key (a : (objects Map.! key)) objects
-                                            (b : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                            let (b:a:rest) = outStack
+                                            if not (isLIST b)
+                                                then do
+                                                    let newObjects = deallocateObject a (deallocateObject b newObjects)
+                                                    (ERROR ExpectedList : rest, newObjects)
+                                            else do
+                                                let key = getLIST b
+                                                let newObjects = updateObject key (a : (objects Map.! key)) objects
+                                                (b : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcAppend :: StackState
 funcAppend = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "append"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        if not (isLIST a) || not (isLIST b)
-                                            then do
-                                                let newObjects = deallocateObject a objects
-                                                let objects = deallocateObject b newObjects
-                                                (ERROR ExpectedList : rest, objects)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "append"
+                                            then deallocateStack outStack objects
                                         else do
-                                            let keyA = getLIST a
-                                            let keyB = getLIST b
-                                            let newObjects = updateObject keyB ((objects Map.! keyA) ++ (objects Map.! keyB)) objects
-                                            let objects = deallocateObject a newObjects
-                                            (b : rest, newObjects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                            let (b:a:rest) = outStack
+                                            if not (isLIST a) || not (isLIST b)
+                                                then do
+                                                    let newObjects = deallocateObject a (deallocateObject b newObjects)
+                                                    (ERROR ExpectedList : rest, newObjects)
+                                            else do
+                                                let keyA = getLIST a
+                                                let keyB = getLIST b
+                                                let newObjects = deallocateObject a (updateObject keyB ((objects Map.! keyA) ++ (objects Map.! keyB)) objects)
+                                                (b : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- Length -}
 
 funcLength :: StackState
 funcLength = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "length"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (a:rest) = stack
-                                        let newStack    | isSTRING a = INT (length $ getSTRING a) : rest
-                                                        | isLIST a = INT (length $ objects Map.! getLIST a) : rest
-                                                        | otherwise = ERROR ExpectedList : rest
-                                        (newStack, deallocateObject a objects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "length"
+                                            then deallocateStack outStack objects
+                                        else do
+                                            let (a:rest) = outStack
+                                            let newObjects = deallocateObject a objects
+                                            let value   | isSTRING a = INT (length $ getSTRING a)
+                                                        | isLIST a = INT (length $ objects Map.! getLIST a)
+                                                        | otherwise = ERROR ExpectedList
+                                            (value : rest, newObjects)
+                                    )
+    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- Code block -}
 
 funcExec :: StackState
 funcExec = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newBuffer, newStack, newObjects) =    (if length stack < functors Map.! "exec"
-                                                    then do
-                                                        let (newStack, newObjects) = deallocateStack stack objects
-                                                        (buffer, newStack, newObjects)
-                                                else do
-                                                    let (a:rest) = stack
-                                                    if not $ isCODEBLOCK a
-                                                        then (buffer, ERROR ExpectedCodeblock : rest, deallocateObject a objects)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newInpStack, newOutStack, newObjects) = (  if length outStack < functors Map.! "exec"
+                                                        then do
+                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                            (inpStack, newOutStack, newObjects)
                                                     else do
-                                                        let object = objects Map.! getCODEBLOCK a
-                                                        (object ++ buffer, rest, deallocateObject a objects))
-    put (newBuffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                                        let (a:rest) = outStack
+                                                        let newObjects = deallocateObject a objects
+                                                        if not (isCODEBLOCK a)
+                                                            then (inpStack, ERROR ExpectedCodeblock : rest, newObjects)
+                                                        else do
+                                                            let block = objects Map.! getCODEBLOCK a
+                                                            (block ++ inpStack, rest, newObjects)
+                                                )
+    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
 
 {- Control flow -}
 
 funcIf :: StackState
 funcIf = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newBuffer, newStack, newObjects) =    (if length stack < functors Map.! "if"
-                                                    then do
-                                                        let (newStack, newObjects) = deallocateStack stack objects
-                                                        (buffer, newStack, newObjects)
-                                                else do
-                                                    let (c:b:a:rest) = stack
-                                                    let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
-                                                    if not $ isBOOL a
-                                                        then (buffer, ERROR ExpectedBool : rest, newObjects)
-                                                    else if not (isCODEBLOCK b) || not (isCODEBLOCK c)
-                                                        then (buffer, ERROR ExpectedCodeblock : rest, newObjects)
-                                                    else if getBOOL a
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newInpStack, newOutStack, newObjects) = (  if length outStack < functors Map.! "if"
                                                         then do
-                                                            let object = objects Map.! getCODEBLOCK b
-                                                            (object ++ buffer, rest, newObjects)
+                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                            (inpStack, newOutStack, newObjects)
                                                     else do
-                                                        let object = objects Map.! getCODEBLOCK c
-                                                        (object ++ buffer, rest, newObjects))
-    put (newBuffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                                        let (c:b:a:rest) = outStack
+                                                        let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
+                                                        if not (isBOOL a)
+                                                            then (inpStack, ERROR ExpectedBool : rest, newObjects)
+                                                        else if not (isCODEBLOCK b) || not (isCODEBLOCK c)
+                                                            then (inpStack, ERROR ExpectedCodeblock : rest, newObjects)
+                                                        else if getBOOL a
+                                                            then do
+                                                                let block = objects Map.! getCODEBLOCK b
+                                                                (block ++ inpStack, rest, newObjects)
+                                                        else do
+                                                            let block = objects Map.! getCODEBLOCK c
+                                                            (block ++ inpStack, rest, newObjects)
+                                                )
+    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
 
 funcMap :: StackState
 funcMap = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "map"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (b:a:rest) = stack
-                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                        if not (isLIST a)
-                                            then (ERROR ExpectedList : rest, newObjects)
-                                        else if not (isCODEBLOCK b)
-                                            then (ERROR ExpectedCodeblock : rest, newObjects)
-                                        else do
-                                            let block = objects Map.! getCODEBLOCK b
-                                            let list = objects Map.! getLIST a
-                                            let (newList, newObjects) = mapOf list block ([], objects)
-                                            let objects = updateObject (getLIST a) newList (deallocateObject b newObjects)
-                                            (a : rest, objects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "map"
+                                                                        then do
+                                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                                            (newObjects, variables, functions, newOutStack)
+                                                                    else do
+                                                                        let (b:a:rest) = outStack
+                                                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                                                        if not (isLIST a)
+                                                                            then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                                                                        else if not (isCODEBLOCK b)
+                                                                            then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                                                                        else do
+                                                                            let block = objects Map.! getCODEBLOCK b
+                                                                            let list = objects Map.! getLIST a
+                                                                            let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
+                                                                            let objects = updateObject (getLIST a) (reverse newList) (deallocateObject b newObjects)
+                                                                            (objects, newVariables, newFunctions, a : rest)
+                                                                )
+    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
+    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
 
-mapOf :: Stack -> Stack -> (Stack, Object) -> (Stack, Object)
-mapOf [] _ (stack, objects) = (stack, objects)
-mapOf (x:xs) block (stack, objects) = do
-    let (newObjects, newStack) = evalState executeStack (block, objects, Map.empty, Map.empty, [x])
-    mapOf xs block (stack ++ newStack, newObjects)
+mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
+mapOf [] _ (objects, variables, functions, outStack) = (objects, variables, functions, outStack)
+mapOf (x:xs) block (objects, variables, functions, outStack) = do
+    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, [x], False)
+    mapOf xs block (newObjects, newVariables, newFunctions, newOutStack ++ outStack)
 
 funcEach :: StackState
 funcEach = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =    (if length stack < functors Map.! "each"
-                                                    then deallocateStack stack objects
-                                                else do
-                                                    let (b:a:rest) = stack
-                                                    let newObjects = deallocateObject a (deallocateObject b objects)
-                                                    if not (isLIST a)
-                                                        then (ERROR ExpectedList : rest, newObjects)
-                                                    else if not (isCODEBLOCK b)
-                                                        then (ERROR ExpectedCodeblock : rest, newObjects)
-                                                    else do
-                                                        let list = objects Map.! getLIST a
-                                                        let block = objects Map.! getCODEBLOCK b
-                                                        let (newList, objects) = mapOf list block ([], newObjects)
-                                                        (newList ++ rest, objects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "each"
+                                                                        then do
+                                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                                            (newObjects, variables, functions, newOutStack)
+                                                                    else do
+                                                                        let (b:a:rest) = outStack
+                                                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                                                        if not (isLIST a)
+                                                                            then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                                                                        else if not (isCODEBLOCK b)
+                                                                            then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                                                                        else do
+                                                                            let list = objects Map.! getLIST a
+                                                                            let block = objects Map.! getCODEBLOCK b
+                                                                            let (objects, newVariables, newFunctions, values) = mapOf list block (newObjects, variables, functions, [])
+                                                                            (objects, newVariables, newFunctions, values ++ rest)
+                                                                )
+    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
+    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
 
 funcFoldl :: StackState
 funcFoldl = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects) =   (if length stack < functors Map.! "foldl"
-                                        then deallocateStack stack objects
-                                    else do
-                                        let (c:b:a:rest) = stack
-                                        let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
-                                        if not (isLIST a)
-                                            then (ERROR ExpectedList : rest, newObjects)
-                                        else if isCODEBLOCK b || isFUNC b
-                                            then (ERROR InvalidType : rest, newObjects)
-                                        else if not (isCODEBLOCK c)
-                                            then (ERROR ExpectedCodeblock : rest, newObjects)
-                                        else do
-                                            let block = objects Map.! getCODEBLOCK c
-                                            if length block /= 1 || not (isFUNC (head block))
-                                                then (ERROR ExpectedFunctor : rest, newObjects)
-                                            else do
-                                                let list = objects Map.! getLIST a
-                                                let (newValue, newObjects) = foldlOf list block (b, objects)
-                                                let objects = deallocateObject a (deallocateObject c newObjects)
-                                                (newValue : rest, objects))
-    put (buffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "foldl"
+                                                                        then do
+                                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                                            (newObjects, variables, functions, newOutStack)
+                                                                    else do
+                                                                        let (c:b:a:rest) = outStack
+                                                                        let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
+                                                                        if not (isLIST a)
+                                                                            then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                                                                        else if isCODEBLOCK b || isFUNC b
+                                                                            then (newObjects, variables, functions, ERROR InvalidType : rest)
+                                                                        else if not (isCODEBLOCK c)
+                                                                            then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                                                                        else do
+                                                                            let block = objects Map.! getCODEBLOCK c
+                                                                            if length block /= 1 || not (isFUNC (head block))
+                                                                                then (newObjects, variables, functions, ERROR ExpectedFunctor : rest)
+                                                                            else do
+                                                                                let list = objects Map.! getLIST a
+                                                                                let (newObjects, newVariables, newFunctions, newValue) = foldlOf list block (objects, variables, functions, b)
+                                                                                let objects = deallocateObject a (deallocateObject c newObjects)
+                                                                                (objects, newVariables, newFunctions, newValue : rest)
+                                                                )
+    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
+    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
 
-foldlOf :: Stack -> Stack -> (Type, Object) -> (Type, Object)
-foldlOf [] _ (value, objects) = (value, objects)
-foldlOf (x:xs) block (value, objects) = do
-    let (newObjects, newValue) = evalState executeStack (block, objects, Map.empty, Map.empty, x : [value])
-    foldlOf xs block (head newValue, newObjects)
+foldlOf :: Stack -> Stack -> (Objects, Variables, Functions, Type) -> (Objects, Variables, Functions, Type)
+foldlOf [] _ (objects, variables, functions, value) = (objects, variables, functions, value)
+foldlOf (x:xs) block (objects, variables, functions, value) = do
+    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, x : [value], False)
+    foldlOf xs block (newObjects, newVariables, newFunctions, head newOutStack)
 
 funcTimes :: StackState
 funcTimes = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newBuffer, newStack, newObjects) =    (if length stack < functors Map.! "times"
-                                                    then do
-                                                        let (newStack, newObjects) = deallocateStack stack objects
-                                                        (buffer, newStack, newObjects)
-                                                else do
-                                                    let (b:a:rest) = stack
-                                                    let newObject = deallocateObject a (deallocateObject b objects)
-                                                    if not (isINT a) || getINT a < 0
-                                                        then (buffer, ERROR ExpectedPositiveInteger : rest, newObject)
-                                                    else if not $ isCODEBLOCK b
-                                                        then (buffer, ERROR ExpectedCodeblock : rest, newObject)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newInpStack, newObjects, newOutStack) = (  if length outStack < functors Map.! "times"
+                                                        then do
+                                                            let (newStack, newObjects) = deallocateStack outStack objects
+                                                            (inpStack, newObjects, newStack)
                                                     else do
-                                                        let block = objects Map.! getCODEBLOCK b
-                                                        let newBuffer = loopN (getINT a) block
-                                                        (newBuffer ++ buffer, rest, newObject))
-    put (newBuffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                                        let (b:a:rest) = outStack
+                                                        let newObject = deallocateObject a (deallocateObject b objects)
+                                                        if not (isINT a) || getINT a < 0
+                                                            then (inpStack, newObject, ERROR ExpectedPositiveInteger : rest)
+                                                        else if not $ isCODEBLOCK b
+                                                            then (inpStack, newObject, ERROR ExpectedCodeblock : rest)
+                                                        else do
+                                                            let block = objects Map.! getCODEBLOCK b
+                                                            let values = loopN (getINT a) block
+                                                            (values ++ inpStack, newObject, rest)
+                                                )
+    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
 
 loopN :: Int -> Stack -> Stack
 loopN 0 _ = []
-loopN i block = block ++ loopN (i - 1) block
+loopN n block = block ++ loopN (n - 1) block
 
 funcLoop :: StackState
 funcLoop = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newBuffer, newStack, newObjects) =    (if length stack < functors Map.! "loop"
-                                                    then do
-                                                        let (newStack, newObjects) = deallocateStack stack objects
-                                                        (buffer, newStack, newObjects)
-                                                else do
-                                                    let (b:a:rest) = stack
-                                                    let newObjects = deallocateObject a (deallocateObject b objects)
-                                                    if not (isCODEBLOCK a) || not (isCODEBLOCK b)
-                                                        then (buffer, ERROR ExpectedCodeblock : rest, newObjects)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newInpStack, newObjects, newOutStack) = (  if length outStack < functors Map.! "loop"
+                                                        then do
+                                                            let (newStack, newObjects) = deallocateStack outStack objects
+                                                            (inpStack, newObjects, newStack)
                                                     else do
-                                                        let break = objects Map.! getCODEBLOCK a
-                                                        let block = objects Map.! getCODEBLOCK b
-                                                        let (objects, newBuffer) = loop break block (newObjects, rest)
-                                                        (newBuffer ++ buffer, [], objects))
-    put (newBuffer, newObjects, variables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                                        let (b:a:rest) = outStack
+                                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                                        if not (isCODEBLOCK a) || not (isCODEBLOCK b)
+                                                            then (inpStack, newObjects, ERROR ExpectedCodeblock : rest)
+                                                        else do
+                                                            let break = objects Map.! getCODEBLOCK a
+                                                            let block = objects Map.! getCODEBLOCK b
+                                                            let (objects, values) = loop break block (newObjects, variables, functions, rest)
+                                                            (values ++ inpStack, objects, [])
+                                                )
+    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
 
-loop :: Stack -> Stack -> (Object, Stack) -> (Object, Stack)
-loop break block (objects, stack) = do
-    let (_, newStack) = evalState executeStack (break, objects, Map.empty, Map.empty, reverse stack)
-    let (bool:rest) = reverse newStack
-    if not (isBOOL bool)
+loop :: Stack -> Stack -> (Objects, Variables, Functions, Stack) -> (Objects, Stack)
+loop break block (objects, variables, functions, outStack) = do
+    let (_, _, _, _, newOutStack, _) = evalState executeStack (break, objects, variables, functions, outStack, False)
+    let value = head newOutStack
+    if not (isBOOL value)
         then (objects, [ERROR ExpectedBool])
-    else if getBOOL bool
-        then (objects, stack)
+    else if getBOOL value
+        then (objects, reverse outStack)
     else do
-        let (newObjects, newStack) = evalState executeStack (block, objects, Map.empty, Map.empty, reverse stack)
-        loop break block (newObjects, newStack)
+        let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, outStack, False)
+        loop break block (newObjects, newVariables, newFunctions, newOutStack)
 
 funcSetVariable :: StackState
 funcSetVariable = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects, newVariables) = (if length stack < functors Map.! ":="
-                                                    then do
-                                                        let (newStack, newObjects) = deallocateStack stack objects
-                                                        (newStack, newObjects, variables)
-                                                else do
-                                                    let (b:a:rest) = stack
-                                                    let newObjects = deallocateObject a objects
-                                                    if not (isUNKNOWN a)
-                                                        then (ERROR ExpectedUnknown : rest, deallocateObject b newObjects, variables)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newObjects, newVariables, newOutStack) = ( if length outStack < functors Map.! ":="
+                                                        then do
+                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                            (newObjects, variables, newOutStack)
                                                     else do
-                                                        let newVariables = Map.insert (getUNKNOWN a) b variables
-                                                        (rest, newObjects, newVariables))
-    put (buffer, newObjects, newVariables, functions, newStack)
-    return (newObjects, reverse newStack)
+                                                        let (b:a:rest) = outStack
+                                                        let newObjects = deallocateObject a objects
+                                                        if not (isUNKNOWN a)
+                                                            then (deallocateObject b newObjects, variables, ERROR ExpectedUnknown : rest)
+                                                        else do
+                                                            let newVariables = Map.insert (getUNKNOWN a) b variables
+                                                            (newObjects, newVariables, rest)
+                                                )
+    put (inpStack, newObjects, newVariables, functions, newOutStack, readInp)
+    return (inpStack, newObjects, newVariables, functions, newOutStack, readInp)
 
 funcSetFunction :: StackState
 funcSetFunction = do
-    (buffer, objects, variables, functions, stack) <- get
-    let (newStack, newObjects, newFunctions) = (if length stack < functors Map.! "fun"
-                                                    then do
-                                                        let (newStack, newObjects) = deallocateStack stack objects
-                                                        (newStack, newObjects, functions)
-                                                else do
-                                                    let (b:a:rest) = stack
-                                                    let newObjects = deallocateObject a (deallocateObject b objects)
-                                                    if not (isUNKNOWN a)
-                                                        then (ERROR ExpectedUnknown : rest, newObjects, functions)
-                                                    else if not (isCODEBLOCK b)
-                                                        then (ERROR ExpectedCodeblock : rest, newObjects, functions)
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    let (newObjects, newFunctions, newOutStack) = ( if length outStack < functors Map.! "fun"
+                                                        then do
+                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                            (newObjects, functions, newOutStack)
                                                     else do
-                                                        let newFunctions = Map.insert (getUNKNOWN a) (objects Map.! getCODEBLOCK b) functions
-                                                        (rest, newObjects, newFunctions))
-    put (buffer, newObjects, variables, newFunctions, newStack)
-    return (newObjects, reverse newStack)
+                                                        let (b:a:rest) = outStack
+                                                        let newObjects = deallocateObject a (deallocateObject b objects)
+                                                        if not (isUNKNOWN a)
+                                                            then (newObjects, functions, ERROR ExpectedUnknown : rest)
+                                                        else if not (isCODEBLOCK b)
+                                                            then (newObjects, functions, ERROR ExpectedCodeblock : rest)
+                                                        else do
+                                                            let newFunctions = Map.insert (getUNKNOWN a) (objects Map.! getCODEBLOCK b) functions
+                                                            (newObjects, newFunctions, rest)
+                                                )
+    put (inpStack, newObjects, variables, newFunctions, newOutStack, readInp)
+    return (inpStack, newObjects, variables, newFunctions, newOutStack, readInp)

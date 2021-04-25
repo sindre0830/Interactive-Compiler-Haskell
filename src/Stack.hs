@@ -7,37 +7,37 @@ import qualified Data.Map as Map
 -- local modules
 import Dictionary
 
-deallocateStack :: Stack -> Object -> (Stack, Object)
+deallocateStack :: Stack -> Objects -> (Stack, Objects)
 deallocateStack [] objects = ([ERROR InvalidParameterAmount], objects)
 deallocateStack (x:xs) objects = deallocateStack xs (deallocateObject x objects)
 
-generateObjectAddress :: Object -> String 
+generateObjectAddress :: Objects -> String 
 generateObjectAddress objects = show $ getValidAddress objects 0
 
-getValidAddress :: Object -> Int -> Int
+getValidAddress :: Objects -> Int -> Int
 getValidAddress objects index = do
     if Map.member (show index) objects
         then getValidAddress objects (index + 1)
     else index
 
-updateObject :: Key -> Stack -> Object -> Object
+updateObject :: Key -> Stack -> Objects -> Objects
 updateObject = Map.insert
 
-allocateObject :: Stack -> Object -> (Object, String)
+allocateObject :: Stack -> Objects -> (Objects, String)
 allocateObject stack objects = do
     let key = generateObjectAddress objects
     (Map.insert key stack objects, key)
 
-deallocateObject :: Type -> Object -> Object
+deallocateObject :: Type -> Objects -> Objects
 deallocateObject x objects
     | isLIST x = Map.delete (getLIST x) objects
     | isCODEBLOCK x = Map.delete (getCODEBLOCK x) objects
     | otherwise = objects
 
-printableStack :: (Object, Stack) -> String 
-printableStack (objects, stack) = "[" ++ formatStack stack ", " objects ++ "]"
+printableStack :: (InputStack, Objects, Variables, Functions, OutputStack, ReadInput) -> String 
+printableStack (_, objects, _, _, outStack, _) = "[" ++ formatStack (reverse outStack) ", " objects ++ "]"
 
-formatStack :: Stack -> Divider -> Object -> String
+formatStack :: Stack -> Divider -> Objects -> String
 formatStack [] _ _ = []
 formatStack (x:xs) divider objects
     | null xs && not (null divider) = formatStack [x] "" objects
@@ -47,7 +47,7 @@ formatStack (x:xs) divider objects
     | isSTRING x    = show (getSTRING x) ++ divider ++ formatStack xs divider objects
     | isFUNC x      = getFUNC x ++ divider ++ formatStack xs divider objects
     | isUNKNOWN x   = getUNKNOWN x ++ divider ++ formatStack xs divider objects
-    | isLIST x      = printableStack (objects, objects Map.! getLIST x) ++ divider ++ formatStack xs divider objects
-    | isCODEBLOCK x = "{" ++ formatStack (objects Map.! getCODEBLOCK x) ", " objects ++ "}" ++ divider ++ formatStack xs divider objects
+    | isLIST x      = printableStack ([], objects, Map.empty, Map.empty, reverse (objects Map.! getLIST x), False) ++ divider ++ formatStack xs divider objects
+    | isCODEBLOCK x = "{" ++ formatStack (reverse (objects Map.! getCODEBLOCK x)) ", " objects ++ "}" ++ divider ++ formatStack xs divider objects
     | isERROR x     = show (getERROR x) ++ divider ++ formatStack xs divider objects
     | otherwise     = formatStack xs divider objects

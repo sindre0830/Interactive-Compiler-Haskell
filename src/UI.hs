@@ -26,15 +26,14 @@ menu = do
     if cmd == "interactive"
         then do
             putStrLn "Starting interactive mode..."
-            let variables = Map.empty
-            modeInteractive [] variables
+            modeInteractive [] Map.empty
     else if cmd == "compiler"
         then do
             putStrLn "Starting compiler mode..."
             modeCompiler
     else menu
 
-modeInteractive :: Stack -> Variable -> IO ()
+modeInteractive :: Stack -> Variables -> IO ()
 modeInteractive stack variables = do
     readInput
     input <- getLine
@@ -42,12 +41,12 @@ modeInteractive stack variables = do
     let (beforeStack, objects) = parser tokens [] Map.empty
     putStrLn "\n\tBefore compiling:"
     putStrLn $ "\t\tRaw:   " ++ show beforeStack
-    putStrLn $ "\t\tStack: " ++ printableStack (objects, beforeStack)
-    let (newObjects, afterstack) = evalState executeStack (beforeStack, objects, Map.empty, Map.empty, [])
+    putStrLn $ "\t\tStack: " ++ printableStack ([], objects, Map.empty, Map.empty, beforeStack, False)
+    let (_, newObjects, _, _, afterstack, _) = evalState executeStack (beforeStack, objects, Map.empty, Map.empty, [], False)
     putStrLn "\n\tAfter compiling:"
     putStrLn $ "\t\tRaw:   " ++ show afterstack
-    putStrLn $ "\t\tStack: " ++ printableStack (newObjects, afterstack) ++ "\n"
-    modeInteractive [] variables
+    putStrLn $ "\t\tStack: " ++ printableStack ([], newObjects, Map.empty, Map.empty, afterstack, False) ++ "\n"
+    modeInteractive [] Map.empty
 
 modeCompiler :: IO ()
 modeCompiler = do
@@ -57,11 +56,11 @@ modeCompiler = do
     let (beforeStack, objects) = parser tokens [] Map.empty
     putStrLn "\n\tBefore compiling:"
     putStrLn $ "\t\tRaw:   " ++ show beforeStack
-    putStrLn $ "\t\tStack: " ++ printableStack (objects, beforeStack)
-    let (newObjects, afterstack) = evalState executeStack (beforeStack, objects, Map.empty, Map.empty, [])
+    putStrLn $ "\t\tStack: " ++ printableStack ([], objects, Map.empty, Map.empty, beforeStack, False)
+    let (_, newObjects, _, _, afterstack, _) = evalState executeStack (beforeStack, objects, Map.empty, Map.empty, [], False)
     putStrLn "\n\tAfter compiling:"
     putStrLn $ "\t\tRaw:   " ++ show afterstack
-    putStrLn $ "\t\tStack: " ++ printableStack (newObjects, afterstack) ++ "\n"
+    putStrLn $ "\t\tStack: " ++ printableStack ([], newObjects, Map.empty, Map.empty, afterstack, False) ++ "\n"
 
 -- | Converts string to lowercase.
 stringToLower :: String -> String

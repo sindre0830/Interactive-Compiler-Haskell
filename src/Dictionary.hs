@@ -11,6 +11,7 @@ import Control.Monad.State.Lazy
 type Data = String
 type Key = String
 type Divider = String
+type ReadInput = Bool
 
 type Tokens = [String]
 
@@ -101,13 +102,17 @@ type Type = EitherN Int Float Bool String Func Unknown List CodeBlock Error
 
 type Stack = [Type]
 
-type Variable = Map Key Type
+type InputStack = Stack
 
-type Function = Map Key Stack
+type OutputStack = Stack
 
-type Object = Map Key Stack
+type Variables = Map Key Type
 
-type StackState = State (Stack, Object, Variable, Function, Stack) (Object, Stack)
+type Functions = Map Key Stack
+
+type Objects = Map Key Stack
+
+type StackState = State (InputStack, Objects, Variables, Functions, OutputStack, ReadInput) (InputStack, Objects, Variables, Functions, OutputStack, ReadInput)
 
 type FuncInfo = Map Key Int
 

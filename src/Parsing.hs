@@ -13,18 +13,18 @@ import Stack
 
 parseInput :: String -> StackState
 parseInput input = do
-    (buffer, objects, variables, functions, stack) <- get
+    (inpStack, objects, variables, functions, outStack, readInp) <- get
     let tokens = tokenize input
-    let (newStack, newObjects) = parser tokens stack objects
-    put (newStack, newObjects, variables, functions, [])
-    return (newObjects, newStack)
+    let (newInpStack, newObjects) = parser tokens outStack objects
+    put (inpStack, newObjects, variables, functions, outStack, readInp)
+    return (inpStack, newObjects, variables, functions, outStack, readInp)
 
 -- | Splits string by whitespace.
 tokenize :: String -> Tokens
 tokenize = words
 
 -- ! parses tokens to stack and list of objects.
-parser :: Tokens -> Stack -> Object -> (Stack, Object)
+parser :: Tokens -> Stack -> Objects -> (Stack, Objects)
 parser [] stack objects = (reverse stack, objects)
 parser (x:xs) stack objects = do
     case x of
@@ -56,7 +56,7 @@ parser (x:xs) stack objects = do
         _ -> parser xs (typeParser x : stack) objects
 
 -- | Parses codeBlocks.
-codeBlockParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
+codeBlockParser :: Tokens -> Stack -> Objects -> (Stack, Tokens, Objects)
 codeBlockParser [] _ objects = ([ERROR IncompleteCodeBlock], [], objects)
 codeBlockParser (x:xs) stack objects = do
     case x of
@@ -82,7 +82,7 @@ codeBlockParser (x:xs) stack objects = do
             codeBlockParser xs (typeParser x : stack) objects
 
 -- | Parses lists.
-listParser :: Tokens -> Stack -> Object -> (Stack, Tokens, Object)
+listParser :: Tokens -> Stack -> Objects -> (Stack, Tokens, Objects)
 listParser [] _ objects = ([ERROR IncompleteList], [], objects)
 listParser (x:xs) stack objects = do
     case x of

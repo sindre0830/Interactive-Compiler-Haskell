@@ -137,3 +137,5 @@ Fucked up last commit by commiting files that weren't ready
 [1.42.0] **development**: Fixed functions to properly duplicate objects
 
 [1.43.0] **development**: Added file reader to compiler mode
+
+[1.44.0] **development**: Modified StackState so it can handle IO
