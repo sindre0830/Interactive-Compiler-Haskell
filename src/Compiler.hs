@@ -13,16 +13,16 @@ import Stack
 
 executeStack :: StackState
 executeStack = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
-    if null inpStack
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
+    if null inpStack || statusIO /= None
         then do
-           put (inpStack, objects, variables, functions, outStack, readInp)
-           return (inpStack, objects, variables, functions, outStack, readInp)
+            put (inpStack, objects, variables, functions, outStack, statusIO)
+            return (inpStack, objects, variables, functions, outStack, statusIO)
     else do
         let (x:xs) = inpStack
         if isFUNC x
             then ( do
-                put (xs, objects, variables, functions, outStack, readInp)
+                put (xs, objects, variables, functions, outStack, statusIO)
                 case getFUNC x of
                     -- Arithmetic
                     "+"     -> funcAddition
@@ -66,21 +66,23 @@ executeStack = do
                     -- Assignment
                     ":="    -> funcSetVariable
                     "fun"   -> funcSetFunction
+                    -- IO
+                    "print" -> funcPrint
                 ) >> executeStack
         else if isUNKNOWN x && Map.member (getUNKNOWN x) variables
             then do
                 let value = variables Map.! getUNKNOWN x
                 let (newValue, newObjects) = duplicateStack [value] ([], objects)
-                put (xs, newObjects, variables, functions, head newValue : outStack, readInp)
+                put (xs, newObjects, variables, functions, head newValue : outStack, statusIO)
                 executeStack 
         else if isUNKNOWN x && Map.member (getUNKNOWN x) functions
             then do
                 let value = functions Map.! getUNKNOWN x
                 let (newValue, newObjects) = duplicateStack value ([], objects)
-                put (newValue ++ xs, newObjects, variables, functions, outStack, readInp)
+                put (newValue ++ xs, newObjects, variables, functions, outStack, statusIO)
                 executeStack 
         else do
-            put (xs, objects, variables, functions, x : outStack, readInp)
+            put (xs, objects, variables, functions, x : outStack, statusIO)
             executeStack
 
 duplicateStack :: Stack -> (Stack, Objects) -> (Stack, Objects)
@@ -100,7 +102,7 @@ duplicateStack (x:xs) (stack, objects)
 
 funcAddition :: StackState
 funcAddition = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "+"
                                             then deallocateStack outStack objects
                                         else do
@@ -113,12 +115,12 @@ funcAddition = do
                                                         | otherwise = ERROR ExpectedNumber
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcSubtraction :: StackState
 funcSubtraction = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "-"
                                             then deallocateStack outStack objects
                                         else do
@@ -131,12 +133,12 @@ funcSubtraction = do
                                                         | otherwise = ERROR ExpectedNumber
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcMultiplication :: StackState
 funcMultiplication = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "*"
                                             then deallocateStack outStack objects
                                         else do
@@ -149,12 +151,12 @@ funcMultiplication = do
                                                         | otherwise = ERROR ExpectedNumber
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcDivisionFloat :: StackState
 funcDivisionFloat = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "/"
                                             then deallocateStack outStack objects
                                         else do
@@ -167,12 +169,12 @@ funcDivisionFloat = do
                                                         | otherwise = ERROR ExpectedNumber
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcDivisionInteger :: StackState
 funcDivisionInteger = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "div"
                                             then deallocateStack outStack objects
                                         else do
@@ -185,14 +187,14 @@ funcDivisionInteger = do
                                                         | otherwise = ERROR ExpectedNumber
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- Bool -}
 
 funcAND :: StackState
 funcAND = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "&&"
                                             then deallocateStack outStack objects
                                         else do
@@ -202,12 +204,12 @@ funcAND = do
                                                         | otherwise = BOOL (getBOOL a && getBOOL b)
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcOR :: StackState
 funcOR = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "||"
                                             then deallocateStack outStack objects
                                         else do
@@ -217,12 +219,12 @@ funcOR = do
                                                         | otherwise = BOOL (getBOOL a || getBOOL b)
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcNOT :: StackState
 funcNOT = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "not"
                                             then deallocateStack outStack objects
                                         else do
@@ -232,14 +234,14 @@ funcNOT = do
                                                         | otherwise = BOOL (not $ getBOOL a)
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- Comparison -}
 
 funcEqual :: StackState
 funcEqual = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "=="
                                             then deallocateStack outStack objects
                                         else do
@@ -250,12 +252,12 @@ funcEqual = do
                                                         | otherwise = BOOL (a == b)
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcLess :: StackState
 funcLess = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "<"
                                             then deallocateStack outStack objects
                                         else do
@@ -268,12 +270,12 @@ funcLess = do
                                                         | otherwise = ERROR ExpectedNumber
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcGreater :: StackState
 funcGreater = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! ">"
                                             then deallocateStack outStack objects
                                         else do
@@ -286,14 +288,14 @@ funcGreater = do
                                                         | otherwise = ERROR ExpectedNumber
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- Stack -}
 
 funcPop :: StackState
 funcPop = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "pop"
                                             then deallocateStack outStack objects
                                         else do
@@ -301,12 +303,12 @@ funcPop = do
                                             let newObjects = deallocateObject a objects
                                             (rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcDup :: StackState
 funcDup = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "dup"
                                             then deallocateStack outStack objects
                                         else do
@@ -322,26 +324,26 @@ funcDup = do
                                                                     | otherwise = (a, objects)
                                             (value : outStack, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcSwap :: StackState
 funcSwap = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "swap"
                                             then deallocateStack outStack objects
                                         else do
                                             let (b:a:rest) = outStack
                                             (a:b:rest, objects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- String -}
 
 funcParseInteger :: StackState
 funcParseInteger = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "parseInteger"
                                             then deallocateStack outStack objects
                                         else do
@@ -352,12 +354,12 @@ funcParseInteger = do
                                                         | otherwise = ERROR ExpectedStringOfInteger
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcParseFloat :: StackState
 funcParseFloat = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "parseFloat"
                                             then deallocateStack outStack objects
                                         else do
@@ -368,12 +370,12 @@ funcParseFloat = do
                                                         | otherwise = ERROR ExpectedStringOfFloat
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcWords :: StackState
 funcWords = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "words"
                                             then deallocateStack outStack objects
                                         else do
@@ -383,14 +385,14 @@ funcWords = do
                                                         | otherwise = map STRING (reverse $ words $ getSTRING a)
                                             (values ++ rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- List -}
 
 funcEmpty :: StackState
 funcEmpty = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "empty"
                                             then deallocateStack outStack objects
                                         else do
@@ -400,12 +402,12 @@ funcEmpty = do
                                                         | otherwise = BOOL (null (objects Map.! getLIST a))
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcHead :: StackState
 funcHead = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "head"
                                             then deallocateStack outStack objects
                                         else do
@@ -419,12 +421,12 @@ funcHead = do
                                                     then (rest, newObjects)
                                                 else (head list : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcTail :: StackState
 funcTail = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "tail"
                                             then deallocateStack outStack objects
                                         else do
@@ -440,12 +442,12 @@ funcTail = do
                                                                 | otherwise = updateObject key (tail list) objects
                                                 (outStack, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcCons :: StackState
 funcCons = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "cons"
                                             then deallocateStack outStack objects
                                         else do
@@ -459,12 +461,12 @@ funcCons = do
                                                 let newObjects = updateObject key (a : (objects Map.! key)) objects
                                                 (b : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcAppend :: StackState
 funcAppend = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "append"
                                             then deallocateStack outStack objects
                                         else do
@@ -479,14 +481,14 @@ funcAppend = do
                                                 let newObjects = deallocateObject a (updateObject keyB ((objects Map.! keyA) ++ (objects Map.! keyB)) objects)
                                                 (b : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- Length -}
 
 funcLength :: StackState
 funcLength = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = (   if length outStack < functors Map.! "length"
                                             then deallocateStack outStack objects
                                         else do
@@ -497,14 +499,14 @@ funcLength = do
                                                         | otherwise = ERROR ExpectedList
                                             (value : rest, newObjects)
                                     )
-    put (inpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- Code block -}
 
 funcExec :: StackState
 funcExec = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newOutStack, newObjects) = (  if length outStack < functors Map.! "exec"
                                                         then do
                                                             let (newOutStack, newObjects) = deallocateStack outStack objects
@@ -518,14 +520,14 @@ funcExec = do
                                                             let block = objects Map.! getCODEBLOCK a
                                                             (block ++ inpStack, rest, newObjects)
                                                 )
-    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 {- Control flow -}
 
 funcIf :: StackState
 funcIf = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newOutStack, newObjects) = (  if length outStack < functors Map.! "if"
                                                         then do
                                                             let (newOutStack, newObjects) = deallocateStack outStack objects
@@ -545,12 +547,12 @@ funcIf = do
                                                             let block = objects Map.! getCODEBLOCK c
                                                             (block ++ inpStack, rest, newObjects)
                                                 )
-    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 funcMap :: StackState
 funcMap = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "map"
                                                                         then do
                                                                             let (newOutStack, newObjects) = deallocateStack outStack objects
@@ -569,18 +571,18 @@ funcMap = do
                                                                             let objects = updateObject (getLIST a) (reverse newList) (deallocateObject b newObjects)
                                                                             (objects, newVariables, newFunctions, a : rest)
                                                                 )
-    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
-    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
+    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
 
 mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
 mapOf [] _ (objects, variables, functions, outStack) = (objects, variables, functions, outStack)
 mapOf (x:xs) block (objects, variables, functions, outStack) = do
-    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, [x], False)
+    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, [x], None)
     mapOf xs block (newObjects, newVariables, newFunctions, newOutStack ++ outStack)
 
 funcEach :: StackState
 funcEach = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "each"
                                                                         then do
                                                                             let (newOutStack, newObjects) = deallocateStack outStack objects
@@ -598,12 +600,12 @@ funcEach = do
                                                                             let (objects, newVariables, newFunctions, values) = mapOf list block (newObjects, variables, functions, [])
                                                                             (objects, newVariables, newFunctions, values ++ rest)
                                                                 )
-    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
-    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
+    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
 
 funcFoldl :: StackState
 funcFoldl = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "foldl"
                                                                         then do
                                                                             let (newOutStack, newObjects) = deallocateStack outStack objects
@@ -627,18 +629,18 @@ funcFoldl = do
                                                                                 let objects = deallocateObject a (deallocateObject c newObjects)
                                                                                 (objects, newVariables, newFunctions, newValue : rest)
                                                                 )
-    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
-    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, readInp)
+    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
 
 foldlOf :: Stack -> Stack -> (Objects, Variables, Functions, Type) -> (Objects, Variables, Functions, Type)
 foldlOf [] _ (objects, variables, functions, value) = (objects, variables, functions, value)
 foldlOf (x:xs) block (objects, variables, functions, value) = do
-    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, x : [value], False)
+    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, x : [value], None)
     foldlOf xs block (newObjects, newVariables, newFunctions, head newOutStack)
 
 funcTimes :: StackState
 funcTimes = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = (  if length outStack < functors Map.! "times"
                                                         then do
                                                             let (newStack, newObjects) = deallocateStack outStack objects
@@ -655,8 +657,8 @@ funcTimes = do
                                                             let values = loopN (getINT a) block
                                                             (values ++ inpStack, newObject, rest)
                                                 )
-    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 loopN :: Int -> Stack -> Stack
 loopN 0 _ = []
@@ -664,7 +666,7 @@ loopN n block = block ++ loopN (n - 1) block
 
 funcLoop :: StackState
 funcLoop = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = (  if length outStack < functors Map.! "loop"
                                                         then do
                                                             let (newStack, newObjects) = deallocateStack outStack objects
@@ -680,24 +682,24 @@ funcLoop = do
                                                             let (objects, values) = loop break block (newObjects, variables, functions, rest)
                                                             (values ++ inpStack, objects, [])
                                                 )
-    put (newInpStack, newObjects, variables, functions, newOutStack, readInp)
-    return (newInpStack, newObjects, variables, functions, newOutStack, readInp)
+    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 
 loop :: Stack -> Stack -> (Objects, Variables, Functions, Stack) -> (Objects, Stack)
 loop break block (objects, variables, functions, outStack) = do
-    let (_, _, _, _, newOutStack, _) = evalState executeStack (break, objects, variables, functions, outStack, False)
+    let (_, _, _, _, newOutStack, _) = evalState executeStack (break, objects, variables, functions, outStack, None)
     let value = head newOutStack
     if not (isBOOL value)
         then (objects, [ERROR ExpectedBool])
     else if getBOOL value
         then (objects, reverse outStack)
     else do
-        let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, outStack, False)
+        let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, outStack, None)
         loop break block (newObjects, newVariables, newFunctions, newOutStack)
 
 funcSetVariable :: StackState
 funcSetVariable = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newOutStack) = ( if length outStack < functors Map.! ":="
                                                         then do
                                                             let (newOutStack, newObjects) = deallocateStack outStack objects
@@ -711,12 +713,12 @@ funcSetVariable = do
                                                             let newVariables = Map.insert (getUNKNOWN a) b variables
                                                             (newObjects, newVariables, rest)
                                                 )
-    put (inpStack, newObjects, newVariables, functions, newOutStack, readInp)
-    return (inpStack, newObjects, newVariables, functions, newOutStack, readInp)
+    put (inpStack, newObjects, newVariables, functions, newOutStack, statusIO)
+    return (inpStack, newObjects, newVariables, functions, newOutStack, statusIO)
 
 funcSetFunction :: StackState
 funcSetFunction = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newFunctions, newOutStack) = ( if length outStack < functors Map.! "fun"
                                                         then do
                                                             let (newOutStack, newObjects) = deallocateStack outStack objects
@@ -732,5 +734,24 @@ funcSetFunction = do
                                                             let newFunctions = Map.insert (getUNKNOWN a) (objects Map.! getCODEBLOCK b) functions
                                                             (newObjects, newFunctions, rest)
                                                 )
-    put (inpStack, newObjects, variables, newFunctions, newOutStack, readInp)
-    return (inpStack, newObjects, variables, newFunctions, newOutStack, readInp)
+    put (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
+    return (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
+
+{- IO -}
+
+funcPrint :: StackState
+funcPrint = do
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
+    let (newOutStack, newObjects, newStatusIO) = (  if length outStack < functors Map.! "print"
+                                                        then do
+                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
+                                                            (newOutStack, newObjects, statusIO)
+                                                    else do
+                                                        let (a:rest) = outStack
+                                                        let newObjects = deallocateObject a objects
+                                                        let value   | not (isSTRING a) = ERROR ExpectedString
+                                                                    | otherwise = PRINT (getSTRING a)
+                                                        (value : rest, newObjects, Output)
+                                                )
+    put (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
+    return (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)

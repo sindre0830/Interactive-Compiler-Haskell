@@ -34,7 +34,7 @@ deallocateObject x objects
     | isCODEBLOCK x = Map.delete (getCODEBLOCK x) objects
     | otherwise = objects
 
-printableStack :: (InputStack, Objects, Variables, Functions, OutputStack, ReadInput) -> String 
+printableStack :: (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) -> String 
 printableStack (_, objects, _, _, outStack, _) = "[" ++ formatStack (reverse outStack) ", " objects ++ "]"
 
 formatStack :: Stack -> Divider -> Objects -> String
@@ -47,7 +47,8 @@ formatStack (x:xs) divider objects
     | isSTRING x    = show (getSTRING x) ++ divider ++ formatStack xs divider objects
     | isFUNC x      = getFUNC x ++ divider ++ formatStack xs divider objects
     | isUNKNOWN x   = getUNKNOWN x ++ divider ++ formatStack xs divider objects
-    | isLIST x      = printableStack ([], objects, Map.empty, Map.empty, reverse (objects Map.! getLIST x), False) ++ divider ++ formatStack xs divider objects
+    | isLIST x      = printableStack ([], objects, Map.empty, Map.empty, reverse (objects Map.! getLIST x), None) ++ divider ++ formatStack xs divider objects
     | isCODEBLOCK x = "{" ++ formatStack (reverse (objects Map.! getCODEBLOCK x)) ", " objects ++ "}" ++ divider ++ formatStack xs divider objects
     | isERROR x     = show (getERROR x) ++ divider ++ formatStack xs divider objects
+    | isPRINT x     = "Should have printed: " ++ getPRINT x ++ divider ++ formatStack xs divider objects
     | otherwise     = formatStack xs divider objects

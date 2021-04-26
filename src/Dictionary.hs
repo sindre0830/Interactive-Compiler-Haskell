@@ -11,82 +11,88 @@ import Control.Monad.State.Lazy
 type Data = String
 type Key = String
 type Divider = String
-type ReadInput = Bool
 
 type Tokens = [String]
 
 type Token = String
 
 
-data EitherN a b c d e f g h i
-    = INT a | FLOAT b | BOOL c | STRING d | FUNC e | UNKNOWN f | LIST g | CODEBLOCK h | ERROR i
+data EitherN a b c d e f g h i j
+    = INT a | FLOAT b | BOOL c | STRING d | FUNC e | UNKNOWN f | LIST g | CODEBLOCK h | ERROR i | PRINT j
     deriving (Eq, Show)
 
-convertFloat :: Integral a => EitherN a b c d e f g h i -> Float
+convertFloat :: Integral a => EitherN a b c d e f g h i j -> Float
 convertFloat (INT a) = fromIntegral a
 
-getINT :: EitherN a b c d e f g h i -> a
+getINT :: EitherN a b c d e f g h i j -> a
 getINT (INT a) = a
 
-getFLOAT :: EitherN a b c d e f g h i -> b
+getFLOAT :: EitherN a b c d e f g h i j -> b
 getFLOAT (FLOAT b) = b
 
-getBOOL :: EitherN a b c d e f g h i -> c
+getBOOL :: EitherN a b c d e f g h i j -> c
 getBOOL (BOOL c) = c
 
-getSTRING :: EitherN a b c d e f g h i -> d
+getSTRING :: EitherN a b c d e f g h i j -> d
 getSTRING (STRING d) = d
 
-getFUNC :: EitherN a b c d e f g h i -> e
+getFUNC :: EitherN a b c d e f g h i j -> e
 getFUNC (FUNC e) = e
 
-getUNKNOWN :: EitherN a b c d e f g h i -> f
+getUNKNOWN :: EitherN a b c d e f g h i j -> f
 getUNKNOWN (UNKNOWN f) = f
 
-getLIST :: EitherN a b c d e f g h i -> g
+getLIST :: EitherN a b c d e f g h i j -> g
 getLIST (LIST g) = g
 
-getCODEBLOCK :: EitherN a b c d e f g h i -> h
+getCODEBLOCK :: EitherN a b c d e f g h i j -> h
 getCODEBLOCK (CODEBLOCK h) = h
 
-getERROR :: EitherN a b c d e f g h i -> i
+getERROR :: EitherN a b c d e f g h i j -> i
 getERROR (ERROR i) = i
 
-isINT :: EitherN a b c d e f g h i -> Bool
+getPRINT :: EitherN a b c d e f g h i j -> j
+getPRINT (PRINT j) = j
+
+isINT :: EitherN a b c d e f g h i j -> Bool
 isINT (INT _) = True
 isINT _ = False
 
-isFLOAT :: EitherN a b c d e f g h i -> Bool
+isFLOAT :: EitherN a b c d e f g h i j -> Bool
 isFLOAT (FLOAT _) = True
 isFLOAT _ = False
 
-isBOOL :: EitherN a b c d e f g h i -> Bool
+isBOOL :: EitherN a b c d e f g h i j -> Bool
 isBOOL (BOOL _) = True
 isBOOL _ = False
 
-isSTRING :: EitherN a b c d e f g h i -> Bool
+isSTRING :: EitherN a b c d e f g h i j -> Bool
 isSTRING (STRING _) = True
 isSTRING _ = False
 
-isFUNC :: EitherN a b c d e f g h i -> Bool
+isFUNC :: EitherN a b c d e f g h i j -> Bool
 isFUNC (FUNC _) = True
 isFUNC _ = False
 
-isUNKNOWN :: EitherN a b c d e f g h i -> Bool
+isUNKNOWN :: EitherN a b c d e f g h i j -> Bool
 isUNKNOWN (UNKNOWN _) = True
 isUNKNOWN _ = False
 
-isERROR :: EitherN a b c d e f g h i -> Bool
+isERROR :: EitherN a b c d e f g h i j -> Bool
 isERROR (ERROR _) = True
 isERROR _ = False
 
-isLIST :: EitherN a b c d e f g h i -> Bool
+isLIST :: EitherN a b c d e f g h i j -> Bool
 isLIST (LIST _) = True
 isLIST _ = False
 
-isCODEBLOCK :: EitherN a b c d e f g h i -> Bool
+isCODEBLOCK :: EitherN a b c d e f g h i j -> Bool
 isCODEBLOCK (CODEBLOCK _) = True
 isCODEBLOCK _ = False
+
+isPRINT :: EitherN a b c d e f g h i j -> Bool
+isPRINT (PRINT _) = True
+isPRINT _ = False
 
 type List = Key
 
@@ -98,7 +104,9 @@ type Error = ErrorTypes
 
 type Unknown = Data
 
-type Type = EitherN Int Float Bool String Func Unknown List CodeBlock Error
+type StatusIO = TypeIO
+
+type Type = EitherN Int Float Bool String Func Unknown List CodeBlock Error String
 
 type Stack = [Type]
 
@@ -112,7 +120,7 @@ type Functions = Map Key Stack
 
 type Objects = Map Key Stack
 
-type StackState = State (InputStack, Objects, Variables, Functions, OutputStack, ReadInput) (InputStack, Objects, Variables, Functions, OutputStack, ReadInput)
+type StackState = State (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) (InputStack, Objects, Variables, Functions, OutputStack, StatusIO)
 
 type FuncInfo = Map Key Int
 
@@ -138,8 +146,16 @@ functors = Map.fromList [
         -- Control flow
         ("if", 3), ("map", 2), ("each", 2), ("foldl", 3), ("loop", 2), ("times", 2),
         -- Assignment
-        (":=", 2), ("fun", 2)
+        (":=", 2), ("fun", 2),
+        -- IO
+        ("read", 0), ("print", 1)
     ]
+
+data TypeIO
+    = Input
+    | Output
+    | None
+    deriving (Eq, Show)
 
 data ErrorTypes
     = StackEmpty
