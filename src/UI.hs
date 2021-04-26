@@ -55,10 +55,17 @@ modeInteractive (inpStack, objects, variables, functions, outStack, statusIO) sh
     else do
         readInput "interactive"
         input <- getLine
-        let tokens = tokenize input
-        let (newInpStack, newObjects) = parser tokens inpStack objects
-        let (inpStack, objects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (newInpStack, newObjects, variables, functions, outStack, None)
-        modeInteractive (inpStack, objects, newVariables, newFunctions, newOutStack, newStatusIO) True
+        if stringToLower input == "--debug"
+            then do
+                putStrLn $ "\tObjects:   " ++ show objects
+                putStrLn $ "\tVariables: " ++ show variables
+                putStrLn $ "\tFunctions: " ++ show functions
+                modeInteractive (inpStack, objects, variables, functions, outStack, statusIO) False
+        else do
+            let tokens = tokenize input
+            let (newInpStack, newObjects) = parser tokens inpStack objects
+            let (inpStack, objects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (newInpStack, newObjects, variables, functions, outStack, None)
+            modeInteractive (inpStack, objects, newVariables, newFunctions, newOutStack, newStatusIO) True
 
 modeCompiler :: (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
 modeCompiler (inpStack, objects, variables, functions, outStack, statusIO) showStack = do
