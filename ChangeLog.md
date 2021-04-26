@@ -147,3 +147,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.0.0] **milestone**: Implemented all functors
 
 [2.1.0] **development**: Implemented debug cmd in interactive mode
+
+[2.2.0] **development**: Added deallocation/duplication of nested objects

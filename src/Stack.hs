@@ -28,10 +28,36 @@ allocateObject stack objects = do
     let key = generateObjectAddress objects
     (Map.insert key stack objects, key)
 
+duplicateStack :: Stack -> (Stack, Objects) -> (Stack, Objects)
+duplicateStack [] (stack, objects) = (stack, objects)
+duplicateStack (x:xs) (stack, objects) = do
+        let (value, newObjects) = duplicateObject x objects
+        duplicateStack xs (value : stack, newObjects)
+
+duplicateObject :: Type -> Objects -> (Type, Objects)
+duplicateObject x objects
+    | isLIST x = do
+        let list = objects Map.! getLIST x
+        let (stack, newObjects) = duplicateStack list ([], objects)
+        let (objects, key) = allocateObject stack newObjects
+        (LIST key, objects)
+    | isCODEBLOCK x = do
+        let block = objects Map.! getCODEBLOCK x
+        let (stack, newObjects) = duplicateStack block ([], objects)
+        let (objects, key) = allocateObject stack newObjects
+        (LIST key, objects)
+    | otherwise = (x, objects)
+
 deallocateObject :: Type -> Objects -> Objects
 deallocateObject x objects
-    | isLIST x = Map.delete (getLIST x) objects
-    | isCODEBLOCK x = Map.delete (getCODEBLOCK x) objects
+    | isLIST x = do
+        let list = objects Map.! getLIST x
+        let (_, newObjects) = deallocateStack list objects
+        Map.delete (getLIST x) newObjects
+    | isCODEBLOCK x = do
+        let block = objects Map.! getCODEBLOCK x
+        let (_, newObjects) = deallocateStack block objects
+        Map.delete (getCODEBLOCK x) newObjects
     | otherwise = objects
 
 printableStack :: (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) -> String 

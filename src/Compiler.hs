@@ -86,19 +86,6 @@ executeStack = do
             put (xs, objects, variables, functions, x : outStack, statusIO)
             executeStack
 
-duplicateStack :: Stack -> (Stack, Objects) -> (Stack, Objects)
-duplicateStack [] (stack, objects) = (stack, objects)
-duplicateStack (x:xs) (stack, objects)  
-    | isLIST x = do
-        let list = objects Map.! getLIST x
-        let (newObjects, key) = allocateObject list objects
-        duplicateStack xs (LIST key : stack, newObjects)
-    | isCODEBLOCK x = do
-        let block = objects Map.! getCODEBLOCK x
-        let (newObjects, key) = allocateObject block objects
-        duplicateStack xs (CODEBLOCK key : stack, newObjects)
-    | otherwise = duplicateStack xs (x : stack, objects)
-
 {- Arithmetic -}
 
 funcAddition :: StackState
@@ -314,16 +301,8 @@ funcDup = do
                                             then deallocateStack outStack objects
                                         else do
                                             let (a:rest) = outStack
-                                            let (value, newObjects) | isLIST a = do
-                                                                        let list = objects Map.! getLIST a
-                                                                        let (newObjects, key) = allocateObject list objects
-                                                                        (LIST key, newObjects)
-                                                                    | isCODEBLOCK a = do
-                                                                        let block = objects Map.! getCODEBLOCK a
-                                                                        let (newObjects, key) = allocateObject block objects
-                                                                        (CODEBLOCK key, newObjects)
-                                                                    | otherwise = (a, objects)
-                                            (value : outStack, newObjects)
+                                            let (value, newObjects) = duplicateStack [a] ([], objects)
+                                            (head value : outStack, newObjects)
                                     )
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
