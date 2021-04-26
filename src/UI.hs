@@ -41,6 +41,12 @@ modeInteractive (inpStack, objects, variables, functions, outStack, statusIO) sh
             putStrLn $ getPRINT x
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, rest, None)
             modeInteractive (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
+    else if statusIO == Input
+        then do
+            input <- getLine
+            let value = STRING input
+            let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, value : outStack, None)
+            modeInteractive (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if showStack
         then do
             putStrLn $ "\tRaw:   " ++ show outStack
@@ -61,6 +67,12 @@ modeCompiler (inpStack, objects, variables, functions, outStack, statusIO) showS
             let (x:rest) = outStack
             putStrLn $ getPRINT x
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, rest, None)
+            modeCompiler (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
+    else if statusIO == Input
+        then do
+            input <- getLine
+            let value = STRING input
+            let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, value : outStack, None)
             modeCompiler (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if showStack
         then do

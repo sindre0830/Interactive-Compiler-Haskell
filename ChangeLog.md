@@ -141,3 +141,7 @@ Fucked up last commit by commiting files that weren't ready
 [1.44.0] **development**: Modified StackState so it can handle IO
 
 [1.45.0] **development**: Implemented print functor
+
+[1.46.0] **development**: Implemented read functor
+
+[2.0.0] **milestone**: Implemented all functors

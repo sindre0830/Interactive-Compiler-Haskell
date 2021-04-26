@@ -47,6 +47,7 @@ main = do
         spec_funcSetVariable
         spec_funcSetFunction
         spec_funcPrint
+        spec_funcRead
         -- module Parsing
         --spec_parseInput
         spec_tokenize
@@ -485,6 +486,12 @@ spec_funcPrint = do
             printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0], None)) `shouldBe` "[ExpectedString]"
         it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
+
+spec_funcRead :: Spec
+spec_funcRead = do
+    describe "funcRead tests:" $ do
+        it "printableStack (evalState funcRead ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[]\"" $ do
+            printableStack (evalState funcRead ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[]"
 -- module Parsing
 
 -- spec_parseInput :: Spec

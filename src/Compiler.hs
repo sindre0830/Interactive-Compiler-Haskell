@@ -67,6 +67,7 @@ executeStack = do
                     ":="    -> funcSetVariable
                     "fun"   -> funcSetFunction
                     -- IO
+                    "read"  -> funcRead
                     "print" -> funcPrint
                 ) >> executeStack
         else if isUNKNOWN x && Map.member (getUNKNOWN x) variables
@@ -738,6 +739,12 @@ funcSetFunction = do
     return (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
 
 {- IO -}
+
+funcRead :: StackState
+funcRead = do
+    (inpStack, objects, variables, functions, outStack, statusIO) <- get
+    put (inpStack, objects, variables, functions, outStack, Input)
+    return (inpStack, objects, variables, functions, outStack, Input)
 
 funcPrint :: StackState
 funcPrint = do
