@@ -548,8 +548,11 @@ funcMap = do
                                                                             let block = objects Map.! getCODEBLOCK b
                                                                             let list = objects Map.! getLIST a
                                                                             let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
-                                                                            let objects = updateObject (getLIST a) (reverse newList) (deallocateObject b newObjects)
-                                                                            (objects, newVariables, newFunctions, a : rest)
+                                                                            if head newList == ERROR InvalidOperationIO
+                                                                                then (deallocateObject a (deallocateObject b newObjects), newVariables, newFunctions, head newList : rest)
+                                                                            else do
+                                                                                let objects = updateObject (getLIST a) (reverse newList) (deallocateObject b newObjects)
+                                                                                (objects, newVariables, newFunctions, a : rest)
                                                                 )
     put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
@@ -557,8 +560,12 @@ funcMap = do
 mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
 mapOf [] _ (objects, variables, functions, outStack) = (objects, variables, functions, outStack)
 mapOf (x:xs) block (objects, variables, functions, outStack) = do
-    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, [x], None)
-    mapOf xs block (newObjects, newVariables, newFunctions, newOutStack ++ outStack)
+    let (_, newObjects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (block, objects, variables, functions, [x], None)
+    if statusIO /= None
+        then do
+            let (_, newObjects) = deallocateStack outStack objects
+            (newObjects, variables, functions, [ERROR InvalidOperationIO])
+    else mapOf xs block (newObjects, newVariables, newFunctions, newOutStack ++ outStack)
 
 funcEach :: StackState
 funcEach = do
@@ -615,8 +622,10 @@ funcFoldl = do
 foldlOf :: Stack -> Stack -> (Objects, Variables, Functions, Type) -> (Objects, Variables, Functions, Type)
 foldlOf [] _ (objects, variables, functions, value) = (objects, variables, functions, value)
 foldlOf (x:xs) block (objects, variables, functions, value) = do
-    let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, x : [value], None)
-    foldlOf xs block (newObjects, newVariables, newFunctions, head newOutStack)
+    let (_, newObjects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (block, objects, variables, functions, x : [value], None)
+    if statusIO /= None
+        then (deallocateObject value objects, variables, functions, ERROR InvalidOperationIO)
+    else foldlOf xs block (newObjects, newVariables, newFunctions, head newOutStack)
 
 funcTimes :: StackState
 funcTimes = do
@@ -667,15 +676,19 @@ funcLoop = do
 
 loop :: Stack -> Stack -> (Objects, Variables, Functions, Stack) -> (Objects, Stack)
 loop break block (objects, variables, functions, outStack) = do
-    let (_, _, _, _, newOutStack, _) = evalState executeStack (break, objects, variables, functions, outStack, None)
+    let (_, _, _, _, newOutStack, statusIO) = evalState executeStack (break, objects, variables, functions, outStack, None)
     let value = head newOutStack
-    if not (isBOOL value)
+    if statusIO /= None
+        then (objects, [ERROR InvalidOperationIO])
+    else if not (isBOOL value)
         then (objects, [ERROR ExpectedBool])
     else if getBOOL value
         then (objects, reverse outStack)
     else do
-        let (_, newObjects, newVariables, newFunctions, newOutStack, _) = evalState executeStack (block, objects, variables, functions, outStack, None)
-        loop break block (newObjects, newVariables, newFunctions, newOutStack)
+        let (_, newObjects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (block, objects, variables, functions, outStack, None)
+        if statusIO /= None
+            then (objects, [ERROR InvalidOperationIO])
+        else loop break block (newObjects, newVariables, newFunctions, newOutStack)
 
 funcSetVariable :: StackState
 funcSetVariable = do

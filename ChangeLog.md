@@ -153,3 +153,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.3.0] **development**: Fixed print to only print when there is a string
 
 [2.4.0] **development**: Modified printable stack to use intercalate
+
+[2.5.0] **development**: Added handler when IO operation is used in map, each, foldl and loop

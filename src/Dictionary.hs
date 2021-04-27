@@ -159,6 +159,7 @@ data TypeIO
 
 data ErrorTypes
     = StackEmpty
+    | InvalidOperationIO
     | UnknownValue
     | ExpectedBool
     | ExpectedStringOfInteger
