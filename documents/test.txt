@@ -1,2 +1,26 @@
-
-1 2 +
+1 
+{ dup 4 > } { dup 1 + } loop
+[ ] 
+5 { cons } times
+dup length 
+5 == 
+{ 
+    " list has 5 elements! " print 
+} 
+{ 
+    " we've done something wrong " print 
+} 
+if
+{ 10 * } map
+0 { + } foldl
+150 ==
+{ 
+    " sum after 10* of the list is 150 " print 
+    True 
+}
+{ 
+    " sum does not add up correctly! " print 
+    " we've got a different number! " print 
+    False 
+}
+if

@@ -149,3 +149,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.1.0] **development**: Implemented debug cmd in interactive mode
 
 [2.2.0] **development**: Added deallocation/duplication of nested objects
+
+[2.3.0] **development**: Fixed print to only print when there is a string

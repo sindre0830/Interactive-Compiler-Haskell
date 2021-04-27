@@ -735,9 +735,9 @@ funcPrint = do
                                                     else do
                                                         let (a:rest) = outStack
                                                         let newObjects = deallocateObject a objects
-                                                        let value   | not (isSTRING a) = ERROR ExpectedString
-                                                                    | otherwise = PRINT (getSTRING a)
-                                                        (value : rest, newObjects, Output)
+                                                        if not (isSTRING a)
+                                                            then (ERROR ExpectedString : rest, newObjects, statusIO)
+                                                        else (PRINT (getSTRING a) : rest, newObjects, Output)
                                                 )
     put (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
