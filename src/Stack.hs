@@ -3,6 +3,7 @@ module Stack
     ) where
 -- foreign modules
 import Data.Map (Map)
+import Data.List ( intercalate )
 import qualified Data.Map as Map
 -- local modules
 import Dictionary
@@ -61,20 +62,18 @@ deallocateObject x objects
     | otherwise = objects
 
 printableStack :: (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) -> String 
-printableStack (_, objects, _, _, outStack, _) = "[" ++ formatStack (reverse outStack) ", " objects ++ "]"
+printableStack (_, objects, _, _, outStack, _) = "[" ++ intercalate "," (formatStack (reverse outStack) objects) ++ "]"
 
-formatStack :: Stack -> Divider -> Objects -> String
-formatStack [] _ _ = []
-formatStack (x:xs) divider objects
-    | null xs && not (null divider) = formatStack [x] "" objects
-    | isINT x       = show (getINT x) ++ divider ++ formatStack xs divider objects
-    | isFLOAT x     = show (getFLOAT x) ++ divider ++ formatStack xs divider objects
-    | isBOOL x      = show (getBOOL x) ++ divider ++ formatStack xs divider objects
-    | isSTRING x    = show (getSTRING x) ++ divider ++ formatStack xs divider objects
-    | isFUNC x      = getFUNC x ++ divider ++ formatStack xs divider objects
-    | isUNKNOWN x   = getUNKNOWN x ++ divider ++ formatStack xs divider objects
-    | isLIST x      = printableStack ([], objects, Map.empty, Map.empty, reverse (objects Map.! getLIST x), None) ++ divider ++ formatStack xs divider objects
-    | isCODEBLOCK x = "{" ++ formatStack (reverse (objects Map.! getCODEBLOCK x)) ", " objects ++ "}" ++ divider ++ formatStack xs divider objects
-    | isERROR x     = show (getERROR x) ++ divider ++ formatStack xs divider objects
-    | isPRINT x     = "Should have printed: " ++ getPRINT x ++ divider ++ formatStack xs divider objects
-    | otherwise     = formatStack xs divider objects
+formatStack :: Stack -> Objects -> [String]
+formatStack [] _ = []
+formatStack (x:xs) objects
+    | isINT x       = show (getINT x) : formatStack xs objects
+    | isFLOAT x     = show (getFLOAT x) : formatStack xs objects
+    | isBOOL x      = show (getBOOL x) : formatStack xs objects
+    | isSTRING x    = show (getSTRING x) : formatStack xs objects
+    | isFUNC x      = getFUNC x : formatStack xs objects
+    | isUNKNOWN x   = getUNKNOWN x : formatStack xs objects
+    | isLIST x      = printableStack ([], objects, Map.empty, Map.empty, reverse (objects Map.! getLIST x), None) : formatStack xs objects
+    | isCODEBLOCK x = ("{" ++ intercalate "," (formatStack (objects Map.! getCODEBLOCK x) objects) ++ "}") : formatStack xs objects
+    | isERROR x     = show (getERROR x) : formatStack xs objects
+    | otherwise     = formatStack xs objects

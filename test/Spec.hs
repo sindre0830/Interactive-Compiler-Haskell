@@ -246,16 +246,16 @@ spec_funcPop = do
 spec_funcDup :: Spec
 spec_funcDup = do
     describe "funcDup tests:" $ do
-        it "printableStack (evalState funcDup ([], Map.empty, Map.empty, Map.empty, [BOOL True], None)) returns \"[True, True]\"" $ do
-            printableStack (evalState funcDup ([], Map.empty, Map.empty, Map.empty, [BOOL True], None)) `shouldBe` "[True, True]"
+        it "printableStack (evalState funcDup ([], Map.empty, Map.empty, Map.empty, [BOOL True], None)) returns \"[True,True]\"" $ do
+            printableStack (evalState funcDup ([], Map.empty, Map.empty, Map.empty, [BOOL True], None)) `shouldBe` "[True,True]"
         it "printableStack (evalState funcDup ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcDup ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
 
 spec_funcSwap :: Spec
 spec_funcSwap = do
     describe "funcSwap tests:" $ do
-        it "printableStack (evalState funcSwap ([], Map.empty, Map.empty, Map.empty, [BOOL True, INT 5], None)) returns \"[True, 5]\"" $ do
-            printableStack (evalState funcSwap ([], Map.empty, Map.empty, Map.empty, [BOOL True, INT 5], None)) `shouldBe` "[True, 5]"
+        it "printableStack (evalState funcSwap ([], Map.empty, Map.empty, Map.empty, [BOOL True, INT 5], None)) returns \"[True,5]\"" $ do
+            printableStack (evalState funcSwap ([], Map.empty, Map.empty, Map.empty, [BOOL True, INT 5], None)) `shouldBe` "[True,5]"
         it "printableStack (evalState funcSwap ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcSwap ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
 
@@ -290,8 +290,8 @@ spec_funcParseFloat = do
 spec_funcWords :: Spec
 spec_funcWords = do
     describe "funcWords tests:" $ do
-        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"a b c\"], None)) returns \"[\"a\", \"b\", \"c\"]\"" $ do
-            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING "a b c"], None)) `shouldBe` "[\"a\", \"b\", \"c\"]"
+        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"a b c\"], None)) returns \"[\"a\",\"b\",\"c\"]\"" $ do
+            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING "a b c"], None)) `shouldBe` "[\"a\",\"b\",\"c\"]"
         it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"a\"], None)) returns \"[\"a\"]\"" $ do
             printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING "a"], None)) `shouldBe` "[\"a\"]"
         it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"\"], None)) returns \"[]\"" $ do
@@ -326,8 +326,8 @@ spec_funcHead = do
 spec_funcTail :: Spec
 spec_funcTail = do
     describe "funcTail tests:" $ do
-        it "printableStack (evalState funcTail ([], Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [LIST \"0\"], None)) returns \"[[2, 3]]\"" $ do
-            printableStack (evalState funcTail ([], Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [LIST "0"], None)) `shouldBe` "[[2, 3]]"
+        it "printableStack (evalState funcTail ([], Map.fromList [(\"0\", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [LIST \"0\"], None)) returns \"[[2,3]]\"" $ do
+            printableStack (evalState funcTail ([], Map.fromList [("0", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [LIST "0"], None)) `shouldBe` "[[2,3]]"
         it "printableStack (evalState funcTail ([], Map.empty, Map.empty, Map.empty, [INT 10], None)) returns \"[ExpectedList]\"" $ do
             printableStack (evalState funcTail ([], Map.empty, Map.empty, Map.empty, [INT 10], None)) `shouldBe` "[ExpectedList]"
         it "printableStack (evalState funcTail ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
@@ -336,8 +336,8 @@ spec_funcTail = do
 spec_funcCons :: Spec
 spec_funcCons = do
     describe "funcCons tests:" $ do
-        it "printableStack (evalState funcCons ([], Map.fromList [(\"0\", [INT 2, INT 3])], Map.empty, Map.empty, [LIST \"0\", INT 1], None)) returns \"[[1, 2, 3]]\"" $ do
-            printableStack (evalState funcCons ([], Map.fromList [("0", [INT 2, INT 3])], Map.empty, Map.empty, [LIST "0", INT 1], None)) `shouldBe` "[[1, 2, 3]]"
+        it "printableStack (evalState funcCons ([], Map.fromList [(\"0\", [INT 2, INT 3])], Map.empty, Map.empty, [LIST \"0\", INT 1], None)) returns \"[[1,2,3]]\"" $ do
+            printableStack (evalState funcCons ([], Map.fromList [("0", [INT 2, INT 3])], Map.empty, Map.empty, [LIST "0", INT 1], None)) `shouldBe` "[[1,2,3]]"
         it "printableStack (evalState funcCons ([], Map.fromList [(\"0\", []), (\"1\", [])], Map.empty, Map.empty, [LIST \"1\", LIST \"0\"], None)) returns \"[[[]]]\"" $ do
             printableStack (evalState funcCons ([], Map.fromList [("0", []), ("1", [])], Map.empty, Map.empty, [LIST "1", LIST "0"], None)) `shouldBe` "[[[]]]"
         it "printableStack (evalState funcCons ([], Map.empty, Map.empty, Map.empty, [INT 10, INT 10], None)) returns \"[ExpectedList]\"" $ do
@@ -348,8 +348,8 @@ spec_funcCons = do
 spec_funcAppend :: Spec
 spec_funcAppend = do
     describe "funcAppend tests:" $ do
-        it "printableStack (evalState funcAppend ([], Map.fromList [(\"0\", [INT 2, INT 3]), (\"1\", [INT 1])], Map.empty, Map.empty, [LIST \"0\", LIST \"1\"], None)) returns \"[[1, 2, 3]]\"" $ do
-            printableStack (evalState funcAppend ([], Map.fromList [("0", [INT 2, INT 3]), ("1", [INT 1])], Map.empty, Map.empty, [LIST "0", LIST "1"], None)) `shouldBe` "[[1, 2, 3]]"
+        it "printableStack (evalState funcAppend ([], Map.fromList [(\"0\", [INT 2, INT 3]), (\"1\", [INT 1])], Map.empty, Map.empty, [LIST \"0\", LIST \"1\"], None)) returns \"[[1,2,3]]\"" $ do
+            printableStack (evalState funcAppend ([], Map.fromList [("0", [INT 2, INT 3]), ("1", [INT 1])], Map.empty, Map.empty, [LIST "0", LIST "1"], None)) `shouldBe` "[[1,2,3]]"
         it "printableStack (evalState funcAppend ([], Map.fromList [(\"0\", []), (\"1\", [])], Map.empty, Map.empty, [LIST \"1\", LIST \"0\"], None)) returns \"[[]]\"" $ do
             printableStack (evalState funcAppend ([], Map.fromList [("0", []), ("1", [])], Map.empty, Map.empty, [LIST "1", LIST "0"], None)) `shouldBe` "[[]]"
         it "printableStack (evalState funcAppend ([], Map.empty, Map.empty, Map.empty, [INT 10, INT 10], None)) returns \"[ExpectedList]\"" $ do
@@ -396,8 +396,8 @@ spec_funcIf = do
 spec_funcMap :: Spec
 spec_funcMap = do
     describe "funcMap tests:" $ do
-        it "printableStack (evalState funcMap ([], Map.fromList [(\"0\", [INT 10, FUNC \"*\"]), (\"1\", [INT 3, INT 2, INT 1])], Map.empty, Map.empty, [CODEBLOCK \"0\", LIST \"1\"], None)) returns \"[[30, 20, 10]]\"" $ do
-            printableStack (evalState funcMap ([], Map.fromList [("0", [INT 10, FUNC "*"]), ("1", [INT 3, INT 2, INT 1])], Map.empty, Map.empty, [CODEBLOCK "0", LIST "1"], None)) `shouldBe` "[[30, 20, 10]]"
+        it "printableStack (evalState funcMap ([], Map.fromList [(\"0\", [INT 10, FUNC \"*\"]), (\"1\", [INT 3, INT 2, INT 1])], Map.empty, Map.empty, [CODEBLOCK \"0\", LIST \"1\"], None)) returns \"[[30,20,10]]\"" $ do
+            printableStack (evalState funcMap ([], Map.fromList [("0", [INT 10, FUNC "*"]), ("1", [INT 3, INT 2, INT 1])], Map.empty, Map.empty, [CODEBLOCK "0", LIST "1"], None)) `shouldBe` "[[30,20,10]]"
         it "printableStack (evalState funcMap ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0], None)) returns \"[ExpectedList]\"" $ do
             printableStack (evalState funcMap ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0], None)) `shouldBe` "[ExpectedList]"
         it "printableStack (evalState funcMap ([], Map.fromList [(\"1\", [INT 3, INT 2, INT 1])], Map.empty, Map.empty, [FLOAT 5.0, LIST \"0\"], None)) returns \"[ExpectedCodeblock]\"" $ do
@@ -408,8 +408,8 @@ spec_funcMap = do
 spec_funcEach :: Spec
 spec_funcEach = do
     describe "funcEach tests:" $ do
-        it "printableStack (evalState funcEach ([], Map.fromList [(\"0\", [INT 10, FUNC \"*\"]), (\"1\", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [CODEBLOCK \"0\", LIST \"1\"], None)) returns \"[10, 20, 30]\"" $ do
-            printableStack (evalState funcEach ([], Map.fromList [("0", [INT 10, FUNC "*"]), ("1", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [CODEBLOCK "0", LIST "1"], None)) `shouldBe` "[10, 20, 30]"
+        it "printableStack (evalState funcEach ([], Map.fromList [(\"0\", [INT 10, FUNC \"*\"]), (\"1\", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [CODEBLOCK \"0\", LIST \"1\"], None)) returns \"[10,20,30]\"" $ do
+            printableStack (evalState funcEach ([], Map.fromList [("0", [INT 10, FUNC "*"]), ("1", [INT 1, INT 2, INT 3])], Map.empty, Map.empty, [CODEBLOCK "0", LIST "1"], None)) `shouldBe` "[10,20,30]"
         it "printableStack (evalState funcEach ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0], None)) returns \"[ExpectedList]\"" $ do
             printableStack (evalState funcEach ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0], None)) `shouldBe` "[ExpectedList]"
         it "printableStack (evalState funcEach ([], Map.fromList [(\"1\", [INT 3, INT 2, INT 1])], Map.empty, Map.empty, [FLOAT 5.0, LIST \"0\"], None)) returns \"[ExpectedCodeblock]\"" $ do
@@ -480,8 +480,8 @@ spec_funcSetFunction = do
 spec_funcPrint :: Spec
 spec_funcPrint = do
     describe "funcPrint tests:" $ do
-        it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING \"abc\"], None)) returns \"[Should have printed: abc]\"" $ do
-            printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING "abc"], None)) `shouldBe` "[Should have printed: abc]"
+        it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING \"abc\"], None)) returns \"[]\"" $ do
+            printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING "abc"], None)) `shouldBe` "[]"
         it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0], None)) returns \"[ExpectedString]\"" $ do
             printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0], None)) `shouldBe` "[ExpectedString]"
         it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
@@ -492,13 +492,8 @@ spec_funcRead = do
     describe "funcRead tests:" $ do
         it "printableStack (evalState funcRead ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[]\"" $ do
             printableStack (evalState funcRead ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[]"
--- module Parsing
 
--- spec_parseInput :: Spec
--- spec_parseInput = do
---     describe "parseInput tests:" $ do
---         it "printableStack (evalState (parseInput \"1 2 +\") ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[1, 2, +]\"" $ do
---             printableStack (evalState (parseInput "1 2 +") ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[1, 2, +]"
+-- module Parsing
 
 spec_tokenize :: Spec
 spec_tokenize = do
@@ -627,11 +622,11 @@ spec_deallocateObject = do
 spec_printableStack :: Spec
 spec_printableStack = do
     describe "printableStack tests:" $ do
-        it "printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING \"a string\", INT 1], None) returns \"[1, \"a string\", 2\"]" $ do
-            printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING "a string", INT 1], None) `shouldBe` "[1, \"a string\", 2]"
+        it "printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING \"a string\", INT 1], None) returns \"[1,\"a string\",2\"]" $ do
+            printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING "a string", INT 1], None) `shouldBe` "[1,\"a string\",2]"
 
 spec_formatStack :: Spec
 spec_formatStack = do
     describe "formatStack tests:" $ do
-        it "formatStack [INT 2, STRING \"a string\", INT 1] \", \" Map.empty returns \"2, \"a string\", 1\"" $ do
-            formatStack [INT 2, STRING "a string", INT 1] ", " Map.empty `shouldBe` "2, \"a string\", 1"
+        it "formatStack [INT 2, STRING \"a string\", INT 1] Map.empty returns [\"2\",\"\"a string\"\",\"1\"]" $ do
+            formatStack [INT 2, STRING "a string", INT 1] Map.empty `shouldBe` ["2","\"a string\"","1"]

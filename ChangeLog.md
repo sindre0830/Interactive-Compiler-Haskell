@@ -151,3 +151,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.2.0] **development**: Added deallocation/duplication of nested objects
 
 [2.3.0] **development**: Fixed print to only print when there is a string
+
+[2.4.0] **development**: Modified printable stack to use intercalate
