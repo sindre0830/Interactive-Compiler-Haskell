@@ -155,3 +155,6 @@ Fucked up last commit by commiting files that weren't ready
 [2.4.0] **development**: Modified printable stack to use intercalate
 
 [2.5.0] **development**: Added handler when IO operation is used in map, each, foldl and loop
+
+[2.6.0] **development**: Allow controlflow to read without blocks
+

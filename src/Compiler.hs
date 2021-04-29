@@ -20,7 +20,12 @@ executeStack = do
             return (inpStack, objects, variables, functions, outStack, statusIO)
     else do
         let (x:xs) = inpStack
-        if isFUNC x
+        let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack
+        if shouldSkip
+            then do
+                put (newInpStack, objects, variables, functions, newOutStack ++ outStack, statusIO)
+                executeStack
+        else if isFUNC x
             then ( do
                 put (xs, objects, variables, functions, outStack, statusIO)
                 case getFUNC x of
@@ -85,6 +90,33 @@ executeStack = do
         else do
             put (xs, objects, variables, functions, x : outStack, statusIO)
             executeStack
+
+skipOperation :: Stack -> (Bool, Stack, Stack)
+skipOperation stack
+    | length stack >= 4 && isFUNC (stack !! 3) 
+        && (getFUNC (stack !! 3) == "if" 
+        || getFUNC (stack !! 3) == "foldl") = do
+            let (x:y:z:rest) = stack
+            (True, rest, z:y:[x])
+    | length stack >= 3 && isFUNC (stack !! 2) 
+        && (getFUNC (stack !! 2) == "map" 
+        || getFUNC (stack !! 2) == "each" 
+        || getFUNC (stack !! 2) == "loop" 
+        || getFUNC (stack !! 2) == "times"
+        || getFUNC (stack !! 2) == "if"
+        || getFUNC (stack !! 2) == "foldl") = do
+            let (x:y:rest) = stack
+            (True, rest, y:[x])
+    | length stack >= 2 && isFUNC (stack !! 1) 
+        && (getFUNC (stack !! 1) == "map" 
+        || getFUNC (stack !! 1) == "each" 
+        || getFUNC (stack !! 1) == "loop" 
+        || getFUNC (stack !! 1) == "times"
+        || getFUNC (stack !! 1) == "if"
+        || getFUNC (stack !! 1) == "foldl") = do
+            let (x:rest) = stack
+            (True, rest, [x])
+    | otherwise = (False, stack, [])
 
 {- Arithmetic -}
 
@@ -517,14 +549,16 @@ funcIf = do
                                                         let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
                                                         if not (isBOOL a)
                                                             then (inpStack, ERROR ExpectedBool : rest, newObjects)
-                                                        else if not (isCODEBLOCK b) || not (isCODEBLOCK c)
+                                                        else if (not (isCODEBLOCK b) && not (isFUNC b)) || (not (isCODEBLOCK c) && not (isFUNC c))
                                                             then (inpStack, ERROR ExpectedCodeblock : rest, newObjects)
                                                         else if getBOOL a
                                                             then do
-                                                                let block = objects Map.! getCODEBLOCK b
+                                                                let block   | isCODEBLOCK b = objects Map.! getCODEBLOCK b
+                                                                            | isFUNC b = [b]
                                                                 (block ++ inpStack, rest, newObjects)
                                                         else do
-                                                            let block = objects Map.! getCODEBLOCK c
+                                                            let block   | isCODEBLOCK c = objects Map.! getCODEBLOCK c
+                                                                        | isFUNC c = [c]
                                                             (block ++ inpStack, rest, newObjects)
                                                 )
     put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
@@ -542,10 +576,11 @@ funcMap = do
                                                                         let newObjects = deallocateObject a (deallocateObject b objects)
                                                                         if not (isLIST a)
                                                                             then (newObjects, variables, functions, ERROR ExpectedList : rest)
-                                                                        else if not (isCODEBLOCK b)
+                                                                        else if not (isCODEBLOCK b) && not (isFUNC b)
                                                                             then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
                                                                         else do
-                                                                            let block = objects Map.! getCODEBLOCK b
+                                                                            let block   | isCODEBLOCK b = objects Map.! getCODEBLOCK b
+                                                                                        | isFUNC b = [b]
                                                                             let list = objects Map.! getLIST a
                                                                             let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
                                                                             if head newList == ERROR InvalidOperationIO
@@ -579,13 +614,14 @@ funcEach = do
                                                                         let newObjects = deallocateObject a (deallocateObject b objects)
                                                                         if not (isLIST a)
                                                                             then (newObjects, variables, functions, ERROR ExpectedList : rest)
-                                                                        else if not (isCODEBLOCK b)
+                                                                        else if not (isCODEBLOCK b) && not (isFUNC b)
                                                                             then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
                                                                         else do
+                                                                            let block   | isCODEBLOCK b = objects Map.! getCODEBLOCK b
+                                                                                        | isFUNC b = [b]
                                                                             let list = objects Map.! getLIST a
-                                                                            let block = objects Map.! getCODEBLOCK b
-                                                                            let (objects, newVariables, newFunctions, values) = mapOf list block (newObjects, variables, functions, [])
-                                                                            (objects, newVariables, newFunctions, values ++ rest)
+                                                                            let (newObjects, newVariables, newFunctions, values) = mapOf list block (objects, variables, functions, [])
+                                                                            (deallocateObject a (deallocateObject b newObjects), newVariables, newFunctions, values ++ rest)
                                                                 )
     put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
@@ -604,10 +640,11 @@ funcFoldl = do
                                                                             then (newObjects, variables, functions, ERROR ExpectedList : rest)
                                                                         else if isCODEBLOCK b || isFUNC b
                                                                             then (newObjects, variables, functions, ERROR InvalidType : rest)
-                                                                        else if not (isCODEBLOCK c)
+                                                                        else if not (isCODEBLOCK c) && not (isFUNC c)
                                                                             then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
                                                                         else do
-                                                                            let block = objects Map.! getCODEBLOCK c
+                                                                            let block   | isCODEBLOCK c = objects Map.! getCODEBLOCK c
+                                                                                        | isFUNC c = [c]
                                                                             if length block /= 1 || not (isFUNC (head block))
                                                                                 then (newObjects, variables, functions, ERROR ExpectedFunctor : rest)
                                                                             else do
@@ -639,10 +676,11 @@ funcTimes = do
                                                         let newObject = deallocateObject a (deallocateObject b objects)
                                                         if not (isINT a) || getINT a < 0
                                                             then (inpStack, newObject, ERROR ExpectedPositiveInteger : rest)
-                                                        else if not $ isCODEBLOCK b
+                                                        else if not (isCODEBLOCK b) && not (isFUNC b)
                                                             then (inpStack, newObject, ERROR ExpectedCodeblock : rest)
                                                         else do
-                                                            let block = objects Map.! getCODEBLOCK b
+                                                            let block   | isCODEBLOCK b = objects Map.! getCODEBLOCK b
+                                                                        | isFUNC b = [b]
                                                             let values = loopN (getINT a) block
                                                             (values ++ inpStack, newObject, rest)
                                                 )
@@ -663,11 +701,13 @@ funcLoop = do
                                                     else do
                                                         let (b:a:rest) = outStack
                                                         let newObjects = deallocateObject a (deallocateObject b objects)
-                                                        if not (isCODEBLOCK a) || not (isCODEBLOCK b)
+                                                        if not (isCODEBLOCK a) && not (isFUNC a) || not (isCODEBLOCK b) && not (isFUNC b)
                                                             then (inpStack, newObjects, ERROR ExpectedCodeblock : rest)
                                                         else do
-                                                            let break = objects Map.! getCODEBLOCK a
-                                                            let block = objects Map.! getCODEBLOCK b
+                                                            let break   | isCODEBLOCK a = objects Map.! getCODEBLOCK a
+                                                                        | isFUNC a = [a]
+                                                            let block   | isCODEBLOCK b = objects Map.! getCODEBLOCK b
+                                                                        | isFUNC b = [b]
                                                             let (objects, values) = loop break block (newObjects, variables, functions, rest)
                                                             (values ++ inpStack, objects, [])
                                                 )
