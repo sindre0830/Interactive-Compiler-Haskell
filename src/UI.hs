@@ -20,7 +20,7 @@ readInput message = do
 
 menu :: IO ()
 menu = do
-    readInput "bprog"
+    readInput "bprog2"
     input <- getLine
     let cmd = stringToLower input
     if cmd == "interactive"
@@ -38,28 +38,30 @@ modeInteractive (inpStack, objects, variables, functions, outStack, statusIO) sh
     if statusIO == Output
         then do
             let (x:rest) = outStack
-            putStrLn $ getPRINT x
+            putStrLn $ "output: " ++ getPRINT x
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, rest, None)
             modeInteractive (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if statusIO == Input
         then do
+            readInput "input"
             input <- getLine
             let value = STRING input
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, value : outStack, None)
             modeInteractive (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if showStack
         then do
-            putStrLn $ "\tRaw:   " ++ show outStack
-            putStrLn $ "\tStack: " ++ printableStack (inpStack, objects, variables, functions, outStack, statusIO) ++ "\n"
+            putStrLn $ "Stack: " ++ printableStack (inpStack, objects, variables, functions, outStack, statusIO) ++ "\n"
             modeInteractive (inpStack, objects, variables, functions, outStack, statusIO) False
     else do
-        readInput "interactive"
+        readInput "bprog2"
         input <- getLine
+        putStrLn ""
         if stringToLower input == "--debug"
             then do
-                putStrLn $ "\tObjects:   " ++ show objects
-                putStrLn $ "\tVariables: " ++ show variables
-                putStrLn $ "\tFunctions: " ++ show functions
+                putStrLn $ "Stack:     " ++ show outStack
+                putStrLn $ "Objects:   " ++ show objects
+                putStrLn $ "Variables: " ++ show variables
+                putStrLn $ "Functions: " ++ show functions ++ "\n"
                 modeInteractive (inpStack, objects, variables, functions, outStack, statusIO) False
         else do
             let tokens = tokenize input

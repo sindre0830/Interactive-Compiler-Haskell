@@ -158,3 +158,5 @@ Fucked up last commit by commiting files that weren't ready
 
 [2.6.0] **development**: Allow controlflow to read without blocks
 
+[2.7.0] **development**: Modified UI
+
