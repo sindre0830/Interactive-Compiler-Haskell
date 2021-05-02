@@ -258,13 +258,23 @@ funcEqual = do
                                         else do
                                             let (b:a:rest) = outStack
                                             let newObjects = deallocateObject a (deallocateObject b objects)
-                                            let value   | isLIST a && isLIST b = BOOL (objects Map.! getLIST a == objects Map.! getLIST b)
-                                                        | isCODEBLOCK a && isCODEBLOCK b = BOOL (objects Map.! getCODEBLOCK a == objects Map.! getCODEBLOCK b)
-                                                        | otherwise = BOOL (a == b)
-                                            (value : rest, newObjects)
+                                            let value = compareStack [a] [b] objects
+                                            (BOOL value : rest, newObjects)
                                     )
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+
+compareStack :: Stack -> Stack -> Objects -> Bool
+compareStack [] [] _ = True
+compareStack [] _ _ = False
+compareStack _ [] _ = False
+compareStack (x:xs) (y:ys) objects
+    | isLIST x && isLIST y = compareStack (objects Map.! getLIST x) (objects Map.! getLIST y) objects
+    | isCODEBLOCK x && isCODEBLOCK y = compareStack (objects Map.! getCODEBLOCK x) (objects Map.! getCODEBLOCK y) objects
+    | isINT x && isFLOAT y = convertFloat x == getFLOAT y
+    | isFLOAT x && isINT y = getFLOAT x == convertFloat y
+    | x /= y = False
+    | otherwise = compareStack xs ys objects
 
 funcLess :: StackState
 funcLess = do

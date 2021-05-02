@@ -167,3 +167,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.10.0] **development**: Added offical tests for assignment 2
 
 [2.11.0] **development**: Changed INT type to Integer for larger values
+
+[2.12.0] **development**: Fixed equal functor so it can check nested lists and codeblocks
