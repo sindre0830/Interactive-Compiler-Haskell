@@ -662,9 +662,9 @@ spec_testCompiler = do
             testCompiler "\" [ so { not if ] and } \"" `shouldBe` "[\"[ so { not if ] and }\"]"
         {-- quotation literals -}
         it "quotation literals test" $ do
-            testCompiler "{ 20 10 + }" `shouldBe` "[{20,10,+}]"
+            testCompiler "{ 20 10 + }" `shouldBe` "[{20 10 +}]"
         it "quotation literals test" $ do
-            testCompiler "[ { + } { 10 + } { 20 10 + } ]" `shouldBe` "[[{+},{10,+},{20,10,+}]]"
+            testCompiler "[ { + } { 10 + } { 20 10 + } ]" `shouldBe` "[[{+},{10 +},{20 10 +}]]"
 
         {-- simple arithmetic -}
         it "simple arithmetic test" $ do
@@ -872,24 +872,24 @@ spec_testCompiler = do
 
 
         it "other test" $ do
-            testCompiler "odd { dup 2 div swap 2 / == if False True } fun \
+            testCompiler "odd { dup 2 div swap 2 / == False True if } fun \
         \ 2 odd" `shouldBe` "[False]"
         
         it "other test" $ do
-            testCompiler "odd { dup 2 div swap 2 / == if False True } fun \
+            testCompiler "odd { dup 2 div swap 2 / == False True if } fun \
         \ 3 odd" `shouldBe` "[True]"
         
         it "other test" $ do
-            testCompiler "toList { [ ] swap times cons } fun \
+            testCompiler "toList { [ ] swap cons times } fun \
         \ 1 2 3 4 \
         \ 4 toList" `shouldBe` "[[1,2,3,4]]"
         
         it "other test" $ do
-            testCompiler "gen1toNum { max swap := 1 loop { dup max > } { dup 1 + } } fun \
+            testCompiler "gen1toNum { max swap := 1 { dup max > } { dup 1 + } loop } fun \
         \ 3 gen1toNum + + +" `shouldBe` "[10]"
 
         it "other test" $ do
-            testCompiler "odd { dup 2 div swap 2 / == if False True } fun \
-        \ toList { [ ] swap times cons } fun \
-        \ gen1toNum { max swap := 1 loop { dup max > } { dup 1 + } } fun \
-        \ 4 gen1toNum 5 toList map odd" `shouldBe` "[[True,False,True,False,True]]"
+            testCompiler "odd { dup 2 div swap 2 / == False True if } fun \
+        \ toList { [ ] swap cons times } fun \
+        \ gen1toNum { max swap := 1 { dup max > } { dup 1 + } loop } fun \
+        \ 4 gen1toNum 5 toList odd map" `shouldBe` "[[True,False,True,False,True]]"

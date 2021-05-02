@@ -75,21 +75,35 @@ executeStack = do
                     "read"  -> funcRead
                     "print" -> funcPrint
                 ) >> executeStack
-        else if isUNKNOWN x && Map.member (getUNKNOWN x) variables
-            then do
-                let value = variables Map.! getUNKNOWN x
-                let (newValue, newObjects) = duplicateStack [value] ([], objects)
-                put (xs, newObjects, variables, functions, head newValue : outStack, statusIO)
-                executeStack 
-        else if isUNKNOWN x && Map.member (getUNKNOWN x) functions
-            then do
-                let value = functions Map.! getUNKNOWN x
-                let (newValue, newObjects) = duplicateStack value ([], objects)
-                put (newValue ++ xs, newObjects, variables, functions, outStack, statusIO)
-                executeStack 
         else do
-            put (xs, objects, variables, functions, x : outStack, statusIO)
+            let (newInpStack, newObjects, newOutStack) = setVariable [x] variables functions ([], objects, [])
+            put (newInpStack ++ xs, newObjects, variables, functions, newOutStack ++ outStack, statusIO)
             executeStack
+
+setVariable :: Stack -> Variables -> Functions -> (InputStack, Objects, OutputStack) -> (InputStack, Objects, OutputStack)
+setVariable [] _ _ (inpStack, objects, outStack) = (inpStack, objects, outStack)
+setVariable (x:xs) variables functions (inpStack, objects, outStack)
+    | isLIST x = do
+        let key = getLIST x
+        let list = objects Map.! key
+        let (_, newObjects, newOutStack) = setVariable list variables functions ([], objects, [])
+        let objects = updateObject key (reverse newOutStack) newObjects
+        setVariable xs variables functions (inpStack, objects, x : outStack)
+    | isCODEBLOCK x = do
+        let key = getCODEBLOCK x
+        let block = objects Map.! key
+        let (_, newObjects, newOutStack) = setVariable block variables functions ([], objects, [])
+        let objects = updateObject key (reverse newOutStack) newObjects
+        setVariable xs variables functions (inpStack, objects, x : outStack)
+    | isUNKNOWN x && Map.member (getUNKNOWN x) variables = do
+        let value = variables Map.! getUNKNOWN x
+        let (newStack, newObjects) = duplicateStack [value] ([], objects)
+        setVariable xs variables functions (inpStack, newObjects, newStack ++ outStack)
+    | isUNKNOWN x && Map.member (getUNKNOWN x) functions = do
+        let value = functions Map.! getUNKNOWN x
+        let (newStack, newObjects) = duplicateStack value ([], objects)
+        setVariable xs variables functions (newStack ++ inpStack, newObjects, outStack)
+    | otherwise = setVariable xs variables functions (inpStack, objects, x : outStack)
 
 skipOperation :: Stack -> (Bool, Stack, Stack)
 skipOperation stack

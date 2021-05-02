@@ -80,6 +80,6 @@ formatStack (x:xs) objects
     | isFUNC x      = getFUNC x : formatStack xs objects
     | isUNKNOWN x   = getUNKNOWN x : formatStack xs objects
     | isLIST x      = printableStack ([], objects, Map.empty, Map.empty, reverse (objects Map.! getLIST x), None) : formatStack xs objects
-    | isCODEBLOCK x = ("{" ++ intercalate "," (formatStack (objects Map.! getCODEBLOCK x) objects) ++ "}") : formatStack xs objects
+    | isCODEBLOCK x = ("{" ++ unwords (formatStack (objects Map.! getCODEBLOCK x) objects) ++ "}") : formatStack xs objects
     | isERROR x     = show (getERROR x) : formatStack xs objects
     | otherwise     = formatStack xs objects
