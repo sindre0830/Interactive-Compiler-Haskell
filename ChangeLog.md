@@ -177,3 +177,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.15.0] **development**: Fixed assignments being reversed
 
 [2.16.0] **development**: Fixed exec functor deallocating too many objects
+
+[2.17.0] **development**: Fixed if functor by allowing all types when called without blocks

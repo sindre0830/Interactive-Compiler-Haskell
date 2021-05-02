@@ -552,17 +552,15 @@ funcIf = do
                                                         let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
                                                         if not (isBOOL a)
                                                             then (inpStack, ERROR ExpectedBool : rest, newObjects)
-                                                        else if (not (isCODEBLOCK b) && not (isFUNC b)) || (not (isCODEBLOCK c) && not (isFUNC c))
-                                                            then (inpStack, ERROR ExpectedCodeblock : rest, newObjects)
                                                         else if getBOOL a
                                                             then do
-                                                                let block   | isCODEBLOCK b = objects Map.! getCODEBLOCK b
-                                                                            | isFUNC b = [b]
-                                                                (block ++ inpStack, rest, newObjects)
+                                                                let values  | isCODEBLOCK b = [b, FUNC "exec"]
+                                                                            | otherwise = [b]
+                                                                (values ++ inpStack, rest, deallocateObject a (deallocateObject c objects))
                                                         else do
-                                                            let block   | isCODEBLOCK c = objects Map.! getCODEBLOCK c
-                                                                        | isFUNC c = [c]
-                                                            (block ++ inpStack, rest, newObjects)
+                                                            let values  | isCODEBLOCK c = [c, FUNC "exec"]
+                                                                        | otherwise = [c]
+                                                            (values ++ inpStack, rest, deallocateObject a (deallocateObject b objects))
                                                 )
     put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
