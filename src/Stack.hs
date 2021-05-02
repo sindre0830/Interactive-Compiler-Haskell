@@ -49,6 +49,12 @@ duplicateObject x objects
         (LIST key, objects)
     | otherwise = (x, objects)
 
+deallocateOneObject :: Type -> Objects -> Objects
+deallocateOneObject x objects
+    | isLIST x = Map.delete (getLIST x) objects
+    | isCODEBLOCK x = Map.delete (getCODEBLOCK x) objects
+    | otherwise = objects
+
 deallocateObject :: Type -> Objects -> Objects
 deallocateObject x objects
     | isLIST x = do

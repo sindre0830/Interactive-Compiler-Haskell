@@ -860,7 +860,7 @@ spec_testCompiler = do
         it "times test" $ do
             testCompiler "5 { 10 } times + + + +" `shouldBe` "[50]"
         it "times test" $ do
-            testCompiler "5 times 10 4 times +" `shouldBe` "[50]"
+            testCompiler "5 10 times 4 + times" `shouldBe` "[50]"
 
         {-- loop -}
         it "loop test" $ do

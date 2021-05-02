@@ -175,3 +175,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.14.0] **development**: Fixed words functor so it returns a list
 
 [2.15.0] **development**: Fixed assignments being reversed
+
+[2.16.0] **development**: Fixed exec functor deallocating too many objects

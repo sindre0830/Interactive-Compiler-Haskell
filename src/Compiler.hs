@@ -529,12 +529,11 @@ funcExec = do
                                                             (inpStack, newOutStack, newObjects)
                                                     else do
                                                         let (a:rest) = outStack
-                                                        let newObjects = deallocateObject a objects
                                                         if not (isCODEBLOCK a)
-                                                            then (inpStack, ERROR ExpectedCodeblock : rest, newObjects)
+                                                            then (inpStack, ERROR ExpectedCodeblock : rest, deallocateObject a objects)
                                                         else do
                                                             let block = objects Map.! getCODEBLOCK a
-                                                            (block ++ inpStack, rest, newObjects)
+                                                            (block ++ inpStack, rest, deallocateOneObject a objects)
                                                 )
     put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
