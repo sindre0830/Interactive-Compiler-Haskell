@@ -122,7 +122,7 @@ stringParser (x:xs) str = do
 typeParser :: Token -> Type
 typeParser value = do
     if isJust (readMaybe value :: Maybe Int)
-        then INT (fromJust (readMaybe value :: Maybe Int))
+        then INT (fromJust (readMaybe value :: Maybe Integer))
     else if isJust (readMaybe value :: Maybe Float)
         then FLOAT (fromJust (readMaybe value :: Maybe Float))
     else if isJust (readMaybe value :: Maybe Bool)

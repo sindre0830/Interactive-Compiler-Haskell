@@ -353,7 +353,7 @@ funcParseInteger = do
                                             let (a:rest) = outStack
                                             let newObjects = deallocateObject a objects
                                             let value   | not (isSTRING a) = ERROR ExpectedString
-                                                        | isJust (readMaybe (getSTRING a) :: Maybe Int) = INT (fromJust (readMaybe (getSTRING a) :: Maybe Int))
+                                                        | isJust (readMaybe (getSTRING a) :: Maybe Integer) = INT (fromJust (readMaybe (getSTRING a) :: Maybe Integer))
                                                         | otherwise = ERROR ExpectedStringOfInteger
                                             (value : rest, newObjects)
                                     )
@@ -497,8 +497,8 @@ funcLength = do
                                         else do
                                             let (a:rest) = outStack
                                             let newObjects = deallocateObject a objects
-                                            let value   | isSTRING a = INT (length $ getSTRING a)
-                                                        | isLIST a = INT (length $ objects Map.! getLIST a)
+                                            let value   | isSTRING a = INT (toInteger $ length $ getSTRING a)
+                                                        | isLIST a = INT (toInteger $ length $ objects Map.! getLIST a)
                                                         | otherwise = ERROR ExpectedList
                                             (value : rest, newObjects)
                                     )
@@ -678,7 +678,7 @@ funcTimes = do
     put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 
-loopN :: Int -> Stack -> Stack
+loopN :: Integer -> Stack -> Stack
 loopN 0 _ = []
 loopN n block = block ++ loopN (n - 1) block
 

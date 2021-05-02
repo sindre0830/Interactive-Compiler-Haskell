@@ -106,7 +106,7 @@ type Unknown = Data
 
 type StatusIO = TypeIO
 
-type Type = EitherN Int Float Bool String Func Unknown List CodeBlock Error String
+type Type = EitherN Integer Float Bool String Func Unknown List CodeBlock Error String
 
 type Stack = [Type]
 
