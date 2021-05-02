@@ -677,11 +677,9 @@ funcTimes = do
                                                         let newObject = deallocateObject a (deallocateObject b objects)
                                                         if not (isINT a) || getINT a < 0
                                                             then (inpStack, newObject, ERROR ExpectedPositiveInteger : rest)
-                                                        else if not (isCODEBLOCK b) && not (isFUNC b)
-                                                            then (inpStack, newObject, ERROR ExpectedCodeblock : rest)
                                                         else do
                                                             let block   | isCODEBLOCK b = objects Map.! getCODEBLOCK b
-                                                                        | isFUNC b = [b]
+                                                                        | otherwise = [b]
                                                             let values = loopN (getINT a) block
                                                             (values ++ inpStack, newObject, rest)
                                                 )

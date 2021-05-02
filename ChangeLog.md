@@ -179,3 +179,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.16.0] **development**: Fixed exec functor deallocating too many objects
 
 [2.17.0] **development**: Fixed if functor by allowing all types when called without blocks
+
+[2.18.0] **development**: Fixed times functor by allowing all types when called without blocks
