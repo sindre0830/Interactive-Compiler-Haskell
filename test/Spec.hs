@@ -293,12 +293,12 @@ spec_funcParseFloat = do
 spec_funcWords :: Spec
 spec_funcWords = do
     describe "funcWords tests:" $ do
-        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"a b c\"], None)) returns \"[\"a\",\"b\",\"c\"]\"" $ do
-            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING "a b c"], None)) `shouldBe` "[\"a\",\"b\",\"c\"]"
-        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"a\"], None)) returns \"[\"a\"]\"" $ do
-            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING "a"], None)) `shouldBe` "[\"a\"]"
-        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"\"], None)) returns \"[]\"" $ do
-            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING ""], None)) `shouldBe` "[]"
+        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"a b c\"], None)) returns \"[[\"a\",\"b\",\"c\"]]\"" $ do
+            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING "a b c"], None)) `shouldBe` "[[\"a\",\"b\",\"c\"]]"
+        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"a\"], None)) returns \"[[\"a\"]]\"" $ do
+            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING "a"], None)) `shouldBe` "[[\"a\"]]"
+        it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING \"\"], None)) returns \"[[]]\"" $ do
+            printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [STRING ""], None)) `shouldBe` "[[]]"
         it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0], None)) returns \"[ExpectedString]\"" $ do
             printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0], None)) `shouldBe` "[ExpectedString]"
         it "printableStack (evalState funcWords ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do

@@ -393,10 +393,12 @@ funcWords = do
                                             then deallocateStack outStack objects
                                         else do
                                             let (a:rest) = outStack
-                                            let newObjects = deallocateObject a objects
-                                            let values  | not (isSTRING a) = [ERROR ExpectedString]
-                                                        | otherwise = map STRING (reverse $ words $ getSTRING a)
-                                            (values ++ rest, newObjects)
+                                            let (value, newObjects) | not (isSTRING a) = (ERROR ExpectedString, deallocateObject a objects)
+                                                                    | otherwise = do
+                                                                        let list = map STRING (words $ getSTRING a)
+                                                                        let (newObjects, key) = allocateObject list objects
+                                                                        (LIST key, newObjects)
+                                            (value : rest, newObjects)
                                     )
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)

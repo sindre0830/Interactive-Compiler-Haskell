@@ -24,7 +24,7 @@ getValidAddress objects index = do
 updateObject :: Key -> Stack -> Objects -> Objects
 updateObject = Map.insert
 
-allocateObject :: Stack -> Objects -> (Objects, String)
+allocateObject :: Stack -> Objects -> (Objects, Key)
 allocateObject stack objects = do
     let key = generateObjectAddress objects
     (Map.insert key stack objects, key)
