@@ -85,7 +85,7 @@ executeStack = do
             then do
                 let value = functions Map.! getUNKNOWN x
                 let (newValue, newObjects) = duplicateStack value ([], objects)
-                put (newValue ++ xs, newObjects, variables, functions, outStack, statusIO)
+                put (reverse newValue ++ xs, newObjects, variables, functions, outStack, statusIO)
                 executeStack 
         else do
             put (xs, objects, variables, functions, x : outStack, statusIO)
@@ -93,24 +93,15 @@ executeStack = do
 
 skipOperation :: Stack -> (Bool, Stack, Stack)
 skipOperation stack
-    | length stack >= 4 && isFUNC (stack !! 3) 
-        && (getFUNC (stack !! 3) == "if" 
-        || getFUNC (stack !! 3) == "foldl") = do
-            let (x:y:z:rest) = stack
-            (True, rest, z:y:[x])
     | length stack >= 3 && isFUNC (stack !! 2) 
-        && (getFUNC (stack !! 2) == "map" 
-        || getFUNC (stack !! 2) == "each" 
-        || getFUNC (stack !! 2) == "loop" 
-        || getFUNC (stack !! 2) == "times"
-        || getFUNC (stack !! 2) == "if"
-        || getFUNC (stack !! 2) == "foldl") = do
+        && (getFUNC (stack !! 2) == "loop"
+        || getFUNC (stack !! 2) == "if") = do
             let (x:y:rest) = stack
             (True, rest, y:[x])
     | length stack >= 2 && isFUNC (stack !! 1) 
-        && (getFUNC (stack !! 1) == "map" 
-        || getFUNC (stack !! 1) == "each" 
-        || getFUNC (stack !! 1) == "loop" 
+        && (getFUNC (stack !! 1) == "map"
+        || getFUNC (stack !! 1) == "each"
+        || getFUNC (stack !! 1) == "loop"
         || getFUNC (stack !! 1) == "times"
         || getFUNC (stack !! 1) == "if"
         || getFUNC (stack !! 1) == "foldl") = do
