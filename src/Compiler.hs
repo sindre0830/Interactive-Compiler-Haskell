@@ -85,7 +85,7 @@ executeStack = do
             then do
                 let value = functions Map.! getUNKNOWN x
                 let (newValue, newObjects) = duplicateStack value ([], objects)
-                put (reverse newValue ++ xs, newObjects, variables, functions, outStack, statusIO)
+                put (newValue ++ xs, newObjects, variables, functions, outStack, statusIO)
                 executeStack 
         else do
             put (xs, objects, variables, functions, x : outStack, statusIO)

@@ -30,7 +30,7 @@ allocateObject stack objects = do
     (Map.insert key stack objects, key)
 
 duplicateStack :: Stack -> (Stack, Objects) -> (Stack, Objects)
-duplicateStack [] (stack, objects) = (stack, objects)
+duplicateStack [] (stack, objects) = (reverse stack, objects)
 duplicateStack (x:xs) (stack, objects) = do
         let (value, newObjects) = duplicateObject x objects
         duplicateStack xs (value : stack, newObjects)

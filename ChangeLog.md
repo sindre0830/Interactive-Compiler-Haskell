@@ -173,3 +173,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.13.0] **development**: Fixed length functor to work on codeblocks
 
 [2.14.0] **development**: Fixed words functor so it returns a list
+
+[2.15.0] **development**: Fixed assignments being reversed
