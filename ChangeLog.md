@@ -169,3 +169,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.11.0] **development**: Changed INT type to Integer for larger values
 
 [2.12.0] **development**: Fixed equal functor so it can check nested lists and codeblocks
+
+[2.13.0] **development**: Fixed length functor to work on codeblocks

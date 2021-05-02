@@ -509,6 +509,7 @@ funcLength = do
                                             let newObjects = deallocateObject a objects
                                             let value   | isSTRING a = INT (toInteger $ length $ getSTRING a)
                                                         | isLIST a = INT (toInteger $ length $ objects Map.! getLIST a)
+                                                        | isCODEBLOCK a = INT (toInteger $ length $ objects Map.! getCODEBLOCK a)
                                                         | otherwise = ERROR ExpectedList
                                             (value : rest, newObjects)
                                     )
