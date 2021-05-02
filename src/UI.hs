@@ -1,5 +1,5 @@
 module UI
-    ( menu
+    ( module UI
     ) where
 -- foreign modules
 import System.IO
@@ -97,3 +97,9 @@ modeCompiler (inpStack, objects, variables, functions, outStack, statusIO) showS
 -- | Converts string to lowercase.
 stringToLower :: String -> String
 stringToLower = map toLower
+
+testCompiler :: String -> String
+testCompiler input = do
+    let tokens = tokenize input
+    let (newInpStack, newObjects) = parser tokens [] Map.empty
+    printableStack $ evalState executeStack (newInpStack, newObjects, Map.empty, Map.empty, [], None)

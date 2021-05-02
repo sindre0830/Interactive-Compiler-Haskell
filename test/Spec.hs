@@ -9,6 +9,7 @@ import Parsing
 import Stack
 import Convert
 import Compiler
+import UI
 -- | Main testing program.
 main :: IO ()
 main = do
@@ -64,6 +65,8 @@ main = do
         spec_deallocateObject
         spec_printableStack
         spec_formatStack
+        -- 
+        spec_testCompiler
 
 -- module compiler
 
@@ -630,3 +633,263 @@ spec_formatStack = do
     describe "formatStack tests:" $ do
         it "formatStack [INT 2, STRING \"a string\", INT 1] Map.empty returns [\"2\",\"\"a string\"\",\"1\"]" $ do
             formatStack [INT 2, STRING "a string", INT 1] Map.empty `shouldBe` ["2","\"a string\"","1"]
+
+spec_testCompiler :: Spec
+spec_testCompiler = do
+    describe "official tests for non-error programs" $ do
+        {-- literals -}
+        it "literals test" $ do
+            testCompiler "3" `shouldBe` "[3]"
+        it "literals test" $ do
+            testCompiler "121231324135634563456363567" `shouldBe` "[121231324135634563456363567]"
+        it "literals test" $ do
+            testCompiler "1.0" `shouldBe` "[1.0]"
+        it "literals test" $ do
+            testCompiler "0.0" `shouldBe` "[0.0]"
+        it "literals test" $ do
+            testCompiler "-1" `shouldBe` "[-1]"
+        it "literals test" $ do
+            testCompiler "-1.1" `shouldBe` "[-1.1]"
+        it "literals test" $ do
+            testCompiler "False" `shouldBe` "[False]"
+        it "literals test" $ do
+            testCompiler "True" `shouldBe` "[True]"
+        it "literals test" $ do
+            testCompiler "[ [ ] [ ] ]" `shouldBe` "[[[],[]]]"
+        it "literals test" $ do
+            testCompiler "[ False [ ] True [ 1 2 ] ]" `shouldBe` "[[False,[],True,[1,2]]]"
+        it "literals test" $ do
+            testCompiler "\" [ so { not if ] and } \"" `shouldBe` "[\"[ so { not if ] and }\"]"
+        {-- quotation literals -}
+        it "quotation literals test" $ do
+            testCompiler "{ 20 10 + }" `shouldBe` "[{20,10,+}]"
+        it "quotation literals test" $ do
+            testCompiler "[ { + } { 10 + } { 20 10 + } ]" `shouldBe` "[[{+},{10,+},{20,10,+}]]"
+
+        {-- simple arithmetic -}
+        it "simple arithmetic test" $ do
+            testCompiler "1 1 +" `shouldBe` "[2]"       
+        it "simple arithmetic test" $ do
+            testCompiler "10 20 *" `shouldBe` "[200]"
+        it "simple arithmetic test" $ do
+            testCompiler "20 2 div" `shouldBe` "[10]"
+        it "simple arithmetic test" $ do
+            testCompiler "20 2 /" `shouldBe` "[10.0]"
+
+        {-- arithmetic with type coercion -}
+        it "arithmetic with type coercion test" $ do
+            testCompiler "1 1.0 +" `shouldBe` "[2.0]"       
+        it "arithmetic with type coercion test" $ do
+            testCompiler "10 20.0 *" `shouldBe` "[200.0]"
+        it "arithmetic with type coercion test" $ do
+            testCompiler "20 2.0 div" `shouldBe` "[10]"
+        it "arithmetic with type coercion test" $ do
+            testCompiler "20.0 2.0 div" `shouldBe` "[10]"
+
+        {-- bool operations -}
+        it "bool operations test" $ do
+            testCompiler "False False &&" `shouldBe` "[False]"
+        it "bool operations test" $ do
+            testCompiler "False True ||" `shouldBe` "[True]"
+        it "bool operations test" $ do
+            testCompiler "False not" `shouldBe` "[True]"
+        it "bool operations test" $ do
+            testCompiler "True not" `shouldBe` "[False]"
+
+        {-- comparisons -}
+        it "comparisons test" $ do
+            testCompiler "20 10 <" `shouldBe` "[False]"
+        it "comparisons test" $ do
+            testCompiler "20 10 >" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "20 10.0 >" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "20.0 20.0 >" `shouldBe` "[False]"
+        it "comparisons test" $ do
+            testCompiler "10 10 ==" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "10 10.0 ==" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "True True ==" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "True 40 40 == ==" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "\" abba \" \" abba \" ==" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "[ ] [ ] ==" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler "[ 1 2 ] [ 1 2 ] ==" `shouldBe` "[True]"
+        it "comparisons test" $ do
+            testCompiler " [ [ ] ] [ [ ] ] ==" `shouldBe` "[True]"
+
+        {-- stack operations -}
+        it "stack operations test" $ do
+            testCompiler "10 20 swap pop" `shouldBe` "[20]"
+        it "stack operations test" $ do
+            testCompiler "10 dup dup + swap pop" `shouldBe` "[20]"
+        it "stack operations test" $ do
+            testCompiler "10 20 swap dup + div" `shouldBe` "[1]"
+
+        {-- length -}
+        it "length test" $ do
+            testCompiler "\" hello \" length" `shouldBe` "[5]"
+        it "length test" $ do
+            testCompiler "\" hello world \" length" `shouldBe` "[11]"
+        it "length test" $ do
+            testCompiler "[ 1 2 3 [ ] ] length" `shouldBe` "[4]"
+        it "length test" $ do
+            testCompiler "{ 10 20 + } length" `shouldBe` "[3]"
+
+        {-- String parsing -}
+        it "String parsing test" $ do
+            testCompiler "\" 12 \" parseInteger" `shouldBe` "[12]"
+        it "String parsing test" $ do
+            testCompiler "\" 12.34 \" parseFloat" `shouldBe` "[12.34]"
+        it "String parsing test" $ do
+            testCompiler "\" adam bob charlie \" words" `shouldBe` "[[\"adam\",\"bob\",\"charlie\"]]"          
+
+        {-- lists -}
+        it "lists test" $ do
+            testCompiler "[ 1 2 3 ]" `shouldBe` "[[1,2,3]]"
+        it "lists test" $ do
+            testCompiler "[ 1 \" bob \" ]" `shouldBe` "[[1,\"bob\"]]"
+        it "lists test" $ do
+            testCompiler "[ 1 2 ] empty" `shouldBe` "[False]"
+        it "lists test" $ do
+            testCompiler "[ ] empty" `shouldBe` "[True]"
+        it "lists test" $ do
+            testCompiler "[ 1 2 3 ] head" `shouldBe` "[1]"
+        it "lists test" $ do
+            testCompiler "[ 1 2 3 ] length" `shouldBe` "[3]"
+        it "lists test" $ do
+            testCompiler "[ 1 2 3 ] tail" `shouldBe` "[[2,3]]"
+        it "lists test" $ do
+            testCompiler "1 [ ] cons" `shouldBe` "[[1]]"
+        it "lists test" $ do
+            testCompiler "1 [ 2 3 ] cons" `shouldBe` "[[1,2,3]]"
+        it "lists test" $ do
+            testCompiler "[ 1 ] [ 2 3 ] append" `shouldBe` "[[1,2,3]]"
+        it "lists test" $ do
+            testCompiler "[ 1 2 ] [ ] append" `shouldBe` "[[1,2]]"
+        it "lists test" $ do
+            testCompiler "[ 1 ] [ 2 3 ] cons" `shouldBe` "[[[1],2,3]]"
+
+        {-- list quotations -}
+        it "lists quotations test" $ do
+            testCompiler "[ 1 2 3 ] { 10 * } map" `shouldBe` "[[10,20,30]]"
+        it "lists quotations test" $ do
+            testCompiler "[ 1 2 3 ] { 1 + } map" `shouldBe` "[[2,3,4]]"
+        it "lists quotations test" $ do
+            testCompiler "[ 1 2 3 4 ] { dup 2 > { 10 * } { 2 * } if } map" `shouldBe` "[[2,4,30,40]]"
+        it "lists quotations test" $ do
+            testCompiler "[ 1 2 3 4 ] { 10 * } each + + +" `shouldBe` "[100]"
+        it "lists quotations test" $ do
+            testCompiler "[ 1 2 3 4 ] 0 { + } foldl" `shouldBe` "[10]"
+        it "lists quotations test" $ do
+            testCompiler "[ 2 5 ] 20 { div } foldl" `shouldBe` "[2]"
+        {-- note no { } needed for 1 instruction code -}
+        it "lists quotations test" $ do
+            testCompiler "[ \" 1 \" \" 2 \" \" 3 \" ] { parseInteger } each [ ] cons cons cons" `shouldBe` "[[1,2,3]]"
+        it "lists quotations test" $ do
+            testCompiler "[ \" 1 \" \" 2 \" \" 3 \" ] parseInteger each [ ] 3 cons times" `shouldBe` "[[1,2,3]]"
+        it "lists quotations test" $ do
+            testCompiler "[ 1 2 3 4 ] 0 + foldl" `shouldBe` "[10]"
+        it "lists quotations test" $ do
+            testCompiler "[ 2 5 ] 20 div foldl" `shouldBe` "[2]"
+        
+        {-- assignments -}
+        it "assignments quotations test" $ do
+            testCompiler "age" `shouldBe` "[age]"
+        it "assignments quotations test" $ do
+            testCompiler "age 10 := age" `shouldBe` "[10]"
+        it "assignments quotations test" $ do
+            testCompiler "10 age swap := age" `shouldBe` "[10]"
+        it "assignments quotations test" $ do
+            testCompiler "[ 1 2 3 ] list swap := list" `shouldBe` "[[1,2,3]]"
+        it "assignments quotations test" $ do
+            testCompiler "age 20 := [ 10 age ]" `shouldBe` "[[10,20]]"
+
+        it "assignments quotations test" $ do
+            testCompiler "inc { 1 + } fun 1 inc" `shouldBe` "[2]"
+        it "assignments quotations test" $ do
+            testCompiler "mul10 { 10 * } fun inc { 1 + } fun 10 inc mul10" `shouldBe` "[110]"
+
+        {-- quotations -}
+        it "quotations test" $ do
+            testCompiler "{ 20 10 + } exec" `shouldBe` "[30]"
+        it "quotations test" $ do
+            testCompiler "10 { 20 + } exec" `shouldBe` "[30]"
+        it "quotations test" $ do
+            testCompiler "10 20 { + } exec" `shouldBe` "[30]"
+        it "quotations test" $ do
+            testCompiler "{ { 10 20 + } exec } exec" `shouldBe` "[30]"
+        it "quotations test" $ do
+            testCompiler "{ { 10 20 + } exec 20 + } exec" `shouldBe` "[50]"
+
+        {-- if -}
+        it "if test" $ do
+            testCompiler "True { 20 } { } if" `shouldBe` "[20]"
+        it "if test" $ do
+            testCompiler "True { 20 10 + } { 3 } if" `shouldBe` "[30]"
+        it "if test" $ do
+            testCompiler "10 5 5 == { 10 + } { 100 + } if" `shouldBe` "[20]"
+        it "if test" $ do
+            testCompiler "False { } { 45 } if" `shouldBe` "[45]"
+        it "if test" $ do
+            testCompiler "True { False { 50 } { 100 } if } { 30 } if" `shouldBe` "[100]"
+
+        {-- if without quotation, more ergonomic expressions -}
+        it "if without quotation test" $ do
+            testCompiler "True 20 { } if" `shouldBe` "[20]"
+        it "if without quotation test" $ do
+            testCompiler "True { 20 10 + } 3 if" `shouldBe` "[30]"
+        it "if without quotation test" $ do
+            testCompiler "10 10 5 5 == + { 100 + } if" `shouldBe` "[20]"
+        it "if without quotation test" $ do
+            testCompiler "False { } 45 if" `shouldBe` "[45]"
+        it "if without quotation test" $ do
+            testCompiler "True { False 50 100 if } 30 if" `shouldBe` "[100]"
+
+        {-- times -}
+        it "times test" $ do
+            testCompiler "1 { 100 50 + } times" `shouldBe` "[150]"
+        it "times test" $ do
+            testCompiler "5 { 1 } times [ ] 5 { cons } times 0 { + } foldl" `shouldBe` "[5]"
+        it "times test" $ do
+            testCompiler "5   1   times [ ] 5   cons   times 0   +   foldl" `shouldBe` "[5]"
+        it "times test" $ do
+            testCompiler "5 { 10 } times + + + +" `shouldBe` "[50]"
+        it "times test" $ do
+            testCompiler "5 times 10 4 times +" `shouldBe` "[50]"
+
+        {-- loop -}
+        it "loop test" $ do
+            testCompiler "1 { dup 4 > } { dup 1 + } loop [ ] 5 { cons } times" `shouldBe` "[[1,2,3,4,5]]"
+        it "loop test" $ do
+            testCompiler "1 { dup 4 > } { dup 1 + } loop [ ] 5   cons   times" `shouldBe` "[[1,2,3,4,5]]"
+        it "loop test" $ do
+            testCompiler "[ 1 ] { dup length 9 > }  { dup head 1 + swap cons } loop" `shouldBe` "[[10,9,8,7,6,5,4,3,2,1]]"
+
+
+        it "other test" $ do
+            testCompiler "odd { dup 2 div swap 2 / == if False True } fun \
+        \ 2 odd" `shouldBe` "[False]"
+        
+        it "other test" $ do
+            testCompiler "odd { dup 2 div swap 2 / == if False True } fun \
+        \ 3 odd" `shouldBe` "[True]"
+        
+        it "other test" $ do
+            testCompiler "toList { [ ] swap times cons } fun \
+        \ 1 2 3 4 \
+        \ 4 toList" `shouldBe` "[[1,2,3,4]]"
+        
+        it "other test" $ do
+            testCompiler "gen1toNum { max swap := 1 loop { dup max > } { dup 1 + } } fun \
+        \ 3 gen1toNum + + +" `shouldBe` "[10]"
+
+        it "other test" $ do
+            testCompiler "odd { dup 2 div swap 2 / == if False True } fun \
+        \ toList { [ ] swap times cons } fun \
+        \ gen1toNum { max swap := 1 loop { dup max > } { dup 1 + } } fun \
+        \ 4 gen1toNum 5 toList map odd" `shouldBe` "[[True,False,True,False,True]]"
