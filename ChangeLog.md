@@ -161,3 +161,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.7.0] **development**: Modified UI
 
 [2.8.0] **development**: Fixed some controlflow that would prematurely take elements
+
+[2.9.0] **development**: Modified UI

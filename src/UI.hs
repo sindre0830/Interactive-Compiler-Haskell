@@ -25,11 +25,11 @@ menu = do
     let cmd = stringToLower input
     if cmd == "interactive"
         then do
-            putStrLn "Starting interactive mode..."
+            putStrLn "Starting interactive mode...\n"
             modeInteractive ([], Map.empty, Map.empty, Map.empty, [], None) False
     else if cmd == "compiler"
         then do
-            putStrLn "Starting compiler mode..."
+            putStrLn "Starting compiler mode...\n"
             modeCompiler ([], Map.empty, Map.empty, Map.empty, [], None) False
     else menu
 
@@ -74,19 +74,18 @@ modeCompiler (inpStack, objects, variables, functions, outStack, statusIO) showS
     if statusIO == Output
         then do
             let (x:rest) = outStack
-            putStrLn $ getPRINT x
+            putStrLn $ "output: " ++ getPRINT x
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, rest, None)
             modeCompiler (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if statusIO == Input
         then do
+            readInput "input"
             input <- getLine
             let value = STRING input
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, value : outStack, None)
             modeCompiler (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if showStack
-        then do
-            putStrLn $ "\tRaw:   " ++ show outStack
-            putStrLn $ "\tStack: " ++ printableStack (inpStack, objects, variables, functions, outStack, statusIO) ++ "\n"
+        then putStrLn $ "Stack: " ++ printableStack (inpStack, objects, variables, functions, outStack, statusIO) ++ "\n"
     else do
         handle <- openFile "documents/test.txt" ReadMode
         contents <- hGetContents handle
