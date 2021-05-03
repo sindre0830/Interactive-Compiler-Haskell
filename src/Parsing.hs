@@ -1,4 +1,4 @@
-module Parsing 
+module Parsing
     ( module Parsing
     ) where
 -- foreign modules
@@ -26,7 +26,7 @@ tokenize = words
 -- ! parses tokens to stack and list of objects.
 parser :: Tokens -> Stack -> Objects -> (Stack, Objects)
 parser [] stack objects = (reverse stack, objects)
-parser (x:xs) stack objects = do
+parser (x:xs) stack objects =
     case x of
         ['"'] -> do
             let (value, rest) = stringParser xs ""
@@ -58,7 +58,7 @@ parser (x:xs) stack objects = do
 -- | Parses codeBlocks.
 codeBlockParser :: Tokens -> Stack -> Objects -> (Stack, Tokens, Objects)
 codeBlockParser [] _ objects = ([ERROR IncompleteCodeBlock], [], objects)
-codeBlockParser (x:xs) stack objects = do
+codeBlockParser (x:xs) stack objects =
     case x of
         "}" -> (stack, xs, objects)
         "{" -> do
@@ -78,13 +78,12 @@ codeBlockParser (x:xs) stack objects = do
         ['"'] -> do
             let (value, rest) = stringParser xs []
             codeBlockParser rest (value : stack) objects
-        _ -> do
-            codeBlockParser xs (typeParser x : stack) objects
+        _ -> codeBlockParser xs (typeParser x : stack) objects
 
 -- | Parses lists.
 listParser :: Tokens -> Stack -> Objects -> (Stack, Tokens, Objects)
 listParser [] _ objects = ([ERROR IncompleteList], [], objects)
-listParser (x:xs) stack objects = do
+listParser (x:xs) stack objects =
     case x of
         "]" -> (stack, xs, objects)
         "[" -> do
@@ -104,29 +103,23 @@ listParser (x:xs) stack objects = do
         ['"'] -> do
             let (value, rest) = stringParser xs []
             listParser rest (value : stack) objects
-        _ -> do
-            listParser xs (typeParser x : stack) objects
+        _ -> listParser xs (typeParser x : stack) objects
 
 -- | Parses strings.
 stringParser :: Tokens -> Data -> (Type, Tokens)
 stringParser [] _ = (ERROR IncompleteString, [])
-stringParser (x:xs) str = do
+stringParser (x:xs) str =
     case x of
         ['"'] -> (STRING str, xs)
-        _ -> do
-            if null str 
+        _ -> if null str
                 then stringParser xs x
             else stringParser xs (str ++ " " ++ x)
 
 -- | Parses types.
 typeParser :: Token -> Type
-typeParser value = do
-    if isJust (readMaybe value :: Maybe Int)
-        then INT (fromJust (readMaybe value :: Maybe Integer))
-    else if isJust (readMaybe value :: Maybe Float)
-        then FLOAT (fromJust (readMaybe value :: Maybe Float))
-    else if isJust (readMaybe value :: Maybe Bool)
-        then BOOL (fromJust (readMaybe value :: Maybe Bool))
-    else if Map.member value functors
-        then FUNC value
-    else UNKNOWN value
+typeParser value
+  | isJust (readMaybe value :: Maybe Integer) = INT (fromJust (readMaybe value :: Maybe Integer))
+  | isJust (readMaybe value :: Maybe Float) = FLOAT (fromJust (readMaybe value :: Maybe Float))
+  | isJust (readMaybe value :: Maybe Bool) = BOOL (fromJust (readMaybe value :: Maybe Bool))
+  | Map.member value functors = FUNC value
+  | otherwise = UNKNOWN value

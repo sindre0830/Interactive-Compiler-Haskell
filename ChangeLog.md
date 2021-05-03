@@ -187,3 +187,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.20.0] **development**: Fixed map and each functor so it works with nested objects
 
 [2.21.0] **development**: Functions are now properly duplicated
+
+[2.22.0] **development**: Simplified parser functions
