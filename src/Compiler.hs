@@ -607,16 +607,6 @@ funcMap = do
     put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
 
-mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
-mapOf [] _ (objects, variables, functions, outStack) = (objects, variables, functions, outStack)
-mapOf (x:xs) block (objects, variables, functions, outStack) = do
-    let (_, newObjects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (block, objects, variables, functions, [x], None)
-    if statusIO /= None
-        then do
-            let (_, newObjects) = deallocateStack outStack objects
-            (newObjects, variables, functions, [ERROR InvalidOperationIO])
-    else mapOf xs block (newObjects, newVariables, newFunctions, newOutStack ++ outStack)
-
 funcEach :: StackState
 funcEach = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
@@ -640,6 +630,17 @@ funcEach = do
                                                                 )
     put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+
+mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
+mapOf [] _ (objects, variables, functions, outStack) = (objects, variables, functions, outStack)
+mapOf (x:xs) block (objects, variables, functions, outStack) = do
+    let (dupBlock, newObjects) = duplicateStack block ([], objects)
+    let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, [x], None)
+    if statusIO /= None
+        then do
+            let (_, newObjects) = deallocateStack outStack objects
+            (newObjects, variables, functions, [ERROR InvalidOperationIO])
+    else mapOf xs block (objects, newVariables, newFunctions, newOutStack ++ outStack)
 
 funcFoldl :: StackState
 funcFoldl = do

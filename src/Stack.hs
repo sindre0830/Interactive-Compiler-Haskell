@@ -46,7 +46,7 @@ duplicateObject x objects
         let block = objects Map.! getCODEBLOCK x
         let (stack, newObjects) = duplicateStack block ([], objects)
         let (objects, key) = allocateObject stack newObjects
-        (LIST key, objects)
+        (CODEBLOCK key, objects)
     | otherwise = (x, objects)
 
 deallocateOneObject :: Type -> Objects -> Objects

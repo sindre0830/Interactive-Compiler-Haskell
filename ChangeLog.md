@@ -183,3 +183,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.18.0] **development**: Fixed times functor by allowing all types when called without blocks
 
 [2.19.0] **development**: Fixed variables so its set inside objects
+
+[2.20.0] **development**: Fixed map and each functor so it works with nested objects

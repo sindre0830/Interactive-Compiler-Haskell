@@ -42,6 +42,7 @@ main = do
         spec_funcIf
         spec_funcMap
         spec_funcEach
+        spec_mapOf
         spec_funcFoldl
         spec_funcTimes
         spec_funcLoop
@@ -419,6 +420,14 @@ spec_funcEach = do
             printableStack (evalState funcEach ([], Map.fromList [("1", [INT 3, INT 2, INT 1])], Map.empty, Map.empty, [FLOAT 5.0, LIST "0"], None)) `shouldBe` "[ExpectedCodeblock]"
         it "printableStack (evalState funcEach ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcEach ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
+
+spec_mapOf :: Spec
+spec_mapOf = do
+    describe "mapOf tests:" $ do
+        it "mapOf [INT 3, INT 2, INT 1] [INT 10, FUNC \"*\"] (Map.empty, Map.empty, Map.empty, []) returns (Map.empty, Map.empty, Map.empty, [INT 10, INT 20, INT 30])" $ do
+            mapOf [INT 3, INT 2, INT 1] [INT 10, FUNC "*"] (Map.empty, Map.empty, Map.empty, []) `shouldBe` (Map.empty, Map.empty, Map.empty, [INT 10, INT 20, INT 30])
+        it "mapOf [INT 3, INT 2, INT 1] [CODEBLOCK \"0\", FUNC \"exec\"] (Map.fromList [(\"0\", [INT 10, FUNC \"*\"])], Map.empty, Map.empty, []) returns (Map.fromList [(\"0\", [INT 10, FUNC \"*\"])], Map.empty, Map.empty, [INT 10, INT 20, INT 30])" $ do
+            mapOf [INT 3, INT 2, INT 1] [CODEBLOCK "0", FUNC "exec"] (Map.fromList [("0", [INT 10, FUNC "*"])], Map.empty, Map.empty, []) `shouldBe` (Map.fromList [("0", [INT 10, FUNC "*"])], Map.empty, Map.empty, [INT 10, INT 20, INT 30])
 
 spec_funcFoldl :: Spec
 spec_funcFoldl = do
