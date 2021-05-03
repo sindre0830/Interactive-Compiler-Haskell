@@ -76,34 +76,35 @@ executeStack = do
                     "print" -> funcPrint
                 ) >> executeStack
         else do
-            let (newInpStack, newObjects, newOutStack) = setVariable [x] variables functions ([], objects, [])
-            put (newInpStack ++ xs, newObjects, variables, functions, newOutStack ++ outStack, statusIO)
-            executeStack
+            let (moveToBuffer, newObjects, newOutStack) = setVariable [x] variables functions (False, objects, [])
+            if moveToBuffer
+                then put (reverse newOutStack ++ xs, newObjects, variables, functions, outStack, statusIO) >> executeStack
+            else put (xs, newObjects, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
 
-setVariable :: Stack -> Variables -> Functions -> (InputStack, Objects, OutputStack) -> (InputStack, Objects, OutputStack)
-setVariable [] _ _ (inpStack, objects, outStack) = (inpStack, objects, outStack)
-setVariable (x:xs) variables functions (inpStack, objects, outStack)
+setVariable :: Stack -> Variables -> Functions -> (Bool, Objects, OutputStack) -> (Bool, Objects, OutputStack)
+setVariable [] _ _ (moveToBuffer, objects, outStack) = (moveToBuffer, objects, outStack)
+setVariable (x:xs) variables functions (moveToBuffer, objects, outStack)
     | isLIST x = do
         let key = getLIST x
         let list = objects Map.! key
-        let (_, newObjects, newOutStack) = setVariable list variables functions ([], objects, [])
+        let (newMoveToBuffer, newObjects, newOutStack) = setVariable list variables functions (moveToBuffer, objects, [])
         let objects = updateObject key (reverse newOutStack) newObjects
-        setVariable xs variables functions (inpStack, objects, x : outStack)
+        setVariable xs variables functions (newMoveToBuffer, objects, x : outStack)
     | isCODEBLOCK x = do
         let key = getCODEBLOCK x
         let block = objects Map.! key
-        let (_, newObjects, newOutStack) = setVariable block variables functions ([], objects, [])
+        let (newMoveToBuffer, newObjects, newOutStack) = setVariable block variables functions (moveToBuffer, objects, [])
         let objects = updateObject key (reverse newOutStack) newObjects
-        setVariable xs variables functions (inpStack, objects, x : outStack)
+        setVariable xs variables functions (newMoveToBuffer, objects, x : outStack)
     | isUNKNOWN x && Map.member (getUNKNOWN x) variables = do
         let value = variables Map.! getUNKNOWN x
         let (newStack, newObjects) = duplicateStack [value] ([], objects)
-        setVariable xs variables functions (inpStack, newObjects, newStack ++ outStack)
+        setVariable xs variables functions (moveToBuffer, newObjects, newStack ++ outStack)
     | isUNKNOWN x && Map.member (getUNKNOWN x) functions = do
         let value = functions Map.! getUNKNOWN x
         let (newStack, newObjects) = duplicateStack value ([], objects)
-        setVariable xs variables functions (newStack ++ inpStack, newObjects, outStack)
-    | otherwise = setVariable xs variables functions (inpStack, objects, x : outStack)
+        setVariable xs variables functions (True, newObjects, reverse newStack ++ outStack)
+    | otherwise = setVariable xs variables functions (moveToBuffer, objects, x : outStack)
 
 skipOperation :: Stack -> (Bool, Stack, Stack)
 skipOperation stack
@@ -778,8 +779,10 @@ funcSetFunction = do
                                                         else if not (isCODEBLOCK b)
                                                             then (newObjects, functions, ERROR ExpectedCodeblock : rest)
                                                         else do
-                                                            let newFunctions = Map.insert (getUNKNOWN a) (objects Map.! getCODEBLOCK b) functions
-                                                            (newObjects, newFunctions, rest)
+                                                            let block = objects Map.! getCODEBLOCK b
+                                                            let (dupBlock, newObjects) = duplicateStack block ([], objects)
+                                                            let newFunctions = Map.insert (getUNKNOWN a) dupBlock functions
+                                                            (deallocateObject a (deallocateObject b newObjects), newFunctions, rest)
                                                 )
     put (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)

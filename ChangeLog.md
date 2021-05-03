@@ -185,3 +185,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.19.0] **development**: Fixed variables so its set inside objects
 
 [2.20.0] **development**: Fixed map and each functor so it works with nested objects
+
+[2.21.0] **development**: Functions are now properly duplicated
