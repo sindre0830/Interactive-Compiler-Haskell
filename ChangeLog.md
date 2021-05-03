@@ -189,3 +189,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.21.0] **development**: Functions are now properly duplicated
 
 [2.22.0] **development**: Simplified parser functions
+
+[2.23.0] **development**: Fixed control flow functors so it deals with nested objects properly
