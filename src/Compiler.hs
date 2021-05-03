@@ -20,7 +20,7 @@ executeStack = do
             return (inpStack, objects, variables, functions, outStack, statusIO)
     else do
         let (x:xs) = inpStack
-        let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack
+        let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack variables functions
         if shouldSkip
             then do
                 put (newInpStack, objects, variables, functions, newOutStack ++ outStack, statusIO)
@@ -106,8 +106,8 @@ setVariable (x:xs) variables functions (moveToBuffer, objects, outStack)
         setVariable xs variables functions (True, newObjects, reverse newStack ++ outStack)
     | otherwise = setVariable xs variables functions (moveToBuffer, objects, x : outStack)
 
-skipOperation :: Stack -> (Bool, Stack, Stack)
-skipOperation stack
+skipOperation :: Stack -> Variables -> Functions -> (Bool, Stack, Stack)
+skipOperation stack variables functions
     | length stack >= 3 && isFUNC (stack !! 2) 
         && (getFUNC (stack !! 2) == "loop"
         || getFUNC (stack !! 2) == "if") = do
@@ -122,6 +122,12 @@ skipOperation stack
         || getFUNC (stack !! 1) == "foldl") = do
             let (x:rest) = stack
             (True, rest, [x])
+    | length stack >= 3 && isFUNC (stack !! 2) && isUNKNOWN (head stack) 
+        && (Map.member (getUNKNOWN (head stack)) variables || Map.member (getUNKNOWN (head stack)) functions)
+        && (getFUNC (stack !! 2) == ":="
+        || getFUNC (stack !! 2) == "fun") = do
+            let (x:y:rest) = stack
+            (True, rest, y:[x])
     | otherwise = (False, stack, [])
 
 {- Arithmetic -}

@@ -191,3 +191,7 @@ Fucked up last commit by commiting files that weren't ready
 [2.22.0] **development**: Simplified parser functions
 
 [2.23.0] **development**: Fixed control flow functors so it deals with nested objects properly
+
+[2.24.0] **development**: Allow for variables and functions to be reassigned
+
+[1.0.0] **milestone**: Implemented offical tests and fixes for functors
