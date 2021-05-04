@@ -15,10 +15,10 @@ funcAND = do
             if validateParameters outStack "&&"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
                             | otherwise = BOOL (getBOOL a && getBOOL b)
-                (deallocateStack [a,b] containers, value : rest))
+                (deallocateStack [a, b] containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -30,10 +30,10 @@ funcOR = do
             if validateParameters outStack "||"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
                             | otherwise = BOOL (getBOOL a || getBOOL b)
-                (deallocateStack [a,b] containers, value : rest))
+                (deallocateStack [a, b] containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -45,7 +45,7 @@ funcNOT = do
             if validateParameters outStack "not"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 let value   | not (isBOOL a) = ERROR ExpectedBool
                             | otherwise = BOOL (not $ getBOOL a)
                 (deallocateMemory a containers, value : rest))

@@ -15,16 +15,16 @@ funcIf = do
             if validateParameters outStack "if"
                 then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (c:b:a:rest) = outStack
+                let (c : b : a : rest) = outStack
                 if not (isBOOL a)
-                    then (inpStack, deallocateStack [a,b,c] containers, ERROR ExpectedBool : rest)
+                    then (inpStack, deallocateStack [a, b, c] containers, ERROR ExpectedBool : rest)
                 else if getBOOL a
                     then do
                         let block = getBlock b
-                        (block ++ inpStack, deallocateStack [a,c] containers, rest)
+                        (block ++ inpStack, deallocateStack [a, c] containers, rest)
                 else do
                     let block = getBlock c
-                    (block ++ inpStack, deallocateStack [a,b] containers, rest))
+                    (block ++ inpStack, deallocateStack [a, b] containers, rest))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -36,9 +36,9 @@ funcTimes = do
             if validateParameters outStack "times"
                 then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isINT a) || getINT a < 0
-                    then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedPositiveInteger : rest)
+                    then (inpStack, deallocateStack [a, b] containers, ERROR ExpectedPositiveInteger : rest)
                 else do
                     let block = getBlock b
                     let (values, newContainers) = loopN (getINT a) block ([], containers)

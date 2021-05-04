@@ -15,7 +15,7 @@ funcPop = do
             if validateParameters outStack "pop"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 (deallocateMemory a containers, rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -28,7 +28,7 @@ funcDup = do
             if validateParameters outStack "dup"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 let (value, newContainers) = duplicateValue a containers
                 (newContainers, value : outStack))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
@@ -42,7 +42,7 @@ funcSwap = do
             if validateParameters outStack "swap"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
-                (containers, a:b:rest))
+                let (b : a : rest) = outStack
+                (containers, a : b : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result

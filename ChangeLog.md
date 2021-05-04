@@ -227,3 +227,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.11.0] **development**: Added proper error handler (Ends executer on error, prints logs, reverts back to a stable version of the program)
 
 [3.12.0] **development**: Added directory handler to display available files and allow the user to pick in the compiler mode
+
+[3.12.1] **formatting**: Added space between elements in lists

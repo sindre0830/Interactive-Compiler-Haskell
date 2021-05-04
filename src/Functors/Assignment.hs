@@ -17,9 +17,9 @@ funcSetVariable = do
             if validateParameters outStack ":="
                 then (deallocateStack outStack containers, variables, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isUNKNOWN a)
-                    then (deallocateStack [a,b] containers, variables, ERROR ExpectedUnknown : rest)
+                    then (deallocateStack [a, b] containers, variables, ERROR ExpectedUnknown : rest)
                 else do
                     let newVariables = Map.insert (getUNKNOWN a) b variables
                     (deallocateMemory a containers, newVariables, rest))
@@ -34,11 +34,11 @@ funcSetFunction = do
             if validateParameters outStack "fun"
                 then (deallocateStack outStack containers, functions, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isUNKNOWN a)
-                    then (deallocateStack [a,b] containers, functions, ERROR ExpectedUnknown : rest)
+                    then (deallocateStack [a, b] containers, functions, ERROR ExpectedUnknown : rest)
                 else if not (isCODEBLOCK b)
-                    then (deallocateStack [a,b] containers, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a, b] containers, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block = getBlock b
                     let newFunctions = Map.insert (getUNKNOWN a) block functions

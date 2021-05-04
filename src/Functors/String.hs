@@ -17,7 +17,7 @@ funcParseInteger = do
             if validateParameters outStack "parseInteger"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 let value   | not (isSTRING a) = ERROR ExpectedString
                             | isJust (readMaybe (getSTRING a) :: Maybe Integer) = INT (fromJust (readMaybe (getSTRING a) :: Maybe Integer))
                             | otherwise = ERROR ExpectedStringOfInteger
@@ -33,7 +33,7 @@ funcParseFloat = do
             if validateParameters outStack "parseFloat"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 let value   | not (isSTRING a) = ERROR ExpectedString
                             | isJust (readMaybe (getSTRING a) :: Maybe Float) = FLOAT (fromJust (readMaybe (getSTRING a) :: Maybe Float))
                             | otherwise = ERROR ExpectedStringOfFloat
@@ -49,12 +49,12 @@ funcWords = do
             if validateParameters outStack "words"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
-                let (value, newContainers) | not (isSTRING a) = (ERROR ExpectedString, deallocateMemory a containers)
-                                        | otherwise = do
-                                            let list = map STRING (words $ getSTRING a)
-                                            let (newContainers, key) = allocateMemory list containers
-                                            (LIST key, newContainers)
+                let (a : rest) = outStack
+                let (value, newContainers)  | not (isSTRING a) = (ERROR ExpectedString, deallocateMemory a containers)
+                                            | otherwise = do
+                                                let list = map STRING (words $ getSTRING a)
+                                                let (newContainers, key) = allocateMemory list containers
+                                                (LIST key, newContainers)
                 (newContainers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result

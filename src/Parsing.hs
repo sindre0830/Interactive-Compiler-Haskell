@@ -18,7 +18,7 @@ tokenize = words
 -- ! parses tokens to stack and list of containers.
 parser :: Tokens -> Stack -> Containers -> (Stack, Containers)
 parser [] stack containers = (reverse stack, containers)
-parser (x:xs) stack containers =
+parser (x : xs) stack containers =
     case x of
         ['"'] -> do
             let (value, rest) = stringParser xs ""
@@ -50,7 +50,7 @@ parser (x:xs) stack containers =
 -- | Parses codeBlocks.
 codeBlockParser :: Tokens -> Stack -> Containers -> (Stack, Tokens, Containers)
 codeBlockParser [] _ containers = ([ERROR IncompleteCodeBlock], [], containers)
-codeBlockParser (x:xs) stack containers =
+codeBlockParser (x : xs) stack containers =
     case x of
         "}" -> (stack, xs, containers)
         "{" -> do
@@ -75,7 +75,7 @@ codeBlockParser (x:xs) stack containers =
 -- | Parses lists.
 listParser :: Tokens -> Stack -> Containers -> (Stack, Tokens, Containers)
 listParser [] _ containers = ([ERROR IncompleteList], [], containers)
-listParser (x:xs) stack containers =
+listParser (x : xs) stack containers =
     case x of
         "]" -> (stack, xs, containers)
         "[" -> do
@@ -100,7 +100,7 @@ listParser (x:xs) stack containers =
 -- | Parses strings.
 stringParser :: Tokens -> Data -> (Type, Tokens)
 stringParser [] _ = (ERROR IncompleteString, [])
-stringParser (x:xs) str =
+stringParser (x : xs) str =
     case x of
         ['"'] -> (STRING str, xs)
         _ -> if null str

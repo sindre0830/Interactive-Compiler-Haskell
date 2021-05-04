@@ -22,7 +22,7 @@ funcPrint = do
             if validateParameters outStack "print"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount], statusIO)
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 if not (isSTRING a)
                     then (deallocateMemory a containers, ERROR ExpectedString : rest, statusIO)
                 else (containers, outStack, Output))

@@ -15,7 +15,7 @@ funcExec = do
             if validateParameters outStack "exec"
                 then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 if not (isCODEBLOCK a)
                     then (inpStack, deallocateMemory a containers, ERROR ExpectedCodeblock : rest)
                 else do
@@ -32,11 +32,11 @@ funcEach = do
             if validateParameters outStack "each"
                 then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isLIST a)
-                    then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedList : rest)
+                    then (inpStack, deallocateStack [a, b] containers, ERROR ExpectedList : rest)
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
-                    then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
+                    then (inpStack, deallocateStack [a, b] containers, ERROR ExpectedCodeblock : rest)
                 else do
                     let list = getContainer a containers
                     let block = getBlock b
@@ -48,7 +48,7 @@ funcEach = do
 
 eachOf :: Stack -> Stack -> (Stack, Containers) -> (Stack, Containers)
 eachOf [] _ (stack, containers) = (stack, containers)
-eachOf (x:xs) block (stack, containers) = do
+eachOf (x : xs) block (stack, containers) = do
     let (dupBlock, newContainers) = duplicateStack block ([], containers)
     let (dupValue, containers) = duplicateValue x newContainers
     eachOf xs block (dupValue : dupBlock ++ stack, containers)

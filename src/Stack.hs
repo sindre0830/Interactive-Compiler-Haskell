@@ -33,7 +33,7 @@ allocateMemory stack containers = do
 
 duplicateStack :: Stack -> (Stack, Containers) -> (Stack, Containers)
 duplicateStack [] (stack, containers) = (reverse stack, containers)
-duplicateStack (x:xs) (stack, containers) = do
+duplicateStack (x : xs) (stack, containers) = do
         let (value, newContainers) = duplicateValue x containers
         duplicateStack xs (value : stack, newContainers)
 

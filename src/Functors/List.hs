@@ -15,7 +15,7 @@ funcEmpty = do
             if validateParameters outStack "empty"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 let value   | not (isLIST a) = ERROR ExpectedList
                             | otherwise = BOOL (null (getContainer a containers))
                 (deallocateMemory a containers, value : rest))
@@ -30,7 +30,7 @@ funcHead = do
             if validateParameters outStack "head"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 if not (isLIST a)
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
@@ -51,7 +51,7 @@ funcTail = do
             if validateParameters outStack "tail"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 if not (isLIST a)
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
@@ -71,9 +71,9 @@ funcCons = do
             if validateParameters outStack "cons"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isLIST b)
-                    then (deallocateStack [a,b] containers, ERROR ExpectedList : rest)
+                    then (deallocateStack [a, b] containers, ERROR ExpectedList : rest)
                 else do
                     let key = getLIST b
                     let newContainers = updateContainer key (a : getContainer b containers) containers
@@ -89,9 +89,9 @@ funcAppend = do
             if validateParameters outStack "append"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isLIST a) || not (isLIST b)
-                    then (deallocateStack [a,b] containers, ERROR ExpectedList : rest)
+                    then (deallocateStack [a, b] containers, ERROR ExpectedList : rest)
                 else do
                     let keyB = getLIST b
                     let newContainers = updateContainer keyB (getContainer a containers ++ getContainer b containers) containers
@@ -107,7 +107,7 @@ funcLength = do
             if validateParameters outStack "length"
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (a:rest) = outStack
+                let (a : rest) = outStack
                 let value   | isSTRING a = INT (toInteger $ length $ getSTRING a)
                             | isLIST a = INT (toInteger $ length $ getContainer a containers)
                             | isCODEBLOCK a = INT (toInteger $ length $ getContainer a containers)

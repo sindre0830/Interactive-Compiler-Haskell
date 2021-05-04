@@ -26,7 +26,7 @@ executeStack = do
     if null inpStack || searchForErrors outStack containers || statusIO /= None
         then return (inpStack, containers, variables, functions, outStack, statusIO)
     else do
-        let (x:xs) = inpStack
+        let (x : xs) = inpStack
         let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack variables functions
         if shouldSkip
             then put (newInpStack, containers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
@@ -88,7 +88,7 @@ executeStack = do
 
 searchForErrors :: Stack -> Containers -> Bool
 searchForErrors [] _ = False
-searchForErrors (x:xs) containers
+searchForErrors (x : xs) containers
     | isLIST x = do
         let list = getContainer x containers
         searchForErrors list containers || searchForErrors xs containers
@@ -100,7 +100,7 @@ searchForErrors (x:xs) containers
 
 setVariable :: Stack -> Variables -> Functions -> (Bool, Containers, OutputStack) -> (Bool, Containers, OutputStack)
 setVariable [] _ _ (moveToBuffer, containers, outStack) = (moveToBuffer, containers, outStack)
-setVariable (x:xs) variables functions (moveToBuffer, containers, outStack)
+setVariable (x : xs) variables functions (moveToBuffer, containers, outStack)
     | isLIST x = do
         let key = getLIST x
         let list = getContainer x containers
@@ -129,8 +129,8 @@ skipOperation stack variables functions
     | length stack >= 3 && isFUNC (stack !! 2)
         && (getFUNC (stack !! 2) == "loop"
         || getFUNC (stack !! 2) == "if") = do
-            let (x:y:rest) = stack
-            (True, rest, y:[x])
+            let (x : y : rest) = stack
+            (True, rest, [y, x])
     | length stack >= 2 && isFUNC (stack !! 1)
         && (getFUNC (stack !! 1) == "map"
         || getFUNC (stack !! 1) == "each"
@@ -138,14 +138,14 @@ skipOperation stack variables functions
         || getFUNC (stack !! 1) == "times"
         || getFUNC (stack !! 1) == "if"
         || getFUNC (stack !! 1) == "foldl") = do
-            let (x:rest) = stack
+            let (x : rest) = stack
             (True, rest, [x])
-    | length stack >= 3 && isFUNC (stack !! 2) && isUNKNOWN (head stack)
+    | length stack >= 3 && isFUNC (stack !! 2) 
         && (isVariable (head stack) variables || isFunction (head stack) functions)
         && (getFUNC (stack !! 2) == ":="
         || getFUNC (stack !! 2) == "fun") = do
-            let (x:y:rest) = stack
-            (True, rest, y:[x])
+            let (x : y : rest) = stack
+            (True, rest, [y, x])
     | otherwise = (False, stack, [])
 
 
@@ -156,11 +156,11 @@ funcMap = do
             if validateParameters outStack "map"
                 then (deallocateStack outStack containers, variables, functions, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isLIST a)
-                    then (deallocateStack [a,b] containers, variables, functions, ERROR ExpectedList : rest)
+                    then (deallocateStack [a, b] containers, variables, functions, ERROR ExpectedList : rest)
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
-                    then (deallocateStack [a,b] containers, variables, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a, b] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block = getBlock b
                     let list = getContainer a containers
@@ -176,7 +176,7 @@ funcMap = do
 
 mapOf :: Stack -> Stack -> (Containers, Variables, Functions, OutputStack) -> (Containers, Variables, Functions, OutputStack)
 mapOf [] _ (containers, variables, functions, outStack) = (containers, variables, functions, outStack)
-mapOf (x:xs) block (containers, variables, functions, outStack) = do
+mapOf (x : xs) block (containers, variables, functions, outStack) = do
     let (dupBlock, newContainers) = duplicateStack block ([], containers)
     let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, [x], None)
     if statusIO /= None
@@ -191,13 +191,13 @@ funcFoldl = do
             if validateParameters outStack "foldl"
                 then (deallocateStack outStack containers, variables, functions, [ERROR InvalidParameterAmount])
             else do
-                let (c:b:a:rest) = outStack
+                let (c : b : a : rest) = outStack
                 if not (isLIST a)
-                    then (deallocateStack [a,b,c] containers, variables, functions, ERROR ExpectedList : rest)
+                    then (deallocateStack [a, b, c] containers, variables, functions, ERROR ExpectedList : rest)
                 else if isCODEBLOCK b || isFUNC b  || isFunction b functions
-                    then (deallocateStack [a,b,c] containers, variables, functions, ERROR InvalidType : rest)
+                    then (deallocateStack [a, b, c] containers, variables, functions, ERROR InvalidType : rest)
                 else if not (isCODEBLOCK c) && not (isFUNC c) && not (isFunction c functions)
-                    then (deallocateStack [a,b,c] containers, variables, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a, b, c] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block = getBlock c
                     let list = getContainer a containers
@@ -209,9 +209,9 @@ funcFoldl = do
 
 foldlOf :: Stack -> Stack -> (Containers, Variables, Functions, Type) -> (Containers, Variables, Functions, Type)
 foldlOf [] _ (containers, variables, functions, value) = (containers, variables, functions, value)
-foldlOf (x:xs) block (containers, variables, functions, value) = do
+foldlOf (x : xs) block (containers, variables, functions, value) = do
     let (dupBlock, newContainers) = duplicateStack block ([], containers)
-    let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, x : [value], None)
+    let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, [x, value], None)
     if statusIO /= None
         then (deallocateStack (value : dupBlock) newContainers, variables, functions, ERROR InvalidOperationIO)
     else foldlOf xs block (containers, newVariables, newFunctions, head newOutStack)
@@ -224,10 +224,10 @@ funcLoop = do
             if validateParameters outStack "loop"
                 then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
-                let (b:a:rest) = outStack
+                let (b : a : rest) = outStack
                 if not (isCODEBLOCK a) && not (isFUNC a)  && not (isFunction a functions)
                     || not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
-                    then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
+                    then (inpStack, deallocateStack [a, b] containers, ERROR ExpectedCodeblock : rest)
                 else do
                     let break = getBlock a
                     let block = getBlock b
