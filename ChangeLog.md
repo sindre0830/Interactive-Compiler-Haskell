@@ -207,3 +207,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.2.0] **development**: Modified deallocateStack to only return object
 
 [3.3.0] **development**: Modified functors to minimize deallocation calls
+
+[3.4.0] **development**: Fixed head and tail functors to work with nested objects

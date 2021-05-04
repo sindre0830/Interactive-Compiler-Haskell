@@ -39,7 +39,9 @@ funcHead = do
                     let list = objects Map.! getLIST a
                     if null list
                         then (deallocateObject a objects, rest)
-                    else (deallocateObject a objects, head list : rest))
+                    else do
+                        let (value, newObjects) = duplicateObject (head list) objects
+                        (deallocateObject a newObjects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -59,7 +61,7 @@ funcTail = do
                     let list = objects Map.! key
                     let newObjects  | null list = objects
                                     | otherwise = updateObject key (tail list) objects
-                    (newObjects, outStack))
+                    (deallocateObject (head list) newObjects, outStack))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
