@@ -9,6 +9,16 @@ import Parsing
 import Stack
 import Convert
 import Compiler
+import Functors.Arithmetic
+import Functors.Boolean
+import Functors.Assignment
+import Functors.IO
+import Functors.Comparison
+import Functors.Stack
+import Functors.String
+import Functors.List
+import Functors.ControlFlow
+import Functors.Other
 import UI
 -- | Main testing program.
 main :: IO ()

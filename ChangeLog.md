@@ -195,3 +195,5 @@ Fucked up last commit by commiting files that weren't ready
 [2.24.0] **development**: Allow for variables and functions to be reassigned
 
 [1.0.0] **milestone**: Implemented offical tests and fixes for functors
+
+[1.0.1] **structure**: Moved functors into their own modules

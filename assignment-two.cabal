@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5cb3eb6516d4fa00d4174a86773192e814339f3f42d95491592b86ebe7099da6
+-- hash: 2553442b12a6352c6cdf31181a8fc9edc5e334f5f99639c6520a501293bc4418
 
 name:           assignment-two
 version:        2.7.0
@@ -30,6 +30,16 @@ library
       Compiler
       Convert
       Dictionary
+      Functors.Arithmetic
+      Functors.Assignment
+      Functors.Boolean
+      Functors.Comparison
+      Functors.ControlFlow
+      Functors.IO
+      Functors.List
+      Functors.Other
+      Functors.Stack
+      Functors.String
       Parsing
       Stack
       UI

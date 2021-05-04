@@ -11,14 +11,6 @@ import Control.Monad.State.Lazy
 import Dictionary
 import Stack
 
-parseInput :: String -> StackState
-parseInput input = do
-    (inpStack, objects, variables, functions, outStack, readInp) <- get
-    let tokens = tokenize input
-    let (newInpStack, newObjects) = parser tokens outStack objects
-    put (inpStack, newObjects, variables, functions, outStack, readInp)
-    return (inpStack, newObjects, variables, functions, outStack, readInp)
-
 -- | Splits string by whitespace.
 tokenize :: String -> Tokens
 tokenize = words

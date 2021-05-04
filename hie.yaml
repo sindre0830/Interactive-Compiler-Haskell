@@ -5,6 +5,16 @@ cradle:
         cradle:
           stack:
             - path: "./app/Main.hs"
+            - path: "./src/Functors/Arithmetic.hs"
+            - path: "./src/Functors/Assignment.hs"
+            - path: "./src/Functors/Boolean.hs"
+            - path: "./src/Functors/Comparison.hs"
+            - path: "./src/Functors/ControlFlow.hs"
+            - path: "./src/Functors/IO.hs"
+            - path: "./src/Functors/List.hs"
+            - path: "./src/Functors/Other.hs"
+            - path: "./src/Functors/Stack.hs"
+            - path: "./src/Functors/String.hs"
             - path: "./src/Compiler.hs"
             - path: "./src/Convert.hs"
             - path: "./src/Dictionary.hs"
