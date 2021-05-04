@@ -2,8 +2,6 @@ module Functors.Boolean
     ( module Functors.Boolean
     ) where
 -- foreign modules
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -14,7 +12,7 @@ funcAND :: StackState
 funcAND = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "&&"
+            if validateParameters outStack "&&"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -29,7 +27,7 @@ funcOR :: StackState
 funcOR = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "||"
+            if validateParameters outStack "||"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -44,7 +42,7 @@ funcNOT :: StackState
 funcNOT = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "not"
+            if validateParameters outStack "not"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack

@@ -144,7 +144,7 @@ funcMap :: StackState
 funcMap = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newFunctions, newOutStack) = ( do   
-            if length outStack < functors Map.! "map"
+            if validateParameters outStack "map"
                 then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -180,7 +180,7 @@ funcFoldl :: StackState
 funcFoldl = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newFunctions, newOutStack) = ( do
-            if length outStack < functors Map.! "foldl"
+            if validateParameters outStack "foldl"
                 then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (c:b:a:rest) = outStack
@@ -214,7 +214,7 @@ funcLoop :: StackState
 funcLoop = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "loop"
+            if validateParameters outStack "loop"
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack

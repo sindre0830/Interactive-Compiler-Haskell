@@ -209,3 +209,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.3.0] **development**: Modified functors to minimize deallocation calls
 
 [3.4.0] **development**: Fixed head and tail functors to work with nested objects
+
+[3.5.0] **development**: Added validateParameters to reduce clutter in functors

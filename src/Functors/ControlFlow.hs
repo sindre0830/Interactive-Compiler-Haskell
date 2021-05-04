@@ -2,8 +2,6 @@ module Functors.ControlFlow
     ( module Functors.ControlFlow
     ) where
 -- foreign modules
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -14,7 +12,7 @@ funcIf :: StackState
 funcIf = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "if"
+            if validateParameters outStack "if"
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (c:b:a:rest) = outStack
@@ -37,7 +35,7 @@ funcTimes :: StackState
 funcTimes = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "times"
+            if validateParameters outStack "times"
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack

@@ -8,6 +8,9 @@ import qualified Data.Map as Map
 -- local modules
 import Dictionary
 
+validateParameters :: Stack -> String -> Bool
+validateParameters stack functor = length stack < functors Map.! functor
+
 deallocateStack :: Stack -> Objects -> Objects
 deallocateStack xs objects = foldl (flip deallocateObject) objects xs
 

@@ -2,8 +2,6 @@ module Functors.Stack
     ( module Functors.Stack
     ) where
 -- foreign modules
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -14,7 +12,7 @@ funcPop :: StackState
 funcPop = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "pop"
+            if validateParameters outStack "pop"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -27,7 +25,7 @@ funcDup :: StackState
 funcDup = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "dup"
+            if validateParameters outStack "dup"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -41,7 +39,7 @@ funcSwap :: StackState
 funcSwap = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "swap"
+            if validateParameters outStack "swap"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack

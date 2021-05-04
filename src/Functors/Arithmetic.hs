@@ -2,8 +2,6 @@ module Functors.Arithmetic
     ( module Functors.Arithmetic
     ) where
 -- foreign modules
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -14,7 +12,7 @@ funcAddition :: StackState
 funcAddition = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "+"
+            if validateParameters outStack "+"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -32,7 +30,7 @@ funcSubtraction :: StackState
 funcSubtraction = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "-"
+            if validateParameters outStack "-"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -50,7 +48,7 @@ funcMultiplication :: StackState
 funcMultiplication = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "*"
+            if validateParameters outStack "*"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -68,7 +66,7 @@ funcDivisionFloat :: StackState
 funcDivisionFloat = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "/"
+            if validateParameters outStack "/"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -86,7 +84,7 @@ funcDivisionInteger :: StackState
 funcDivisionInteger = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "div"
+            if validateParameters outStack "div"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack

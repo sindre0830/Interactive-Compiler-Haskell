@@ -14,7 +14,7 @@ funcExec :: StackState
 funcExec = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "exec"
+            if validateParameters outStack "exec"
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -31,7 +31,7 @@ funcEach :: StackState
 funcEach = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "each"
+            if validateParameters outStack "each"
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack

@@ -4,8 +4,6 @@ module Functors.String
 -- foreign modules
 import Text.Read (readMaybe)
 import Data.Maybe (fromJust, isJust)
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -16,7 +14,7 @@ funcParseInteger :: StackState
 funcParseInteger = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "parseInteger"
+            if validateParameters outStack "parseInteger"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -32,7 +30,7 @@ funcParseFloat :: StackState
 funcParseFloat = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "parseFloat"
+            if validateParameters outStack "parseFloat"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -48,7 +46,7 @@ funcWords :: StackState
 funcWords = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "words"
+            if validateParameters outStack "words"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack

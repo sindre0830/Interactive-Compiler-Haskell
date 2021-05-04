@@ -14,7 +14,7 @@ funcEmpty :: StackState
 funcEmpty = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "empty"
+            if validateParameters outStack "empty"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -29,7 +29,7 @@ funcHead :: StackState
 funcHead = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "head"
+            if validateParameters outStack "head"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -50,7 +50,7 @@ funcTail :: StackState
 funcTail = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "tail"
+            if validateParameters outStack "tail"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
@@ -70,7 +70,7 @@ funcCons :: StackState
 funcCons = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "cons"
+            if validateParameters outStack "cons"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -88,7 +88,7 @@ funcAppend :: StackState
 funcAppend = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "append"
+            if validateParameters outStack "append"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -107,7 +107,7 @@ funcLength :: StackState
 funcLength = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newOutStack) = ( do
-            if length outStack < functors Map.! "length"
+            if validateParameters outStack "length"
                 then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack

@@ -14,7 +14,7 @@ funcSetVariable :: StackState
 funcSetVariable = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newOutStack) = ( do
-            if length outStack < functors Map.! ":="
+            if validateParameters outStack ":="
                 then (deallocateStack outStack objects, variables, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
@@ -31,7 +31,7 @@ funcSetFunction :: StackState
 funcSetFunction = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newFunctions, newOutStack) = ( do
-            if length outStack < functors Map.! "fun"
+            if validateParameters outStack "fun"
                 then (deallocateStack outStack objects, functions, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
