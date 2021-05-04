@@ -217,3 +217,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.6.1] **formatting**: Renamed Objects to Containers
 
 [3.7.0] **development**: Added getContainer to reduce clutter in functors
+
+[3.8.0] **development**: Added isFunction and isVariable to check if Unknown value is assigned

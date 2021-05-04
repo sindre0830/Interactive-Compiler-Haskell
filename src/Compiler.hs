@@ -103,11 +103,11 @@ setVariable (x:xs) variables functions (moveToBuffer, containers, outStack)
         let (newMoveToBuffer, newContainers, newOutStack) = setVariable block variables functions (moveToBuffer, containers, [])
         let containers = updateContainer key (reverse newOutStack) newContainers
         setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
-    | isUNKNOWN x && Map.member (getUNKNOWN x) variables = do
+    | isVariable x variables = do
         let value = variables Map.! getUNKNOWN x
         let (newStack, newContainers) = duplicateStack [value] ([], containers)
         setVariable xs variables functions (moveToBuffer, newContainers, newStack ++ outStack)
-    | isUNKNOWN x && Map.member (getUNKNOWN x) functions = do
+    | isFunction x functions = do
         let value = functions Map.! getUNKNOWN x
         let (newStack, newContainers) = duplicateStack value ([], containers)
         setVariable xs variables functions (True, newContainers, reverse newStack ++ outStack)
@@ -131,8 +131,7 @@ skipOperation stack variables functions
             let (x:rest) = stack
             (True, rest, [x])
     | length stack >= 3 && isFUNC (stack !! 2) && isUNKNOWN (head stack) 
-        && (Map.member (getUNKNOWN (head stack)) variables 
-        || Map.member (getUNKNOWN (head stack)) functions)
+        && (isVariable (head stack) variables || isFunction (head stack) functions)
         && (getFUNC (stack !! 2) == ":="
         || getFUNC (stack !! 2) == "fun") = do
             let (x:y:rest) = stack
@@ -150,7 +149,7 @@ funcMap = do
                 let (b:a:rest) = outStack
                 if not (isLIST a)
                     then (deallocateStack [a,b] containers, variables, functions, ERROR ExpectedList : rest)
-                else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                else if not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
                     then (deallocateStack [a,b] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
@@ -186,9 +185,9 @@ funcFoldl = do
                 let (c:b:a:rest) = outStack
                 if not (isLIST a)
                     then (deallocateStack [a,b,c] containers, variables, functions, ERROR ExpectedList : rest)
-                else if isCODEBLOCK b || isFUNC b  || (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                else if isCODEBLOCK b || isFUNC b  || isFunction b functions
                     then (deallocateStack [a,b,c] containers, variables, functions, ERROR InvalidType : rest)
-                else if not (isCODEBLOCK c) && not (isFUNC c) && not (isUNKNOWN c && Map.member (getUNKNOWN c) functions)
+                else if not (isCODEBLOCK c) && not (isFUNC c) && not (isFunction c functions)
                     then (deallocateStack [a,b,c] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block   | isCODEBLOCK c = [c, FUNC "exec"]
@@ -218,8 +217,8 @@ funcLoop = do
                 then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                if not (isCODEBLOCK a) && not (isFUNC a)  && not (isUNKNOWN a && Map.member (getUNKNOWN a) functions) 
-                    || not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                if not (isCODEBLOCK a) && not (isFUNC a)  && not (isFunction a functions) 
+                    || not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
                     then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
                 else do
                     let break   | isCODEBLOCK a = [a, FUNC "exec"]

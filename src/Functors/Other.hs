@@ -2,8 +2,6 @@ module Functors.Other
     ( module Functors.Other
     ) where
 -- foreign modules
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -37,7 +35,7 @@ funcEach = do
                 let (b:a:rest) = outStack
                 if not (isLIST a)
                     then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedList : rest)
-                else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                else if not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
                     then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
                 else do
                     let list = getContainer a containers

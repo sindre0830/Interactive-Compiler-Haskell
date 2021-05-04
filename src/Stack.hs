@@ -76,6 +76,14 @@ getContainer container containers
     | isCODEBLOCK container = containers Map.! getCODEBLOCK container
 
 
+isFunction :: Type -> Functions -> Bool
+isFunction x functions = isUNKNOWN x && Map.member (getUNKNOWN x) functions
+
+
+isVariable :: Type -> Variables -> Bool
+isVariable x variables = isUNKNOWN x && Map.member (getUNKNOWN x) variables
+
+
 printableStack :: (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> String
 printableStack (_, containers, _, _, outStack, _) = "[" ++ intercalate "," (formatStack (reverse outStack) containers) ++ "]"
 
