@@ -13,15 +13,14 @@ import Stack
 funcAND :: StackState
 funcAND = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "&&"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b objects)
                 let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
                             | otherwise = BOOL (getBOOL a && getBOOL b)
-                (value : rest, newObjects))
+                (deallocateStack [a,b] objects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -29,15 +28,14 @@ funcAND = do
 funcOR :: StackState
 funcOR = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "||"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b objects)
                 let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
                             | otherwise = BOOL (getBOOL a || getBOOL b)
-                (value : rest, newObjects))
+                (deallocateStack [a,b] objects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -45,14 +43,13 @@ funcOR = do
 funcNOT :: StackState
 funcNOT = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "not"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 let value   | not (isBOOL a) = ERROR ExpectedBool
                             | otherwise = BOOL (not $ getBOOL a)
-                (value : rest, newObjects))
+                (deallocateObject a objects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result

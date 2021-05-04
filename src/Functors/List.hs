@@ -13,15 +13,14 @@ import Stack
 funcEmpty :: StackState
 funcEmpty = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "empty"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 let value   | not (isLIST a) = ERROR ExpectedList
                             | otherwise = BOOL (null (objects Map.! getLIST a))
-                (value : rest, newObjects))
+                (deallocateObject a objects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -29,19 +28,18 @@ funcEmpty = do
 funcHead :: StackState
 funcHead = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "head"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 if not (isLIST a)
-                    then (ERROR ExpectedList : rest, newObjects)
+                    then (deallocateObject a objects, ERROR ExpectedList : rest)
                 else do
                     let list = objects Map.! getLIST a
                     if null list
-                        then (rest, newObjects)
-                    else (head list : rest, newObjects))
+                        then (deallocateObject a objects, rest)
+                    else (deallocateObject a objects, head list : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -49,21 +47,19 @@ funcHead = do
 funcTail :: StackState
 funcTail = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "tail"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
                 if not (isLIST a)
-                    then do
-                        let newObjects = deallocateObject a objects
-                        (ERROR ExpectedList : rest, newObjects)
+                    then (deallocateObject a objects, ERROR ExpectedList : rest)
                 else do
                     let key = getLIST a
                     let list = objects Map.! key
                     let newObjects  | null list = objects
                                     | otherwise = updateObject key (tail list) objects
-                    (outStack, newObjects))
+                    (newObjects, outStack))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -71,19 +67,17 @@ funcTail = do
 funcCons :: StackState
 funcCons = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "cons"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 if not (isLIST b)
-                    then do
-                        let newObjects = deallocateObject a (deallocateObject b newObjects)
-                        (ERROR ExpectedList : rest, newObjects)
+                    then (deallocateStack [a,b] objects, ERROR ExpectedList : rest)
                 else do
                     let key = getLIST b
                     let newObjects = updateObject key (a : (objects Map.! key)) objects
-                    (b : rest, newObjects))
+                    (newObjects, b : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -91,20 +85,18 @@ funcCons = do
 funcAppend :: StackState
 funcAppend = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "append"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 if not (isLIST a) || not (isLIST b)
-                    then do
-                        let newObjects = deallocateObject a (deallocateObject b newObjects)
-                        (ERROR ExpectedList : rest, newObjects)
+                    then (deallocateStack [a,b] objects, ERROR ExpectedList : rest)
                 else do
                     let keyA = getLIST a
                     let keyB = getLIST b
-                    let newObjects = deallocateObject a (updateObject keyB ((objects Map.! keyA) ++ (objects Map.! keyB)) objects)
-                    (b : rest, newObjects))
+                    let newObjects = updateObject keyB ((objects Map.! keyA) ++ (objects Map.! keyB)) objects
+                    (deallocateObject a newObjects, b : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -112,16 +104,15 @@ funcAppend = do
 funcLength :: StackState
 funcLength = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "length"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 let value   | isSTRING a = INT (toInteger $ length $ getSTRING a)
                             | isLIST a = INT (toInteger $ length $ objects Map.! getLIST a)
                             | isCODEBLOCK a = INT (toInteger $ length $ objects Map.! getCODEBLOCK a)
                             | otherwise = ERROR ExpectedList
-                (value : rest, newObjects))
+                (deallocateObject a objects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result

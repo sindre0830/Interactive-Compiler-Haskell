@@ -13,13 +13,12 @@ import Stack
 funcPop :: StackState
 funcPop = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "pop"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
-                (rest, newObjects))
+                (deallocateObject a objects, rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -27,13 +26,13 @@ funcPop = do
 funcDup :: StackState
 funcDup = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "dup"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let (value, newObjects) = duplicateStack [a] ([], objects)
-                (head value : outStack, newObjects))
+                let (value, newObjects) = duplicateObject a objects
+                (newObjects, value : outStack))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -41,11 +40,11 @@ funcDup = do
 funcSwap :: StackState
 funcSwap = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "swap"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                (a:b:rest, objects))
+                (objects, a:b:rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result

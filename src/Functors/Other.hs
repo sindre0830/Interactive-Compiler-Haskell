@@ -35,18 +35,16 @@ funcEach = do
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b objects)
                 if not (isLIST a)
-                    then (inpStack, newObjects, ERROR ExpectedList : rest)
+                    then (inpStack, deallocateStack [a,b] objects, ERROR ExpectedList : rest)
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (inpStack, newObjects, ERROR ExpectedCodeblock : rest)
+                    then (inpStack, deallocateStack [a,b] objects, ERROR ExpectedCodeblock : rest)
                 else do
                     let list = objects Map.! getLIST a
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
                     let (values, newObjects) = eachOf (reverse list) block ([], objects)
-                    let objects = deallocateStack block newObjects
-                    (values ++ inpStack, deallocateObject a objects, rest))
+                    (values ++ inpStack, deallocateStack (a : block) newObjects, rest))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 

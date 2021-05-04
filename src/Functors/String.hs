@@ -15,16 +15,15 @@ import Stack
 funcParseInteger :: StackState
 funcParseInteger = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "parseInteger"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 let value   | not (isSTRING a) = ERROR ExpectedString
                             | isJust (readMaybe (getSTRING a) :: Maybe Integer) = INT (fromJust (readMaybe (getSTRING a) :: Maybe Integer))
                             | otherwise = ERROR ExpectedStringOfInteger
-                (value : rest, newObjects))
+                (deallocateObject a objects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -32,16 +31,15 @@ funcParseInteger = do
 funcParseFloat :: StackState
 funcParseFloat = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "parseFloat"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 let value   | not (isSTRING a) = ERROR ExpectedString
                             | isJust (readMaybe (getSTRING a) :: Maybe Float) = FLOAT (fromJust (readMaybe (getSTRING a) :: Maybe Float))
                             | otherwise = ERROR ExpectedStringOfFloat
-                (value : rest, newObjects))
+                (deallocateObject a objects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -49,9 +47,9 @@ funcParseFloat = do
 funcWords :: StackState
 funcWords = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = ( do
+    let (newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "words"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
                 let (value, newObjects) | not (isSTRING a) = (ERROR ExpectedString, deallocateObject a objects)
@@ -59,6 +57,6 @@ funcWords = do
                                             let list = map STRING (words $ getSTRING a)
                                             let (newObjects, key) = allocateObject list objects
                                             (LIST key, newObjects)
-                (value : rest, newObjects))
+                (newObjects, value : rest))
     let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result

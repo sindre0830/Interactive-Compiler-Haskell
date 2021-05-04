@@ -13,23 +13,22 @@ import Stack
 funcIf :: StackState
 funcIf = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newOutStack, newObjects) = ( do
+    let (newInpStack, newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "if"
-                then (inpStack, [ERROR InvalidParameterAmount], deallocateStack outStack objects)
+                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (c:b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
                 if not (isBOOL a)
-                    then (inpStack, ERROR ExpectedBool : rest, newObjects)
+                    then (inpStack, deallocateStack [a,b,c] objects, ERROR ExpectedBool : rest)
                 else if getBOOL a
                     then do
-                        let values  | isCODEBLOCK b = [b, FUNC "exec"]
+                        let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                     | otherwise = [b]
-                        (values ++ inpStack, rest, deallocateObject a (deallocateObject c objects))
+                        (block ++ inpStack, deallocateStack [a,c] objects, rest)
                 else do
-                    let values  | isCODEBLOCK c = [c, FUNC "exec"]
+                    let block   | isCODEBLOCK c = [c, FUNC "exec"]
                                 | otherwise = [c]
-                    (values ++ inpStack, rest, deallocateObject a (deallocateObject b objects)))
+                    (block ++ inpStack, deallocateStack [a,b] objects, rest))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -42,15 +41,13 @@ funcTimes = do
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObject = deallocateObject a (deallocateObject b objects)
                 if not (isINT a) || getINT a < 0
-                    then (inpStack, newObject, ERROR ExpectedPositiveInteger : rest)
+                    then (inpStack, deallocateStack [a,b] objects, ERROR ExpectedPositiveInteger : rest)
                 else do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
                     let (values, newObjects) = loopN (getINT a) block ([], objects)
-                    let objects = deallocateStack block newObjects
-                    (values ++ inpStack, deallocateObject a objects, rest))
+                    (values ++ inpStack, deallocateStack (a : block) newObjects, rest))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 

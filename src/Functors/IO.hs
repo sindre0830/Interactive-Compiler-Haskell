@@ -20,14 +20,13 @@ funcRead = do
 funcPrint :: StackState
 funcPrint = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects, newStatusIO) = ( do
+    let (newObjects, newOutStack, newStatusIO) = ( do
             if length outStack < functors Map.! "print"
-                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects, statusIO)
+                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount], statusIO)
             else do
                 let (a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 if not (isSTRING a)
-                    then (ERROR ExpectedString : rest, newObjects, statusIO)
-                else (PRINT (getSTRING a) : rest, newObjects, Output))
+                    then (deallocateObject a objects, ERROR ExpectedString : rest, statusIO)
+                else (deallocateObject a objects, PRINT (getSTRING a) : rest, Output))
     let result = (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
     put result >> return result

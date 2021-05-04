@@ -31,8 +31,7 @@ executeStack = do
         let (x:xs) = inpStack
         let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack variables functions
         if shouldSkip
-            then do
-                put (newInpStack, objects, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
+            then put (newInpStack, objects, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
         else if isFUNC x
             then ( do
                 put (xs, objects, variables, functions, outStack, statusIO)
@@ -149,11 +148,10 @@ funcMap = do
                 then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b objects)
                 if not (isLIST a)
-                    then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                    then (deallocateStack [a,b] objects, variables, functions, ERROR ExpectedList : rest)
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a,b] objects, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
@@ -161,8 +159,7 @@ funcMap = do
                     let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
                     let objects = deallocateStack block newObjects
                     if head newList == ERROR InvalidOperationIO
-                        then do
-                            (deallocateObject a objects, variables, functions, head newList : rest)
+                        then (deallocateObject a objects, variables, functions, head newList : rest)
                     else do
                         let newObjects = updateObject (getLIST a) (reverse newList) objects
                         (newObjects, newVariables, newFunctions, a : rest))
@@ -175,9 +172,7 @@ mapOf (x:xs) block (objects, variables, functions, outStack) = do
     let (dupBlock, newObjects) = duplicateStack block ([], objects)
     let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, [x], None)
     if statusIO /= None
-        then do
-            let newObjects = deallocateStack outStack objects
-            (newObjects, variables, functions, [ERROR InvalidOperationIO])
+        then (deallocateStack outStack objects, variables, functions, [ERROR InvalidOperationIO])
     else mapOf xs block (objects, newVariables, newFunctions, newOutStack ++ outStack)
 
 
@@ -189,20 +184,18 @@ funcFoldl = do
                 then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (c:b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
                 if not (isLIST a)
-                    then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                    then (deallocateStack [a,b,c] objects, variables, functions, ERROR ExpectedList : rest)
                 else if isCODEBLOCK b || isFUNC b  || (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (newObjects, variables, functions, ERROR InvalidType : rest)
+                    then (deallocateStack [a,b,c] objects, variables, functions, ERROR InvalidType : rest)
                 else if not (isCODEBLOCK c) && not (isFUNC c) && not (isUNKNOWN c && Map.member (getUNKNOWN c) functions)
-                    then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a,b,c] objects, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block   | isCODEBLOCK c = [c, FUNC "exec"]
                                 | otherwise = [c]
                     let list = objects Map.! getLIST a
                     let (newObjects, newVariables, newFunctions, newValue) = foldlOf list block (objects, variables, functions, b)
-                    let objects = deallocateStack block newObjects
-                    (deallocateObject a objects, newVariables, newFunctions, newValue : rest))
+                    (deallocateStack (a : block) newObjects, newVariables, newFunctions, newValue : rest))
     let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
 
@@ -213,9 +206,7 @@ foldlOf (x:xs) block (objects, variables, functions, value) = do
     let (dupBlock, newObjects) = duplicateStack block ([], objects)
     let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, x : [value], None)
     if statusIO /= None
-        then do
-            let objects = deallocateStack dupBlock newObjects
-            (deallocateObject value objects, variables, functions, ERROR InvalidOperationIO)
+        then (deallocateStack (value : dupBlock) newObjects, variables, functions, ERROR InvalidOperationIO)
     else foldlOf xs block (objects, newVariables, newFunctions, head newOutStack)
 
 
@@ -227,18 +218,16 @@ funcLoop = do
                 then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b objects)
                 if not (isCODEBLOCK a) && not (isFUNC a)  && not (isUNKNOWN a && Map.member (getUNKNOWN a) functions) 
                     || not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (inpStack, newObjects, ERROR ExpectedCodeblock : rest)
+                    then (inpStack, deallocateStack [a,b] objects, ERROR ExpectedCodeblock : rest)
                 else do
                     let break   | isCODEBLOCK a = [a, FUNC "exec"]
                                 | otherwise = [a]
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
                     let (newObjects, values) = loop break block (objects, variables, functions, rest)
-                    let objects = deallocateStack (break ++ block) newObjects
-                    (values ++ inpStack, objects, []))
+                    (values ++ inpStack, deallocateStack (break ++ block) newObjects, []))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 

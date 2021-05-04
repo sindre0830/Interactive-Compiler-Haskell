@@ -18,12 +18,11 @@ funcSetVariable = do
                 then (deallocateStack outStack objects, variables, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObjects = deallocateObject a objects
                 if not (isUNKNOWN a)
-                    then (deallocateObject b newObjects, variables, ERROR ExpectedUnknown : rest)
+                    then (deallocateStack [a,b] objects, variables, ERROR ExpectedUnknown : rest)
                 else do
                     let newVariables = Map.insert (getUNKNOWN a) b variables
-                    (newObjects, newVariables, rest))
+                    (deallocateObject a objects, newVariables, rest))
     let result = (inpStack, newObjects, newVariables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -36,15 +35,14 @@ funcSetFunction = do
                 then (deallocateStack outStack objects, functions, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b objects)
                 if not (isUNKNOWN a)
-                    then (newObjects, functions, ERROR ExpectedUnknown : rest)
+                    then (deallocateStack [a,b] objects, functions, ERROR ExpectedUnknown : rest)
                 else if not (isCODEBLOCK b)
-                    then (newObjects, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a,b] objects, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block = objects Map.! getCODEBLOCK b
                     let (dupBlock, newObjects) = duplicateStack block ([], objects)
                     let newFunctions = Map.insert (getUNKNOWN a) dupBlock functions
-                    (deallocateObject a (deallocateObject b newObjects), newFunctions, rest))
+                    (deallocateStack [a,b] newObjects, newFunctions, rest))
     let result = (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
     put result >> return result
