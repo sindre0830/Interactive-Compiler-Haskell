@@ -215,3 +215,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.6.0] **development**: Removed Print type and just use String type
 
 [3.6.1] **formatting**: Renamed Objects to Containers
+
+[3.7.0] **development**: Added getContainer to reduce clutter in functors

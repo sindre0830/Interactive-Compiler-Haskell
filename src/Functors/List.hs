@@ -2,8 +2,6 @@ module Functors.List
     ( module Functors.List
     ) where
 -- foreign modules
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -19,7 +17,7 @@ funcEmpty = do
             else do
                 let (a:rest) = outStack
                 let value   | not (isLIST a) = ERROR ExpectedList
-                            | otherwise = BOOL (null (containers Map.! getLIST a))
+                            | otherwise = BOOL (null (getContainer a containers))
                 (deallocateMemory a containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -36,7 +34,7 @@ funcHead = do
                 if not (isLIST a)
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
-                    let list = containers Map.! getLIST a
+                    let list = getContainer a containers
                     if null list
                         then (deallocateMemory a containers, rest)
                     else do
@@ -57,10 +55,10 @@ funcTail = do
                 if not (isLIST a)
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
+                    let list = getContainer a containers
                     let key = getLIST a
-                    let list = containers Map.! key
-                    let newContainers  | null list = containers
-                                    | otherwise = updateContainer key (tail list) containers
+                    let newContainers   | null list = containers
+                                        | otherwise = updateContainer key (tail list) containers
                     (deallocateMemory (head list) newContainers, outStack))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -78,7 +76,7 @@ funcCons = do
                     then (deallocateStack [a,b] containers, ERROR ExpectedList : rest)
                 else do
                     let key = getLIST b
-                    let newContainers = updateContainer key (a : (containers Map.! key)) containers
+                    let newContainers = updateContainer key (a : getContainer b containers) containers
                     (newContainers, b : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -95,9 +93,8 @@ funcAppend = do
                 if not (isLIST a) || not (isLIST b)
                     then (deallocateStack [a,b] containers, ERROR ExpectedList : rest)
                 else do
-                    let keyA = getLIST a
                     let keyB = getLIST b
-                    let newContainers = updateContainer keyB ((containers Map.! keyA) ++ (containers Map.! keyB)) containers
+                    let newContainers = updateContainer keyB (getContainer a containers ++ getContainer b containers) containers
                     (deallocateMemory a newContainers, b : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -112,8 +109,8 @@ funcLength = do
             else do
                 let (a:rest) = outStack
                 let value   | isSTRING a = INT (toInteger $ length $ getSTRING a)
-                            | isLIST a = INT (toInteger $ length $ containers Map.! getLIST a)
-                            | isCODEBLOCK a = INT (toInteger $ length $ containers Map.! getCODEBLOCK a)
+                            | isLIST a = INT (toInteger $ length $ getContainer a containers)
+                            | isCODEBLOCK a = INT (toInteger $ length $ getContainer a containers)
                             | otherwise = ERROR ExpectedList
                 (deallocateMemory a containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)

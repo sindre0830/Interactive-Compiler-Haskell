@@ -2,8 +2,6 @@ module Functors.Comparison
     ( module Functors.Comparison
     ) where
 -- foreign modules
-import Data.Map (Map)
-import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
@@ -29,8 +27,8 @@ compareStacks [] [] _ = True
 compareStacks [] _ _ = False
 compareStacks _ [] _ = False
 compareStacks (x:xs) (y:ys) containers
-    | isLIST x && isLIST y = compareStacks (containers Map.! getLIST x) (containers Map.! getLIST y) containers
-    | isCODEBLOCK x && isCODEBLOCK y = compareStacks (containers Map.! getCODEBLOCK x) (containers Map.! getCODEBLOCK y) containers
+    | isLIST x && isLIST y = compareStacks (getContainer x containers) (getContainer y containers) containers
+    | isCODEBLOCK x && isCODEBLOCK y = compareStacks (getContainer x containers) (getContainer y containers) containers
     | isINT x && isFLOAT y = convertFloat x == getFLOAT y
     | isFLOAT x && isINT y = getFLOAT x == convertFloat y
     | x /= y = False

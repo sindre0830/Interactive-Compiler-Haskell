@@ -69,6 +69,13 @@ deallocateMemory x containers
         Map.delete (getCODEBLOCK x) newContainers
     | otherwise = containers
 
+
+getContainer :: Type -> Containers -> Stack
+getContainer container containers
+    | isLIST container = containers Map.! getLIST container
+    | isCODEBLOCK container = containers Map.! getCODEBLOCK container
+
+
 printableStack :: (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> String
 printableStack (_, containers, _, _, outStack, _) = "[" ++ intercalate "," (formatStack (reverse outStack) containers) ++ "]"
 

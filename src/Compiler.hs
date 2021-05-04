@@ -93,13 +93,13 @@ setVariable [] _ _ (moveToBuffer, containers, outStack) = (moveToBuffer, contain
 setVariable (x:xs) variables functions (moveToBuffer, containers, outStack)
     | isLIST x = do
         let key = getLIST x
-        let list = containers Map.! key
+        let list = getContainer x containers
         let (newMoveToBuffer, newContainers, newOutStack) = setVariable list variables functions (moveToBuffer, containers, [])
         let containers = updateContainer key (reverse newOutStack) newContainers
         setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
     | isCODEBLOCK x = do
         let key = getCODEBLOCK x
-        let block = containers Map.! key
+        let block = getContainer x containers
         let (newMoveToBuffer, newContainers, newOutStack) = setVariable block variables functions (moveToBuffer, containers, [])
         let containers = updateContainer key (reverse newOutStack) newContainers
         setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
@@ -155,7 +155,7 @@ funcMap = do
                 else do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
-                    let list = containers Map.! getLIST a
+                    let list = getContainer a containers
                     let (newContainers, newVariables, newFunctions, newList) = mapOf list block (containers, variables, functions, [])
                     let containers = deallocateStack block newContainers
                     if head newList == ERROR InvalidOperationIO
@@ -193,7 +193,7 @@ funcFoldl = do
                 else do
                     let block   | isCODEBLOCK c = [c, FUNC "exec"]
                                 | otherwise = [c]
-                    let list = containers Map.! getLIST a
+                    let list = getContainer a containers
                     let (newContainers, newVariables, newFunctions, newValue) = foldlOf list block (containers, variables, functions, b)
                     (deallocateStack (a : block) newContainers, newVariables, newFunctions, newValue : rest))
     let result = (inpStack, newContainers, newVariables, newFunctions, newOutStack, statusIO)

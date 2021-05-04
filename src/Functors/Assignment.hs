@@ -40,7 +40,7 @@ funcSetFunction = do
                 else if not (isCODEBLOCK b)
                     then (deallocateStack [a,b] containers, functions, ERROR ExpectedCodeblock : rest)
                 else do
-                    let block = containers Map.! getCODEBLOCK b
+                    let block = getContainer b containers
                     let (dupBlock, newContainers) = duplicateStack block ([], containers)
                     let newFunctions = Map.insert (getUNKNOWN a) dupBlock functions
                     (deallocateStack [a,b] newContainers, newFunctions, rest))
