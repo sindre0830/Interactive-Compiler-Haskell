@@ -15,87 +15,87 @@ import Stack
 tokenize :: String -> Tokens
 tokenize = words
 
--- ! parses tokens to stack and list of objects.
-parser :: Tokens -> Stack -> Objects -> (Stack, Objects)
-parser [] stack objects = (reverse stack, objects)
-parser (x:xs) stack objects =
+-- ! parses tokens to stack and list of containers.
+parser :: Tokens -> Stack -> Containers -> (Stack, Containers)
+parser [] stack containers = (reverse stack, containers)
+parser (x:xs) stack containers =
     case x of
         ['"'] -> do
             let (value, rest) = stringParser xs ""
-            parser rest (value : stack) objects
+            parser rest (value : stack) containers
         ['['] -> do
             -- parse list
-            let (newStack, rest, newObjects) = listParser xs [] objects
+            let (newStack, rest, newContainers) = listParser xs [] containers
             -- check if list is valid
             if not (null newStack) && isERROR (head newStack)
-                then parser rest (head newStack : stack) newObjects
+                then parser rest (head newStack : stack) newContainers
             else do
                 -- update map with inner list
-                let key = generateObjectAddress newObjects
-                let objects = Map.insert key (reverse newStack) newObjects
-                parser rest (LIST key : stack) objects
+                let key = generateAddress newContainers
+                let containers = Map.insert key (reverse newStack) newContainers
+                parser rest (LIST key : stack) containers
         ['{'] -> do
             -- parse codeBlock
-            let (newStack, rest, newObjects) = codeBlockParser xs [] objects
+            let (newStack, rest, newContainers) = codeBlockParser xs [] containers
             -- check if codeBlock is valid
             if not (null newStack) && isERROR (head newStack)
-                then parser rest (head newStack : stack) newObjects
+                then parser rest (head newStack : stack) newContainers
             else do
                 -- update map with inner codeBlock
-                let key = generateObjectAddress newObjects
-                let objects = Map.insert key (reverse newStack) newObjects
-                parser rest (CODEBLOCK key : stack) objects
-        _ -> parser xs (typeParser x : stack) objects
+                let key = generateAddress newContainers
+                let containers = Map.insert key (reverse newStack) newContainers
+                parser rest (CODEBLOCK key : stack) containers
+        _ -> parser xs (typeParser x : stack) containers
 
 -- | Parses codeBlocks.
-codeBlockParser :: Tokens -> Stack -> Objects -> (Stack, Tokens, Objects)
-codeBlockParser [] _ objects = ([ERROR IncompleteCodeBlock], [], objects)
-codeBlockParser (x:xs) stack objects =
+codeBlockParser :: Tokens -> Stack -> Containers -> (Stack, Tokens, Containers)
+codeBlockParser [] _ containers = ([ERROR IncompleteCodeBlock], [], containers)
+codeBlockParser (x:xs) stack containers =
     case x of
-        "}" -> (stack, xs, objects)
+        "}" -> (stack, xs, containers)
         "{" -> do
             -- get inner codeBlock
-            let (newStack, rest, newObjects) = codeBlockParser xs [] objects
+            let (newStack, rest, newContainers) = codeBlockParser xs [] containers
             -- update map with inner list
-            let key = generateObjectAddress newObjects
-            let objects = Map.insert key (reverse newStack) newObjects
-            codeBlockParser rest (CODEBLOCK key : stack) objects
+            let key = generateAddress newContainers
+            let containers = Map.insert key (reverse newStack) newContainers
+            codeBlockParser rest (CODEBLOCK key : stack) containers
         "[" -> do
             -- get inner list
-            let (newStack, rest, newObjects) = listParser xs [] objects
+            let (newStack, rest, newContainers) = listParser xs [] containers
             -- update map with inner codeBlock
-            let key = generateObjectAddress newObjects
-            let objects = Map.insert key (reverse newStack) newObjects
-            codeBlockParser rest (LIST key : stack) objects
+            let key = generateAddress newContainers
+            let containers = Map.insert key (reverse newStack) newContainers
+            codeBlockParser rest (LIST key : stack) containers
         ['"'] -> do
             let (value, rest) = stringParser xs []
-            codeBlockParser rest (value : stack) objects
-        _ -> codeBlockParser xs (typeParser x : stack) objects
+            codeBlockParser rest (value : stack) containers
+        _ -> codeBlockParser xs (typeParser x : stack) containers
 
 -- | Parses lists.
-listParser :: Tokens -> Stack -> Objects -> (Stack, Tokens, Objects)
-listParser [] _ objects = ([ERROR IncompleteList], [], objects)
-listParser (x:xs) stack objects =
+listParser :: Tokens -> Stack -> Containers -> (Stack, Tokens, Containers)
+listParser [] _ containers = ([ERROR IncompleteList], [], containers)
+listParser (x:xs) stack containers =
     case x of
-        "]" -> (stack, xs, objects)
+        "]" -> (stack, xs, containers)
         "[" -> do
             -- get inner list
-            let (newStack, rest, newObjects) = listParser xs [] objects
+            let (newStack, rest, newContainers) = listParser xs [] containers
             -- update map with inner list
-            let key = generateObjectAddress newObjects
-            let objects = Map.insert key (reverse newStack) newObjects
-            listParser rest (LIST key : stack) objects
+            let key = generateAddress newContainers
+            let containers = Map.insert key (reverse newStack) newContainers
+            listParser rest (LIST key : stack) containers
         "{" -> do
             -- get inner codeBlock
-            let (newStack, rest, newObjects) = codeBlockParser xs [] objects
+            let (newStack, rest, newContainers) = codeBlockParser xs [] containers
             -- update map with inner codeBlock
-            let key = generateObjectAddress newObjects
-            let objects = Map.insert key (reverse newStack) newObjects
-            listParser rest (CODEBLOCK key : stack) objects
+            let key = generateAddress newContainers
+            let containers = Map.insert key (reverse newStack) newContainers
+            listParser rest (CODEBLOCK key : stack) containers
         ['"'] -> do
             let (value, rest) = stringParser xs []
-            listParser rest (value : stack) objects
-        _ -> listParser xs (typeParser x : stack) objects
+            listParser rest (value : stack) containers
+        _ -> listParser xs (typeParser x : stack) containers
 
 -- | Parses strings.
 stringParser :: Tokens -> Data -> (Type, Tokens)

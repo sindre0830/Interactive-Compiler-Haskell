@@ -10,21 +10,21 @@ import Stack
 
 funcRead :: StackState
 funcRead = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let result = (inpStack, objects, variables, functions, outStack, Input)
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let result = (inpStack, containers, variables, functions, outStack, Input)
     put result >> return result
 
 
 funcPrint :: StackState
 funcPrint = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack, newStatusIO) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack, newStatusIO) = ( do
             if validateParameters outStack "print"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount], statusIO)
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount], statusIO)
             else do
                 let (a:rest) = outStack
                 if not (isSTRING a)
-                    then (deallocateObject a objects, ERROR ExpectedString : rest, statusIO)
-                else (objects, outStack, Output))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
+                    then (deallocateMemory a containers, ERROR ExpectedString : rest, statusIO)
+                else (containers, outStack, Output))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, newStatusIO)
     put result >> return result

@@ -111,9 +111,9 @@ type Variables = Map Key Type
 
 type Functions = Map Key Stack
 
-type Objects = Map Key Stack
+type Containers = Map Key Stack
 
-type StackState = State (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) (InputStack, Objects, Variables, Functions, OutputStack, StatusIO)
+type StackState = State (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) (InputStack, Containers, Variables, Functions, OutputStack, StatusIO)
 
 type FuncInfo = Map Key Int
 

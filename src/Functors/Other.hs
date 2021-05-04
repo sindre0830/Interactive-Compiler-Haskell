@@ -12,46 +12,46 @@ import Stack
 
 funcExec :: StackState
 funcExec = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newInpStack, newContainers, newOutStack) = ( do
             if validateParameters outStack "exec"
-                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
                 if not (isCODEBLOCK a)
-                    then (inpStack, deallocateObject a objects, ERROR ExpectedCodeblock : rest)
+                    then (inpStack, deallocateMemory a containers, ERROR ExpectedCodeblock : rest)
                 else do
-                    let block = objects Map.! getCODEBLOCK a
-                    (block ++ inpStack, deallocateOneObject a objects, rest))
-    let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+                    let block = containers Map.! getCODEBLOCK a
+                    (block ++ inpStack, deallocateRootContainer a containers, rest))
+    let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
 funcEach :: StackState
 funcEach = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newInpStack, newContainers, newOutStack) = ( do
             if validateParameters outStack "each"
-                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 if not (isLIST a)
-                    then (inpStack, deallocateStack [a,b] objects, ERROR ExpectedList : rest)
+                    then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedList : rest)
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (inpStack, deallocateStack [a,b] objects, ERROR ExpectedCodeblock : rest)
+                    then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
                 else do
-                    let list = objects Map.! getLIST a
+                    let list = containers Map.! getLIST a
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
-                    let (values, newObjects) = eachOf (reverse list) block ([], objects)
-                    (values ++ inpStack, deallocateStack (a : block) newObjects, rest))
-    let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+                    let (values, newContainers) = eachOf (reverse list) block ([], containers)
+                    (values ++ inpStack, deallocateStack (a : block) newContainers, rest))
+    let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
-eachOf :: Stack -> Stack -> (Stack, Objects) -> (Stack, Objects)
-eachOf [] _ (stack, objects) = (stack, objects)
-eachOf (x:xs) block (stack, objects) = do
-    let (dupBlock, newObjects) = duplicateStack block ([], objects)
-    let (dupValue, objects) = duplicateObject x newObjects
-    eachOf xs block (dupValue : dupBlock ++ stack, objects)
+eachOf :: Stack -> Stack -> (Stack, Containers) -> (Stack, Containers)
+eachOf [] _ (stack, containers) = (stack, containers)
+eachOf (x:xs) block (stack, containers) = do
+    let (dupBlock, newContainers) = duplicateStack block ([], containers)
+    let (dupValue, containers) = duplicateValue x newContainers
+    eachOf xs block (dupValue : dupBlock ++ stack, containers)

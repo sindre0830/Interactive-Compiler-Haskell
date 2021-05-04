@@ -12,37 +12,37 @@ import Stack
 
 funcEqual :: StackState
 funcEqual = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack "=="
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                let value = BOOL $ compareStacks [a] [b] objects
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                let value = BOOL $ compareStacks [a] [b] containers
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
-compareStacks :: Stack -> Stack -> Objects -> Bool
+compareStacks :: Stack -> Stack -> Containers -> Bool
 compareStacks [] [] _ = True
 compareStacks [] _ _ = False
 compareStacks _ [] _ = False
-compareStacks (x:xs) (y:ys) objects
-    | isLIST x && isLIST y = compareStacks (objects Map.! getLIST x) (objects Map.! getLIST y) objects
-    | isCODEBLOCK x && isCODEBLOCK y = compareStacks (objects Map.! getCODEBLOCK x) (objects Map.! getCODEBLOCK y) objects
+compareStacks (x:xs) (y:ys) containers
+    | isLIST x && isLIST y = compareStacks (containers Map.! getLIST x) (containers Map.! getLIST y) containers
+    | isCODEBLOCK x && isCODEBLOCK y = compareStacks (containers Map.! getCODEBLOCK x) (containers Map.! getCODEBLOCK y) containers
     | isINT x && isFLOAT y = convertFloat x == getFLOAT y
     | isFLOAT x && isINT y = getFLOAT x == convertFloat y
     | x /= y = False
-    | otherwise = compareStacks xs ys objects
+    | otherwise = compareStacks xs ys containers
 
 
 funcLess :: StackState
 funcLess = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack "<"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let value   | isINT a && isINT b        = BOOL  (getINT a       < getINT b)
@@ -50,17 +50,17 @@ funcLess = do
                             | isFLOAT a && isINT b      = BOOL  (getFLOAT a     < convertFloat b)
                             | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     < getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
 funcGreater :: StackState
 funcGreater = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack ">"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let value   | isINT a && isINT b        = BOOL  (getINT a       > getINT b)
@@ -68,6 +68,6 @@ funcGreater = do
                             | isFLOAT a && isINT b      = BOOL  (getFLOAT a     > convertFloat b)
                             | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     > getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result

@@ -22,19 +22,19 @@ import Functors.Other
 
 executeStack :: StackState
 executeStack = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
     if null inpStack || statusIO /= None
         then do
-            put (inpStack, objects, variables, functions, outStack, statusIO)
-            return (inpStack, objects, variables, functions, outStack, statusIO)
+            put (inpStack, containers, variables, functions, outStack, statusIO)
+            return (inpStack, containers, variables, functions, outStack, statusIO)
     else do
         let (x:xs) = inpStack
         let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack variables functions
         if shouldSkip
-            then put (newInpStack, objects, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
+            then put (newInpStack, containers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
         else if isFUNC x
             then ( do
-                put (xs, objects, variables, functions, outStack, statusIO)
+                put (xs, containers, variables, functions, outStack, statusIO)
                 case getFUNC x of
                     -- Arithmetic
                     "+"     -> funcAddition
@@ -82,36 +82,36 @@ executeStack = do
                     "print" -> funcPrint
                 ) >> executeStack
         else do
-            let (moveToBuffer, newObjects, newOutStack) = setVariable [x] variables functions (False, objects, [])
+            let (moveToBuffer, newContainers, newOutStack) = setVariable [x] variables functions (False, containers, [])
             if moveToBuffer
-                then put (reverse newOutStack ++ xs, newObjects, variables, functions, outStack, statusIO) >> executeStack
-            else put (xs, newObjects, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
+                then put (reverse newOutStack ++ xs, newContainers, variables, functions, outStack, statusIO) >> executeStack
+            else put (xs, newContainers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
 
 
-setVariable :: Stack -> Variables -> Functions -> (Bool, Objects, OutputStack) -> (Bool, Objects, OutputStack)
-setVariable [] _ _ (moveToBuffer, objects, outStack) = (moveToBuffer, objects, outStack)
-setVariable (x:xs) variables functions (moveToBuffer, objects, outStack)
+setVariable :: Stack -> Variables -> Functions -> (Bool, Containers, OutputStack) -> (Bool, Containers, OutputStack)
+setVariable [] _ _ (moveToBuffer, containers, outStack) = (moveToBuffer, containers, outStack)
+setVariable (x:xs) variables functions (moveToBuffer, containers, outStack)
     | isLIST x = do
         let key = getLIST x
-        let list = objects Map.! key
-        let (newMoveToBuffer, newObjects, newOutStack) = setVariable list variables functions (moveToBuffer, objects, [])
-        let objects = updateObject key (reverse newOutStack) newObjects
-        setVariable xs variables functions (newMoveToBuffer, objects, x : outStack)
+        let list = containers Map.! key
+        let (newMoveToBuffer, newContainers, newOutStack) = setVariable list variables functions (moveToBuffer, containers, [])
+        let containers = updateContainer key (reverse newOutStack) newContainers
+        setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
     | isCODEBLOCK x = do
         let key = getCODEBLOCK x
-        let block = objects Map.! key
-        let (newMoveToBuffer, newObjects, newOutStack) = setVariable block variables functions (moveToBuffer, objects, [])
-        let objects = updateObject key (reverse newOutStack) newObjects
-        setVariable xs variables functions (newMoveToBuffer, objects, x : outStack)
+        let block = containers Map.! key
+        let (newMoveToBuffer, newContainers, newOutStack) = setVariable block variables functions (moveToBuffer, containers, [])
+        let containers = updateContainer key (reverse newOutStack) newContainers
+        setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
     | isUNKNOWN x && Map.member (getUNKNOWN x) variables = do
         let value = variables Map.! getUNKNOWN x
-        let (newStack, newObjects) = duplicateStack [value] ([], objects)
-        setVariable xs variables functions (moveToBuffer, newObjects, newStack ++ outStack)
+        let (newStack, newContainers) = duplicateStack [value] ([], containers)
+        setVariable xs variables functions (moveToBuffer, newContainers, newStack ++ outStack)
     | isUNKNOWN x && Map.member (getUNKNOWN x) functions = do
         let value = functions Map.! getUNKNOWN x
-        let (newStack, newObjects) = duplicateStack value ([], objects)
-        setVariable xs variables functions (True, newObjects, reverse newStack ++ outStack)
-    | otherwise = setVariable xs variables functions (moveToBuffer, objects, x : outStack)
+        let (newStack, newContainers) = duplicateStack value ([], containers)
+        setVariable xs variables functions (True, newContainers, reverse newStack ++ outStack)
+    | otherwise = setVariable xs variables functions (moveToBuffer, containers, x : outStack)
 
 
 skipOperation :: Stack -> Variables -> Functions -> (Bool, Stack, Stack)
@@ -142,109 +142,109 @@ skipOperation stack variables functions
 
 funcMap :: StackState
 funcMap = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newVariables, newFunctions, newOutStack) = ( do   
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newVariables, newFunctions, newOutStack) = ( do   
             if validateParameters outStack "map"
-                then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 if not (isLIST a)
-                    then (deallocateStack [a,b] objects, variables, functions, ERROR ExpectedList : rest)
+                    then (deallocateStack [a,b] containers, variables, functions, ERROR ExpectedList : rest)
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (deallocateStack [a,b] objects, variables, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a,b] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
-                    let list = objects Map.! getLIST a
-                    let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
-                    let objects = deallocateStack block newObjects
+                    let list = containers Map.! getLIST a
+                    let (newContainers, newVariables, newFunctions, newList) = mapOf list block (containers, variables, functions, [])
+                    let containers = deallocateStack block newContainers
                     if head newList == ERROR InvalidOperationIO
-                        then (deallocateObject a objects, variables, functions, head newList : rest)
+                        then (deallocateMemory a containers, variables, functions, head newList : rest)
                     else do
-                        let newObjects = updateObject (getLIST a) (reverse newList) objects
-                        (newObjects, newVariables, newFunctions, a : rest))
-    let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+                        let newContainers = updateContainer (getLIST a) (reverse newList) containers
+                        (newContainers, newVariables, newFunctions, a : rest))
+    let result = (inpStack, newContainers, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
 
-mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
-mapOf [] _ (objects, variables, functions, outStack) = (objects, variables, functions, outStack)
-mapOf (x:xs) block (objects, variables, functions, outStack) = do
-    let (dupBlock, newObjects) = duplicateStack block ([], objects)
-    let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, [x], None)
+mapOf :: Stack -> Stack -> (Containers, Variables, Functions, OutputStack) -> (Containers, Variables, Functions, OutputStack)
+mapOf [] _ (containers, variables, functions, outStack) = (containers, variables, functions, outStack)
+mapOf (x:xs) block (containers, variables, functions, outStack) = do
+    let (dupBlock, newContainers) = duplicateStack block ([], containers)
+    let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, [x], None)
     if statusIO /= None
-        then (deallocateStack outStack objects, variables, functions, [ERROR InvalidOperationIO])
-    else mapOf xs block (objects, newVariables, newFunctions, newOutStack ++ outStack)
+        then (deallocateStack outStack containers, variables, functions, [ERROR InvalidOperationIO])
+    else mapOf xs block (containers, newVariables, newFunctions, newOutStack ++ outStack)
 
 
 funcFoldl :: StackState
 funcFoldl = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newVariables, newFunctions, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newVariables, newFunctions, newOutStack) = ( do
             if validateParameters outStack "foldl"
-                then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (c:b:a:rest) = outStack
                 if not (isLIST a)
-                    then (deallocateStack [a,b,c] objects, variables, functions, ERROR ExpectedList : rest)
+                    then (deallocateStack [a,b,c] containers, variables, functions, ERROR ExpectedList : rest)
                 else if isCODEBLOCK b || isFUNC b  || (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (deallocateStack [a,b,c] objects, variables, functions, ERROR InvalidType : rest)
+                    then (deallocateStack [a,b,c] containers, variables, functions, ERROR InvalidType : rest)
                 else if not (isCODEBLOCK c) && not (isFUNC c) && not (isUNKNOWN c && Map.member (getUNKNOWN c) functions)
-                    then (deallocateStack [a,b,c] objects, variables, functions, ERROR ExpectedCodeblock : rest)
+                    then (deallocateStack [a,b,c] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block   | isCODEBLOCK c = [c, FUNC "exec"]
                                 | otherwise = [c]
-                    let list = objects Map.! getLIST a
-                    let (newObjects, newVariables, newFunctions, newValue) = foldlOf list block (objects, variables, functions, b)
-                    (deallocateStack (a : block) newObjects, newVariables, newFunctions, newValue : rest))
-    let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+                    let list = containers Map.! getLIST a
+                    let (newContainers, newVariables, newFunctions, newValue) = foldlOf list block (containers, variables, functions, b)
+                    (deallocateStack (a : block) newContainers, newVariables, newFunctions, newValue : rest))
+    let result = (inpStack, newContainers, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
 
 
-foldlOf :: Stack -> Stack -> (Objects, Variables, Functions, Type) -> (Objects, Variables, Functions, Type)
-foldlOf [] _ (objects, variables, functions, value) = (objects, variables, functions, value)
-foldlOf (x:xs) block (objects, variables, functions, value) = do
-    let (dupBlock, newObjects) = duplicateStack block ([], objects)
-    let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, x : [value], None)
+foldlOf :: Stack -> Stack -> (Containers, Variables, Functions, Type) -> (Containers, Variables, Functions, Type)
+foldlOf [] _ (containers, variables, functions, value) = (containers, variables, functions, value)
+foldlOf (x:xs) block (containers, variables, functions, value) = do
+    let (dupBlock, newContainers) = duplicateStack block ([], containers)
+    let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, x : [value], None)
     if statusIO /= None
-        then (deallocateStack (value : dupBlock) newObjects, variables, functions, ERROR InvalidOperationIO)
-    else foldlOf xs block (objects, newVariables, newFunctions, head newOutStack)
+        then (deallocateStack (value : dupBlock) newContainers, variables, functions, ERROR InvalidOperationIO)
+    else foldlOf xs block (containers, newVariables, newFunctions, head newOutStack)
 
 
 funcLoop :: StackState
 funcLoop = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newInpStack, newContainers, newOutStack) = ( do
             if validateParameters outStack "loop"
-                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 if not (isCODEBLOCK a) && not (isFUNC a)  && not (isUNKNOWN a && Map.member (getUNKNOWN a) functions) 
                     || not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (inpStack, deallocateStack [a,b] objects, ERROR ExpectedCodeblock : rest)
+                    then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
                 else do
                     let break   | isCODEBLOCK a = [a, FUNC "exec"]
                                 | otherwise = [a]
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
-                    let (newObjects, values) = loop break block (objects, variables, functions, rest)
-                    (values ++ inpStack, deallocateStack (break ++ block) newObjects, []))
-    let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+                    let (newContainers, values) = loop break block (containers, variables, functions, rest)
+                    (values ++ inpStack, deallocateStack (break ++ block) newContainers, []))
+    let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
-loop :: Stack -> Stack -> (Objects, Variables, Functions, Stack) -> (Objects, Stack)
-loop break block (objects, variables, functions, outStack) = do
-    let (_, _, _, _, newOutStack, statusIO) = evalState executeStack (break, objects, variables, functions, outStack, None)
+loop :: Stack -> Stack -> (Containers, Variables, Functions, Stack) -> (Containers, Stack)
+loop break block (containers, variables, functions, outStack) = do
+    let (_, _, _, _, newOutStack, statusIO) = evalState executeStack (break, containers, variables, functions, outStack, None)
     let value = head newOutStack
     if statusIO /= None
-        then (objects, [ERROR InvalidOperationIO])
+        then (containers, [ERROR InvalidOperationIO])
     else if not (isBOOL value)
-        then (objects, [ERROR ExpectedBool])
+        then (containers, [ERROR ExpectedBool])
     else if getBOOL value
-        then (objects, reverse outStack)
+        then (containers, reverse outStack)
     else do
-        let (dupBlock, newObjects) = duplicateStack block ([], objects)
-        let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, outStack, None)
+        let (dupBlock, newContainers) = duplicateStack block ([], containers)
+        let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, outStack, None)
         if statusIO /= None
-            then (objects, [ERROR InvalidOperationIO])
-        else loop break block (objects, newVariables, newFunctions, newOutStack)
+            then (containers, [ERROR InvalidOperationIO])
+        else loop break block (containers, newVariables, newFunctions, newOutStack)

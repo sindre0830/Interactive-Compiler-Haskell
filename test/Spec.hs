@@ -61,7 +61,6 @@ main = do
         spec_funcPrint
         spec_funcRead
         -- module Parsing
-        --spec_parseInput
         spec_tokenize
         spec_parser
         spec_codeBlockParser
@@ -69,11 +68,11 @@ main = do
         spec_stringParser
         spec_typeParser
         -- module Stack
-        spec_generateObjectAddress
-        spec_getValidAddress
-        spec_updateObject
-        spec_allocateObject
-        spec_deallocateObject
+        spec_generateAddress
+        spec_getAvailableAddress
+        spec_updateContainer
+        spec_allocateMemory
+        spec_deallocateMemory
         spec_printableStack
         spec_formatStack
         -- 
@@ -603,43 +602,43 @@ spec_typeParser = do
 
 -- module Stack
 
-spec_generateObjectAddress :: Spec
-spec_generateObjectAddress = do
-    describe "generateObjectAddress tests:" $ do
-        it "generateObjectAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) returns \"4\"" $ do
-            generateObjectAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) `shouldBe` "4"
-        it "generateObjectAddress Map.empty returns \"0\"" $ do
-            generateObjectAddress Map.empty `shouldBe` "0"
+spec_generateAddress :: Spec
+spec_generateAddress = do
+    describe "generateAddress tests:" $ do
+        it "generateAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) returns \"4\"" $ do
+            generateAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) `shouldBe` "4"
+        it "generateAddress Map.empty returns \"0\"" $ do
+            generateAddress Map.empty `shouldBe` "0"
 
-spec_getValidAddress :: Spec
-spec_getValidAddress = do
-    describe "getValidAddress tests:" $ do
-        it "getValidAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) 0 returns 4" $ do
-            getValidAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) 0 `shouldBe` 4
-        it "getValidAddress Map.empty 0 returns 0" $ do
-            getValidAddress Map.empty 0 `shouldBe` 0
+spec_getAvailableAddress :: Spec
+spec_getAvailableAddress = do
+    describe "getAvailableAddress tests:" $ do
+        it "getAvailableAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) 0 returns 4" $ do
+            getAvailableAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) 0 `shouldBe` 4
+        it "getAvailableAddress Map.empty 0 returns 0" $ do
+            getAvailableAddress Map.empty 0 `shouldBe` 0
 
-spec_updateObject :: Spec
-spec_updateObject = do
-    describe "updateObject tests:" $ do
-        it "updateObject \"0\" [INT 1, INT 2] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1, INT 2])]" $ do
-            updateObject "0" [INT 1, INT 2] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1, INT 2])]
+spec_updateContainer :: Spec
+spec_updateContainer = do
+    describe "updateContainer tests:" $ do
+        it "updateContainer \"0\" [INT 1, INT 2] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1, INT 2])]" $ do
+            updateContainer "0" [INT 1, INT 2] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1, INT 2])]
 
-spec_allocateObject :: Spec
-spec_allocateObject = do
-    describe "allocateObject tests:" $ do
-        it "allocateObject [INT 1] (Map.fromList [(\"0\", []), (\"2\", [])]) returns (Map.fromList [(\"0\", []), (\"2\", []), (\"1\", [INT 1])], \"1\")" $ do
-            allocateObject [INT 1] (Map.fromList [("0", []), ("2", [])]) `shouldBe` (Map.fromList [("0", []), ("2", []), ("1", [INT 1])], "1")
+spec_allocateMemory :: Spec
+spec_allocateMemory = do
+    describe "allocateMemory tests:" $ do
+        it "allocateMemory [INT 1] (Map.fromList [(\"0\", []), (\"2\", [])]) returns (Map.fromList [(\"0\", []), (\"2\", []), (\"1\", [INT 1])], \"1\")" $ do
+            allocateMemory [INT 1] (Map.fromList [("0", []), ("2", [])]) `shouldBe` (Map.fromList [("0", []), ("2", []), ("1", [INT 1])], "1")
 
-spec_deallocateObject :: Spec
-spec_deallocateObject = do
-    describe "deallocateObject tests:" $ do
-        it "deallocateObject (LIST \"3\") (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"2\", []), (\"5\", [])]" $ do
-            deallocateObject (LIST "3") (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("2", []), ("5", [])]
-        it "deallocateObject (INT 1) Map.empty returns Map.empty" $ do
-            deallocateObject (INT 1) Map.empty `shouldBe` Map.empty
-        it "deallocateObject (INT 1) (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]" $ do
-            deallocateObject (INT 1) (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]
+spec_deallocateMemory :: Spec
+spec_deallocateMemory = do
+    describe "deallocateMemory tests:" $ do
+        it "deallocateMemory (LIST \"3\") (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"2\", []), (\"5\", [])]" $ do
+            deallocateMemory (LIST "3") (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("2", []), ("5", [])]
+        it "deallocateMemory (INT 1) Map.empty returns Map.empty" $ do
+            deallocateMemory (INT 1) Map.empty `shouldBe` Map.empty
+        it "deallocateMemory (INT 1) (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]" $ do
+            deallocateMemory (INT 1) (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]
 
 spec_printableStack :: Spec
 spec_printableStack = do

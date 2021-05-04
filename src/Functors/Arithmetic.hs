@@ -10,10 +10,10 @@ import Stack
 
 funcAddition :: StackState
 funcAddition = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack "+"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let value   | isINT a && isINT b        = INT      (getINT a       + getINT b)
@@ -21,17 +21,17 @@ funcAddition = do
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     + convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     + getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
 funcSubtraction :: StackState
 funcSubtraction = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack "-"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let value   | isINT a && isINT b        = INT      (getINT a       - getINT b)
@@ -39,17 +39,17 @@ funcSubtraction = do
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     - convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     - getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
 funcMultiplication :: StackState
 funcMultiplication = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack "*"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let value   | isINT a && isINT b        = INT      (getINT a       * getINT b)
@@ -57,17 +57,17 @@ funcMultiplication = do
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     * convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     * getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
 funcDivisionFloat :: StackState
 funcDivisionFloat = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack "/"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let value   | isINT a && isINT b        = FLOAT    (convertFloat a / convertFloat b)
@@ -75,17 +75,17 @@ funcDivisionFloat = do
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     / convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     / getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
 
 funcDivisionInteger :: StackState
 funcDivisionInteger = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newOutStack) = ( do
+    (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    let (newContainers, newOutStack) = ( do
             if validateParameters outStack "div"
-                then (deallocateStack outStack objects, [ERROR InvalidParameterAmount])
+                then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let value   | isINT a && isINT b        = INT           (getINT a   `div` getINT b)
@@ -93,6 +93,6 @@ funcDivisionInteger = do
                             | isFLOAT a && isINT b      = INT   (floor  (getFLOAT a     / convertFloat b))
                             | isFLOAT a && isFLOAT b    = INT   (floor  (getFLOAT a     / getFLOAT b))
                             | otherwise = ERROR ExpectedNumber
-                (deallocateStack [a,b] objects, value : rest))
-    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+                (deallocateStack [a,b] containers, value : rest))
+    let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
