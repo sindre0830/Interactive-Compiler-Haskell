@@ -22,9 +22,7 @@ funcPrint = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects, newStatusIO) = ( do
             if length outStack < functors Map.! "print"
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (newOutStack, newObjects, statusIO)
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects, statusIO)
             else do
                 let (a:rest) = outStack
                 let newObjects = deallocateObject a objects

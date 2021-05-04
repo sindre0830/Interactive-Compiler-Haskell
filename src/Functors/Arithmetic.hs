@@ -15,7 +15,7 @@ funcAddition = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "+"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject b (deallocateObject a objects)
@@ -34,7 +34,7 @@ funcSubtraction = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "-"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject b (deallocateObject a objects)
@@ -53,7 +53,7 @@ funcMultiplication = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "*"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject b (deallocateObject a objects)
@@ -72,7 +72,7 @@ funcDivisionFloat = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "/"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject b (deallocateObject a objects)
@@ -91,7 +91,7 @@ funcDivisionInteger = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "div"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject b (deallocateObject a objects)

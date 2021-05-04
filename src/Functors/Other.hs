@@ -13,18 +13,16 @@ import Stack
 funcExec :: StackState
 funcExec = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newOutStack, newObjects) = ( do
+    let (newInpStack, newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "exec"
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (inpStack, newOutStack, newObjects)
+                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (a:rest) = outStack
                 if not (isCODEBLOCK a)
-                    then (inpStack, ERROR ExpectedCodeblock : rest, deallocateObject a objects)
+                    then (inpStack, deallocateObject a objects, ERROR ExpectedCodeblock : rest)
                 else do
                     let block = objects Map.! getCODEBLOCK a
-                    (block ++ inpStack, rest, deallocateOneObject a objects))
+                    (block ++ inpStack, deallocateOneObject a objects, rest))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -34,9 +32,7 @@ funcEach = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "each"
-                then do
-                    let (newStack, newObjects) = deallocateStack outStack objects
-                    (inpStack, newObjects, newStack)
+                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)
@@ -49,7 +45,7 @@ funcEach = do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
                     let (values, newObjects) = eachOf (reverse list) block ([], objects)
-                    let (_, objects) = deallocateStack block newObjects
+                    let objects = deallocateStack block newObjects
                     (values ++ inpStack, deallocateObject a objects, rest))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result

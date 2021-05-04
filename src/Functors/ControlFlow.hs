@@ -15,9 +15,7 @@ funcIf = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "if"
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (inpStack, newOutStack, newObjects)
+                then (inpStack, [ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (c:b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
@@ -41,9 +39,7 @@ funcTimes = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "times"
-                then do
-                    let (newStack, newObjects) = deallocateStack outStack objects
-                    (inpStack, newObjects, newStack)
+                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let newObject = deallocateObject a (deallocateObject b objects)
@@ -53,7 +49,7 @@ funcTimes = do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
                     let (values, newObjects) = loopN (getINT a) block ([], objects)
-                    let (_, objects) = deallocateStack block newObjects
+                    let objects = deallocateStack block newObjects
                     (values ++ inpStack, deallocateObject a objects, rest))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result

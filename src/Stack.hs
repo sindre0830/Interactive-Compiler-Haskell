@@ -8,11 +8,14 @@ import qualified Data.Map as Map
 -- local modules
 import Dictionary
 
-deallocateStack :: Stack -> Objects -> (Stack, Objects)
-deallocateStack [] objects = ([ERROR InvalidParameterAmount], objects)
-deallocateStack (x:xs) objects = deallocateStack xs (deallocateObject x objects)
+deallocateStack :: Stack -> Objects -> Objects
+deallocateStack xs objects = foldl (flip deallocateObject) objects xs
 
-generateObjectAddress :: Objects -> String 
+deallocateStack' :: Stack -> Objects -> (Stack, Objects)
+deallocateStack' [] objects = ([ERROR InvalidParameterAmount], objects)
+deallocateStack' (x:xs) objects = deallocateStack' xs (deallocateObject x objects)
+
+generateObjectAddress :: Objects -> String
 generateObjectAddress objects = show $ getValidAddress objects 0
 
 getValidAddress :: Objects -> Int -> Int
@@ -59,15 +62,15 @@ deallocateObject :: Type -> Objects -> Objects
 deallocateObject x objects
     | isLIST x = do
         let list = objects Map.! getLIST x
-        let (_, newObjects) = deallocateStack list objects
+        let newObjects = deallocateStack list objects
         Map.delete (getLIST x) newObjects
     | isCODEBLOCK x = do
         let block = objects Map.! getCODEBLOCK x
-        let (_, newObjects) = deallocateStack block objects
+        let newObjects = deallocateStack block objects
         Map.delete (getCODEBLOCK x) newObjects
     | otherwise = objects
 
-printableStack :: (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) -> String 
+printableStack :: (InputStack, Objects, Variables, Functions, OutputStack, StatusIO) -> String
 printableStack (_, objects, _, _, outStack, _) = "[" ++ intercalate "," (formatStack (reverse outStack) objects) ++ "]"
 
 formatStack :: Stack -> Objects -> [String]

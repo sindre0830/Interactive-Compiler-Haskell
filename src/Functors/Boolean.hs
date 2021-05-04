@@ -15,7 +15,7 @@ funcAND = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "&&"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)
@@ -31,7 +31,7 @@ funcOR = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "||"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)
@@ -47,7 +47,7 @@ funcNOT = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "not"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (a:rest) = outStack
                 let newObjects = deallocateObject a objects

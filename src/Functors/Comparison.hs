@@ -15,7 +15,7 @@ funcEqual = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "=="
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)
@@ -43,7 +43,7 @@ funcLess = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "<"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)
@@ -62,7 +62,7 @@ funcGreater = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! ">"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)

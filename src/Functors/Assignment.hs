@@ -15,9 +15,7 @@ funcSetVariable = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newOutStack) = ( do
             if length outStack < functors Map.! ":="
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (newObjects, variables, newOutStack)
+                then (deallocateStack outStack objects, variables, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a objects
@@ -35,9 +33,7 @@ funcSetFunction = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newFunctions, newOutStack) = ( do
             if length outStack < functors Map.! "fun"
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (newObjects, functions, newOutStack)
+                then (deallocateStack outStack objects, functions, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)

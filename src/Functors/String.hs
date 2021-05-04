@@ -17,7 +17,7 @@ funcParseInteger = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "parseInteger"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (a:rest) = outStack
                 let newObjects = deallocateObject a objects
@@ -34,7 +34,7 @@ funcParseFloat = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "parseFloat"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (a:rest) = outStack
                 let newObjects = deallocateObject a objects
@@ -51,7 +51,7 @@ funcWords = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "words"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (a:rest) = outStack
                 let (value, newObjects) | not (isSTRING a) = (ERROR ExpectedString, deallocateObject a objects)

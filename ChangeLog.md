@@ -203,3 +203,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.0.3] **formatting**: Added result variable in functors
 
 [3.1.0] **development**: Modified each functor so it doesn't use nested executer
+
+[3.2.0] **development**: Modified deallocateStack to only return object

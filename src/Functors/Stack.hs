@@ -15,7 +15,7 @@ funcPop = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "pop"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (a:rest) = outStack
                 let newObjects = deallocateObject a objects
@@ -29,7 +29,7 @@ funcDup = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "dup"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (a:rest) = outStack
                 let (value, newObjects) = duplicateStack [a] ([], objects)
@@ -43,7 +43,7 @@ funcSwap = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newOutStack, newObjects) = ( do
             if length outStack < functors Map.! "swap"
-                then deallocateStack outStack objects
+                then ([ERROR InvalidParameterAmount], deallocateStack outStack objects)
             else do
                 let (b:a:rest) = outStack
                 (a:b:rest, objects))

@@ -69,10 +69,10 @@ executeStack = do
                     -- Other
                     "exec"  -> funcExec
                     "map"   -> funcMap
+                    "each"  -> funcEach
                     "foldl" -> funcFoldl
                     -- Control flow
                     "if"    -> funcIf
-                    "each"  -> funcEach
                     "times" -> funcTimes
                     "loop"  -> funcLoop
                     -- Assignment
@@ -146,9 +146,7 @@ funcMap = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newFunctions, newOutStack) = ( do   
             if length outStack < functors Map.! "map"
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (newObjects, variables, functions, newOutStack)
+                then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)
@@ -161,7 +159,7 @@ funcMap = do
                                 | otherwise = [b]
                     let list = objects Map.! getLIST a
                     let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
-                    let (_, objects) = deallocateStack block newObjects
+                    let objects = deallocateStack block newObjects
                     if head newList == ERROR InvalidOperationIO
                         then do
                             (deallocateObject a objects, variables, functions, head newList : rest)
@@ -178,7 +176,7 @@ mapOf (x:xs) block (objects, variables, functions, outStack) = do
     let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, [x], None)
     if statusIO /= None
         then do
-            let (_, newObjects) = deallocateStack outStack objects
+            let newObjects = deallocateStack outStack objects
             (newObjects, variables, functions, [ERROR InvalidOperationIO])
     else mapOf xs block (objects, newVariables, newFunctions, newOutStack ++ outStack)
 
@@ -188,9 +186,7 @@ funcFoldl = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newObjects, newVariables, newFunctions, newOutStack) = ( do
             if length outStack < functors Map.! "foldl"
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (newObjects, variables, functions, newOutStack)
+                then (deallocateStack outStack objects, variables, functions, [ERROR InvalidParameterAmount])
             else do
                 let (c:b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
@@ -205,7 +201,7 @@ funcFoldl = do
                                 | otherwise = [c]
                     let list = objects Map.! getLIST a
                     let (newObjects, newVariables, newFunctions, newValue) = foldlOf list block (objects, variables, functions, b)
-                    let (_, objects) = deallocateStack block newObjects
+                    let objects = deallocateStack block newObjects
                     (deallocateObject a objects, newVariables, newFunctions, newValue : rest))
     let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
@@ -218,8 +214,8 @@ foldlOf (x:xs) block (objects, variables, functions, value) = do
     let (_, objects, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newObjects, variables, functions, x : [value], None)
     if statusIO /= None
         then do
-            let (_, objects) = deallocateStack dupBlock newObjects
-            (deallocateObject value newObjects, variables, functions, ERROR InvalidOperationIO)
+            let objects = deallocateStack dupBlock newObjects
+            (deallocateObject value objects, variables, functions, ERROR InvalidOperationIO)
     else foldlOf xs block (objects, newVariables, newFunctions, head newOutStack)
 
 
@@ -228,9 +224,7 @@ funcLoop = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
     let (newInpStack, newObjects, newOutStack) = ( do
             if length outStack < functors Map.! "loop"
-                then do
-                    let (newStack, newObjects) = deallocateStack outStack objects
-                    (inpStack, newObjects, newStack)
+                then (inpStack, deallocateStack outStack objects, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
                 let newObjects = deallocateObject a (deallocateObject b objects)
@@ -243,7 +237,7 @@ funcLoop = do
                     let block   | isCODEBLOCK b = [b, FUNC "exec"]
                                 | otherwise = [b]
                     let (newObjects, values) = loop break block (objects, variables, functions, rest)
-                    let (_, objects) = deallocateStack (break ++ block) newObjects
+                    let objects = deallocateStack (break ++ block) newObjects
                     (values ++ inpStack, objects, []))
     let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     put result >> return result
