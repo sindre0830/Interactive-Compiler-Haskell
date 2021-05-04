@@ -171,33 +171,6 @@ funcMap = do
     let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
 
-
-funcEach :: StackState
-funcEach = do
-    (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newVariables, newFunctions, newOutStack) = ( do
-            if length outStack < functors Map.! "each"
-                then do
-                    let (newOutStack, newObjects) = deallocateStack outStack objects
-                    (newObjects, variables, functions, newOutStack)
-            else do
-                let (b:a:rest) = outStack
-                let newObjects = deallocateObject a (deallocateObject b objects)
-                if not (isLIST a)
-                    then (newObjects, variables, functions, ERROR ExpectedList : rest)
-                else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                    then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
-                else do
-                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                | otherwise = [b]
-                    let list = objects Map.! getLIST a
-                    let (newObjects, newVariables, newFunctions, values) = mapOf list block (objects, variables, functions, [])
-                    let (_, objects) = deallocateStack block newObjects
-                    (deallocateObject a objects, newVariables, newFunctions, values ++ rest))
-    let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
-    put result >> return result
-
-
 mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
 mapOf [] _ (objects, variables, functions, outStack) = (objects, variables, functions, outStack)
 mapOf (x:xs) block (objects, variables, functions, outStack) = do

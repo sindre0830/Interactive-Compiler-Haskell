@@ -201,3 +201,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.0.2] **formatting**: Reduced indentation in functor calculations
 
 [3.0.3] **formatting**: Added result variable in functors
+
+[3.1.0] **development**: Modified each functor so it doesn't use nested executer
