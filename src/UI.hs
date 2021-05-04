@@ -3,7 +3,9 @@ module UI
     ) where
 -- foreign modules
 import System.IO
-import Data.Char ( toLower )
+import System.Directory
+import Data.List (intercalate)
+import Data.Char (toLower)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Monad.State.Lazy
@@ -15,12 +17,12 @@ import Compiler
 
 readInput :: String -> IO ()
 readInput message = do
-    putStr (message ++ ": ")
+    putStr message
     hFlush stdout
 
 menu :: IO ()
 menu = do
-    readInput "bprog2"
+    readInput "bprog2 > "
     input <- getLine
     let cmd = stringToLower input
     if cmd == "interactive"
@@ -29,21 +31,39 @@ menu = do
             modeInteractive ([], Map.empty, Map.empty, Map.empty, [], None) False
     else if cmd == "compiler"
         then do
-            putStrLn "Starting compiler mode...\n"
-            modeCompiler ([], Map.empty, Map.empty, Map.empty, [], None) False
+            files <- listDirectory "documents"
+            if null files
+                then putStrLn "No files available. Terminating program...\n"
+            else do
+                putStrLn $ "\nAvailable file(s): " ++ intercalate " | " files
+                readInput "Type in filename > "
+                input <- getLine
+                getFileName input files
     else menu
+
+getFileName :: String -> [FilePath] -> IO ()
+getFileName input files
+    | input `elem` files = do
+        putStrLn "Starting compiler mode...\n"
+        modeCompiler input ([], Map.empty, Map.empty, Map.empty, [], None) False
+    | otherwise = do
+        putStrLn "\nCouldn't find file, try again...\n"
+        putStrLn $ "Available file(s): " ++ intercalate " | " files
+        readInput "Type in filename > "
+        input <- getLine
+        getFileName input files
 
 modeInteractive :: (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
 modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
     if statusIO == Output
         then do
             let (x:rest) = outStack
-            putStrLn $ "output: " ++ getSTRING x
+            putStrLn $ "output > " ++ getSTRING x
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, rest, None)
             modeInteractive (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if statusIO == Input
         then do
-            readInput "input"
+            readInput "input > "
             input <- getLine
             let value = STRING input
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, value : outStack, None)
@@ -59,7 +79,7 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
             putStrLn $ "Stack: " ++ printableStack (inpStack, containers, variables, functions, outStack, statusIO) ++ "\n"
             modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) False
     else do
-        readInput "bprog2"
+        readInput "bprog2 > "
         input <- getLine
         putStrLn ""
         if stringToLower input == "--debug"
@@ -82,21 +102,21 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
                     modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) True
             else modeInteractive (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
 
-modeCompiler :: (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
-modeCompiler (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
+modeCompiler :: FilePath -> (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
+modeCompiler file (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
     if statusIO == Output
         then do
             let (x:rest) = outStack
             putStrLn $ "output: " ++ getSTRING x
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, rest, None)
-            modeCompiler (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+            modeCompiler file (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if statusIO == Input
         then do
-            readInput "input"
+            readInput "input > "
             input <- getLine
             let value = STRING input
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, value : outStack, None)
-            modeCompiler (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+            modeCompiler file (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if showStack
         then if searchForErrors outStack containers
             then do
@@ -105,7 +125,7 @@ modeCompiler (inpStack, containers, variables, functions, outStack, statusIO) sh
                 putStrLn "Terminating program...\n"
         else putStrLn $ "Stack: " ++ printableStack (inpStack, containers, variables, functions, outStack, statusIO) ++ "\n"
     else do
-        handle <- openFile "documents/test.txt" ReadMode
+        handle <- openFile ("documents/" ++ file) ReadMode
         contents <- hGetContents handle
         let tokens = tokenize contents
         let (parsedInpStack, parsedContainers) = parser tokens inpStack containers
@@ -116,7 +136,7 @@ modeCompiler (inpStack, containers, variables, functions, outStack, statusIO) sh
                 renderLogsBeforeExecute (parsedInpStack, parsedContainers, outStack)
                 renderLogsAfterExecute (newInpStack, newContainers, newOutStack)
                 putStrLn "Terminating program...\n"
-        else modeCompiler (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+        else modeCompiler file (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
 
 renderLogsBeforeExecute :: (InputStack, Containers, OutputStack) -> IO ()
 renderLogsBeforeExecute (beforeInpStack, beforeContainers, beforeOutStack) = do

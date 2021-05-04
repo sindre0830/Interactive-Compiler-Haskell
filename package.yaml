@@ -27,6 +27,7 @@ library:
   dependencies:
   - containers
   - mtl
+  - directory
 
 executables:
   assignment-two-exe:

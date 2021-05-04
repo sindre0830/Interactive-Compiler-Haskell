@@ -3,8 +3,8 @@ module Stack
     ) where
 -- foreign modules
 import Data.Map (Map)
-import Data.List ( intercalate )
 import qualified Data.Map as Map
+import Data.List (intercalate)
 -- local modules
 import Dictionary
 

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 158a2db3186570afa3c392e2d4993bdea8ed3f134d724d5e2487c5875089f7fd
+-- hash: e447f5bd708f2664d20dae32a95ed76d16ed305fed2a9a9f1b850307f2b77158
 
 name:           assignment-two
 version:        3.1.0
@@ -50,6 +50,7 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , directory
     , mtl
   default-language: Haskell2010
 
