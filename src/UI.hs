@@ -38,7 +38,7 @@ modeInteractive (inpStack, objects, variables, functions, outStack, statusIO) sh
     if statusIO == Output
         then do
             let (x:rest) = outStack
-            putStrLn $ "output: " ++ getPRINT x
+            putStrLn $ "output: " ++ getSTRING x
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, rest, None)
             modeInteractive (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if statusIO == Input
@@ -74,7 +74,7 @@ modeCompiler (inpStack, objects, variables, functions, outStack, statusIO) showS
     if statusIO == Output
         then do
             let (x:rest) = outStack
-            putStrLn $ "output: " ++ getPRINT x
+            putStrLn $ "output: " ++ getSTRING x
             let (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, objects, variables, functions, rest, None)
             modeCompiler (newInpStack, newObjects, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if statusIO == Input

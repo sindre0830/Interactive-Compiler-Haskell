@@ -502,8 +502,8 @@ spec_funcSetFunction = do
 spec_funcPrint :: Spec
 spec_funcPrint = do
     describe "funcPrint tests:" $ do
-        it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING \"abc\"], None)) returns \"[]\"" $ do
-            printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING "abc"], None)) `shouldBe` "[]"
+        it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING \"abc\"], None)) returns \"[\"abc\"]\"" $ do
+            printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [STRING "abc"], None)) `shouldBe` "[\"abc\"]"
         it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0], None)) returns \"[ExpectedString]\"" $ do
             printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0], None)) `shouldBe` "[ExpectedString]"
         it "printableStack (evalState funcPrint ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do

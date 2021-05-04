@@ -211,3 +211,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.4.0] **development**: Fixed head and tail functors to work with nested objects
 
 [3.5.0] **development**: Added validateParameters to reduce clutter in functors
+
+[3.6.0] **development**: Removed Print type and just use String type

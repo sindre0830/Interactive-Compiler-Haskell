@@ -25,6 +25,6 @@ funcPrint = do
                 let (a:rest) = outStack
                 if not (isSTRING a)
                     then (deallocateObject a objects, ERROR ExpectedString : rest, statusIO)
-                else (deallocateObject a objects, PRINT (getSTRING a) : rest, Output))
+                else (objects, outStack, Output))
     let result = (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
     put result >> return result

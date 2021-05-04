@@ -17,82 +17,75 @@ type Tokens = [String]
 type Token = String
 
 
-data EitherN a b c d e f g h i j
-    = INT a | FLOAT b | BOOL c | STRING d | FUNC e | UNKNOWN f | LIST g | CODEBLOCK h | ERROR i | PRINT j
+data EitherN a b c d e f g h i
+    = INT a | FLOAT b | BOOL c | STRING d | FUNC e | UNKNOWN f | LIST g | CODEBLOCK h | ERROR i
     deriving (Eq, Show)
 
-convertFloat :: Integral a => EitherN a b c d e f g h i j -> Float
+convertFloat :: Integral a => EitherN a b c d e f g h i -> Float
 convertFloat (INT a) = fromIntegral a
 
-getINT :: EitherN a b c d e f g h i j -> a
+getINT :: EitherN a b c d e f g h i -> a
 getINT (INT a) = a
 
-getFLOAT :: EitherN a b c d e f g h i j -> b
+getFLOAT :: EitherN a b c d e f g h i -> b
 getFLOAT (FLOAT b) = b
 
-getBOOL :: EitherN a b c d e f g h i j -> c
+getBOOL :: EitherN a b c d e f g h i -> c
 getBOOL (BOOL c) = c
 
-getSTRING :: EitherN a b c d e f g h i j -> d
+getSTRING :: EitherN a b c d e f g h i -> d
 getSTRING (STRING d) = d
 
-getFUNC :: EitherN a b c d e f g h i j -> e
+getFUNC :: EitherN a b c d e f g h i -> e
 getFUNC (FUNC e) = e
 
-getUNKNOWN :: EitherN a b c d e f g h i j -> f
+getUNKNOWN :: EitherN a b c d e f g h i -> f
 getUNKNOWN (UNKNOWN f) = f
 
-getLIST :: EitherN a b c d e f g h i j -> g
+getLIST :: EitherN a b c d e f g h i -> g
 getLIST (LIST g) = g
 
-getCODEBLOCK :: EitherN a b c d e f g h i j -> h
+getCODEBLOCK :: EitherN a b c d e f g h i -> h
 getCODEBLOCK (CODEBLOCK h) = h
 
-getERROR :: EitherN a b c d e f g h i j -> i
+getERROR :: EitherN a b c d e f g h i -> i
 getERROR (ERROR i) = i
 
-getPRINT :: EitherN a b c d e f g h i j -> j
-getPRINT (PRINT j) = j
-
-isINT :: EitherN a b c d e f g h i j -> Bool
+isINT :: EitherN a b c d e f g h i -> Bool
 isINT (INT _) = True
 isINT _ = False
 
-isFLOAT :: EitherN a b c d e f g h i j -> Bool
+isFLOAT :: EitherN a b c d e f g h i -> Bool
 isFLOAT (FLOAT _) = True
 isFLOAT _ = False
 
-isBOOL :: EitherN a b c d e f g h i j -> Bool
+isBOOL :: EitherN a b c d e f g h i -> Bool
 isBOOL (BOOL _) = True
 isBOOL _ = False
 
-isSTRING :: EitherN a b c d e f g h i j -> Bool
+isSTRING :: EitherN a b c d e f g h i -> Bool
 isSTRING (STRING _) = True
 isSTRING _ = False
 
-isFUNC :: EitherN a b c d e f g h i j -> Bool
+isFUNC :: EitherN a b c d e f g h i -> Bool
 isFUNC (FUNC _) = True
 isFUNC _ = False
 
-isUNKNOWN :: EitherN a b c d e f g h i j -> Bool
+isUNKNOWN :: EitherN a b c d e f g h i -> Bool
 isUNKNOWN (UNKNOWN _) = True
 isUNKNOWN _ = False
 
-isERROR :: EitherN a b c d e f g h i j -> Bool
+isERROR :: EitherN a b c d e f g h i -> Bool
 isERROR (ERROR _) = True
 isERROR _ = False
 
-isLIST :: EitherN a b c d e f g h i j -> Bool
+isLIST :: EitherN a b c d e f g h i -> Bool
 isLIST (LIST _) = True
 isLIST _ = False
 
-isCODEBLOCK :: EitherN a b c d e f g h i j -> Bool
+isCODEBLOCK :: EitherN a b c d e f g h i -> Bool
 isCODEBLOCK (CODEBLOCK _) = True
 isCODEBLOCK _ = False
-
-isPRINT :: EitherN a b c d e f g h i j -> Bool
-isPRINT (PRINT _) = True
-isPRINT _ = False
 
 type List = Key
 
@@ -106,7 +99,7 @@ type Unknown = Data
 
 type StatusIO = TypeIO
 
-type Type = EitherN Integer Float Bool String Func Unknown List CodeBlock Error String
+type Type = EitherN Integer Float Bool String Func Unknown List CodeBlock Error
 
 type Stack = [Type]
 
