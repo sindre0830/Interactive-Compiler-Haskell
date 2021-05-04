@@ -139,6 +139,8 @@ spec_funcDivisionFloat = do
             printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [FLOAT 2.0, INT 10], None)) `shouldBe` "[5.0]"
         it "printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [INT 2, FLOAT 10.0], None)) returns \"[5.0]\"" $ do
             printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [INT 2, FLOAT 10.0], None)) `shouldBe` "[5.0]"
+        it "printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [INT 0, FLOAT 10.0], None)) returns \"[DivisionByZero]\"" $ do
+            printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [INT 0, FLOAT 10.0], None)) `shouldBe` "[DivisionByZero]"
         it "printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [INT 2], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [INT 2], None)) `shouldBe` "[InvalidParameterAmount]"
         it "printableStack (evalState funcDivisionFloat ([], Map.empty, Map.empty, Map.empty, [INT 2, BOOL True], None)) returns \"[ExpectedNumber]\"" $ do
@@ -155,6 +157,8 @@ spec_funcDivisionInteger = do
             printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [FLOAT 2.0, INT 10], None)) `shouldBe` "[5]"
         it "printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [INT 2, FLOAT 10.0], None)) returns \"[5]\"" $ do
             printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [INT 2, FLOAT 10.0], None)) `shouldBe` "[5]"
+        it "printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [FLOAT 0.0, FLOAT 10.0], None)) returns \"[DivisionByZero]\"" $ do
+            printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [FLOAT 0.0, FLOAT 10.0], None)) `shouldBe` "[DivisionByZero]"
         it "printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [INT 2], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [INT 2], None)) `shouldBe` "[InvalidParameterAmount]"
         it "printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [INT 2, BOOL True], None)) returns \"[ExpectedNumber]\"" $ do
