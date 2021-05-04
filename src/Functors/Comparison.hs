@@ -13,14 +13,14 @@ import Stack
 funcEqual :: StackState
 funcEqual = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "=="
-                                            then deallocateStack outStack objects
-                                        else do
-                                            let (b:a:rest) = outStack
-                                            let newObjects = deallocateObject a (deallocateObject b objects)
-                                            let value = compareStack [a] [b] objects
-                                            (BOOL value : rest, newObjects)
-                                    )
+    let (newOutStack, newObjects) = ( do
+            if length outStack < functors Map.! "=="
+                then deallocateStack outStack objects
+            else do
+                let (b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b objects)
+                let value = compareStack [a] [b] objects
+                (BOOL value : rest, newObjects))
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
@@ -41,18 +41,18 @@ compareStack (x:xs) (y:ys) objects
 funcLess :: StackState
 funcLess = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "<"
-                                            then deallocateStack outStack objects
-                                        else do
-                                            let (b:a:rest) = outStack
-                                            let newObjects = deallocateObject a (deallocateObject b objects)
-                                            let value   | isINT a && isINT b        = BOOL  (getINT a       < getINT b)
-                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a < getFLOAT b)
-                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     < convertFloat b)
-                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     < getFLOAT b)
-                                                        | otherwise = ERROR ExpectedNumber
-                                            (value : rest, newObjects)
-                                    )
+    let (newOutStack, newObjects) = ( do
+            if length outStack < functors Map.! "<"
+                then deallocateStack outStack objects
+            else do
+                let (b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b objects)
+                let value   | isINT a && isINT b        = BOOL  (getINT a       < getINT b)
+                            | isINT a && isFLOAT b      = BOOL  (convertFloat a < getFLOAT b)
+                            | isFLOAT a && isINT b      = BOOL  (getFLOAT a     < convertFloat b)
+                            | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     < getFLOAT b)
+                            | otherwise = ERROR ExpectedNumber
+                (value : rest, newObjects))
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
@@ -60,17 +60,17 @@ funcLess = do
 funcGreater :: StackState
 funcGreater = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = (   if length outStack < functors Map.! ">"
-                                            then deallocateStack outStack objects
-                                        else do
-                                            let (b:a:rest) = outStack
-                                            let newObjects = deallocateObject a (deallocateObject b objects)
-                                            let value   | isINT a && isINT b        = BOOL  (getINT a       > getINT b)
-                                                        | isINT a && isFLOAT b      = BOOL  (convertFloat a > getFLOAT b)
-                                                        | isFLOAT a && isINT b      = BOOL  (getFLOAT a     > convertFloat b)
-                                                        | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     > getFLOAT b)
-                                                        | otherwise = ERROR ExpectedNumber
-                                            (value : rest, newObjects)
-                                    )
+    let (newOutStack, newObjects) = ( do
+            if length outStack < functors Map.! ">"
+                then deallocateStack outStack objects
+            else do
+                let (b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b objects)
+                let value   | isINT a && isINT b        = BOOL  (getINT a       > getINT b)
+                            | isINT a && isFLOAT b      = BOOL  (convertFloat a > getFLOAT b)
+                            | isFLOAT a && isINT b      = BOOL  (getFLOAT a     > convertFloat b)
+                            | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     > getFLOAT b)
+                            | otherwise = ERROR ExpectedNumber
+                (value : rest, newObjects))
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)

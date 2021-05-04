@@ -13,25 +13,25 @@ import Stack
 funcIf :: StackState
 funcIf = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newOutStack, newObjects) = (  if length outStack < functors Map.! "if"
-                                                        then do
-                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
-                                                            (inpStack, newOutStack, newObjects)
-                                                    else do
-                                                        let (c:b:a:rest) = outStack
-                                                        let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
-                                                        if not (isBOOL a)
-                                                            then (inpStack, ERROR ExpectedBool : rest, newObjects)
-                                                        else if getBOOL a
-                                                            then do
-                                                                let values  | isCODEBLOCK b = [b, FUNC "exec"]
-                                                                            | otherwise = [b]
-                                                                (values ++ inpStack, rest, deallocateObject a (deallocateObject c objects))
-                                                        else do
-                                                            let values  | isCODEBLOCK c = [c, FUNC "exec"]
-                                                                        | otherwise = [c]
-                                                            (values ++ inpStack, rest, deallocateObject a (deallocateObject b objects))
-                                                )
+    let (newInpStack, newOutStack, newObjects) = ( do
+            if length outStack < functors Map.! "if"
+                then do
+                    let (newOutStack, newObjects) = deallocateStack outStack objects
+                    (inpStack, newOutStack, newObjects)
+            else do
+                let (c:b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
+                if not (isBOOL a)
+                    then (inpStack, ERROR ExpectedBool : rest, newObjects)
+                else if getBOOL a
+                    then do
+                        let values  | isCODEBLOCK b = [b, FUNC "exec"]
+                                    | otherwise = [b]
+                        (values ++ inpStack, rest, deallocateObject a (deallocateObject c objects))
+                else do
+                    let values  | isCODEBLOCK c = [c, FUNC "exec"]
+                                | otherwise = [c]
+                    (values ++ inpStack, rest, deallocateObject a (deallocateObject b objects)))
     put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 
@@ -39,22 +39,22 @@ funcIf = do
 funcTimes :: StackState
 funcTimes = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newObjects, newOutStack) = (  if length outStack < functors Map.! "times"
-                                                        then do
-                                                            let (newStack, newObjects) = deallocateStack outStack objects
-                                                            (inpStack, newObjects, newStack)
-                                                    else do
-                                                        let (b:a:rest) = outStack
-                                                        let newObject = deallocateObject a (deallocateObject b objects)
-                                                        if not (isINT a) || getINT a < 0
-                                                            then (inpStack, newObject, ERROR ExpectedPositiveInteger : rest)
-                                                        else do
-                                                            let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                                                        | otherwise = [b]
-                                                            let (values, newObjects) = loopN (getINT a) block ([], objects)
-                                                            let (_, objects) = deallocateStack block newObjects
-                                                            (values ++ inpStack, deallocateObject a objects, rest)
-                                                )
+    let (newInpStack, newObjects, newOutStack) = ( do
+            if length outStack < functors Map.! "times"
+                then do
+                    let (newStack, newObjects) = deallocateStack outStack objects
+                    (inpStack, newObjects, newStack)
+            else do
+                let (b:a:rest) = outStack
+                let newObject = deallocateObject a (deallocateObject b objects)
+                if not (isINT a) || getINT a < 0
+                    then (inpStack, newObject, ERROR ExpectedPositiveInteger : rest)
+                else do
+                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
+                                | otherwise = [b]
+                    let (values, newObjects) = loopN (getINT a) block ([], objects)
+                    let (_, objects) = deallocateStack block newObjects
+                    (values ++ inpStack, deallocateObject a objects, rest))
     put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 

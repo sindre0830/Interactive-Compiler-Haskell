@@ -32,8 +32,7 @@ executeStack = do
         let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack variables functions
         if shouldSkip
             then do
-                put (newInpStack, objects, variables, functions, newOutStack ++ outStack, statusIO)
-                executeStack
+                put (newInpStack, objects, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
         else if isFUNC x
             then ( do
                 put (xs, objects, variables, functions, outStack, statusIO)
@@ -133,7 +132,8 @@ skipOperation stack variables functions
             let (x:rest) = stack
             (True, rest, [x])
     | length stack >= 3 && isFUNC (stack !! 2) && isUNKNOWN (head stack) 
-        && (Map.member (getUNKNOWN (head stack)) variables || Map.member (getUNKNOWN (head stack)) functions)
+        && (Map.member (getUNKNOWN (head stack)) variables 
+        || Map.member (getUNKNOWN (head stack)) functions)
         && (getFUNC (stack !! 2) == ":="
         || getFUNC (stack !! 2) == "fun") = do
             let (x:y:rest) = stack
@@ -144,30 +144,30 @@ skipOperation stack variables functions
 funcMap :: StackState
 funcMap = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "map"
-                                                                        then do
-                                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
-                                                                            (newObjects, variables, functions, newOutStack)
-                                                                    else do
-                                                                        let (b:a:rest) = outStack
-                                                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                                                        if not (isLIST a)
-                                                                            then (newObjects, variables, functions, ERROR ExpectedList : rest)
-                                                                        else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                                                                            then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
-                                                                        else do
-                                                                            let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                                                                        | otherwise = [b]
-                                                                            let list = objects Map.! getLIST a
-                                                                            let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
-                                                                            let (_, objects) = deallocateStack block newObjects
-                                                                            if head newList == ERROR InvalidOperationIO
-                                                                                then do
-                                                                                    (deallocateObject a objects, variables, functions, head newList : rest)
-                                                                            else do
-                                                                                let newObjects = updateObject (getLIST a) (reverse newList) objects
-                                                                                (newObjects, newVariables, newFunctions, a : rest)
-                                                                )
+    let (newObjects, newVariables, newFunctions, newOutStack) = ( do   
+            if length outStack < functors Map.! "map"
+                then do
+                    let (newOutStack, newObjects) = deallocateStack outStack objects
+                    (newObjects, variables, functions, newOutStack)
+            else do
+                let (b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b objects)
+                if not (isLIST a)
+                    then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                    then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                else do
+                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
+                                | otherwise = [b]
+                    let list = objects Map.! getLIST a
+                    let (newObjects, newVariables, newFunctions, newList) = mapOf list block (objects, variables, functions, [])
+                    let (_, objects) = deallocateStack block newObjects
+                    if head newList == ERROR InvalidOperationIO
+                        then do
+                            (deallocateObject a objects, variables, functions, head newList : rest)
+                    else do
+                        let newObjects = updateObject (getLIST a) (reverse newList) objects
+                        (newObjects, newVariables, newFunctions, a : rest))
     put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
 
@@ -175,25 +175,25 @@ funcMap = do
 funcEach :: StackState
 funcEach = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "each"
-                                                                        then do
-                                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
-                                                                            (newObjects, variables, functions, newOutStack)
-                                                                    else do
-                                                                        let (b:a:rest) = outStack
-                                                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                                                        if not (isLIST a)
-                                                                            then (newObjects, variables, functions, ERROR ExpectedList : rest)
-                                                                        else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                                                                            then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
-                                                                        else do
-                                                                            let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                                                                        | otherwise = [b]
-                                                                            let list = objects Map.! getLIST a
-                                                                            let (newObjects, newVariables, newFunctions, values) = mapOf list block (objects, variables, functions, [])
-                                                                            let (_, objects) = deallocateStack block newObjects
-                                                                            (deallocateObject a objects, newVariables, newFunctions, values ++ rest)
-                                                                )
+    let (newObjects, newVariables, newFunctions, newOutStack) = ( do
+            if length outStack < functors Map.! "each"
+                then do
+                    let (newOutStack, newObjects) = deallocateStack outStack objects
+                    (newObjects, variables, functions, newOutStack)
+            else do
+                let (b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b objects)
+                if not (isLIST a)
+                    then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                else if not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                    then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                else do
+                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
+                                | otherwise = [b]
+                    let list = objects Map.! getLIST a
+                    let (newObjects, newVariables, newFunctions, values) = mapOf list block (objects, variables, functions, [])
+                    let (_, objects) = deallocateStack block newObjects
+                    (deallocateObject a objects, newVariables, newFunctions, values ++ rest))
     put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
 
@@ -213,27 +213,27 @@ mapOf (x:xs) block (objects, variables, functions, outStack) = do
 funcFoldl :: StackState
 funcFoldl = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newObjects, newVariables, newFunctions, newOutStack) = (   if length outStack < functors Map.! "foldl"
-                                                                        then do
-                                                                            let (newOutStack, newObjects) = deallocateStack outStack objects
-                                                                            (newObjects, variables, functions, newOutStack)
-                                                                    else do
-                                                                        let (c:b:a:rest) = outStack
-                                                                        let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
-                                                                        if not (isLIST a)
-                                                                            then (newObjects, variables, functions, ERROR ExpectedList : rest)
-                                                                        else if isCODEBLOCK b || isFUNC b  || (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                                                                            then (newObjects, variables, functions, ERROR InvalidType : rest)
-                                                                        else if not (isCODEBLOCK c) && not (isFUNC c) && not (isUNKNOWN c && Map.member (getUNKNOWN c) functions)
-                                                                            then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
-                                                                        else do
-                                                                            let block   | isCODEBLOCK c = [c, FUNC "exec"]
-                                                                                        | otherwise = [c]
-                                                                            let list = objects Map.! getLIST a
-                                                                            let (newObjects, newVariables, newFunctions, newValue) = foldlOf list block (objects, variables, functions, b)
-                                                                            let (_, objects) = deallocateStack block newObjects
-                                                                            (deallocateObject a objects, newVariables, newFunctions, newValue : rest)
-                                                                )
+    let (newObjects, newVariables, newFunctions, newOutStack) = ( do
+            if length outStack < functors Map.! "foldl"
+                then do
+                    let (newOutStack, newObjects) = deallocateStack outStack objects
+                    (newObjects, variables, functions, newOutStack)
+            else do
+                let (c:b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b (deallocateObject c objects))
+                if not (isLIST a)
+                    then (newObjects, variables, functions, ERROR ExpectedList : rest)
+                else if isCODEBLOCK b || isFUNC b  || (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                    then (newObjects, variables, functions, ERROR InvalidType : rest)
+                else if not (isCODEBLOCK c) && not (isFUNC c) && not (isUNKNOWN c && Map.member (getUNKNOWN c) functions)
+                    then (newObjects, variables, functions, ERROR ExpectedCodeblock : rest)
+                else do
+                    let block   | isCODEBLOCK c = [c, FUNC "exec"]
+                                | otherwise = [c]
+                    let list = objects Map.! getLIST a
+                    let (newObjects, newVariables, newFunctions, newValue) = foldlOf list block (objects, variables, functions, b)
+                    let (_, objects) = deallocateStack block newObjects
+                    (deallocateObject a objects, newVariables, newFunctions, newValue : rest))
     put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
     return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
 
@@ -253,25 +253,25 @@ foldlOf (x:xs) block (objects, variables, functions, value) = do
 funcLoop :: StackState
 funcLoop = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newInpStack, newObjects, newOutStack) = (  if length outStack < functors Map.! "loop"
-                                                        then do
-                                                            let (newStack, newObjects) = deallocateStack outStack objects
-                                                            (inpStack, newObjects, newStack)
-                                                    else do
-                                                        let (b:a:rest) = outStack
-                                                        let newObjects = deallocateObject a (deallocateObject b objects)
-                                                        if not (isCODEBLOCK a) && not (isFUNC a)  && not (isUNKNOWN a && Map.member (getUNKNOWN a) functions) 
-                                                            || not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
-                                                            then (inpStack, newObjects, ERROR ExpectedCodeblock : rest)
-                                                        else do
-                                                            let break   | isCODEBLOCK a = [a, FUNC "exec"]
-                                                                        | otherwise = [a]
-                                                            let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                                                        | otherwise = [b]
-                                                            let (newObjects, values) = loop break block (objects, variables, functions, rest)
-                                                            let (_, objects) = deallocateStack (break ++ block) newObjects
-                                                            (values ++ inpStack, objects, [])
-                                                )
+    let (newInpStack, newObjects, newOutStack) = ( do
+            if length outStack < functors Map.! "loop"
+                then do
+                    let (newStack, newObjects) = deallocateStack outStack objects
+                    (inpStack, newObjects, newStack)
+            else do
+                let (b:a:rest) = outStack
+                let newObjects = deallocateObject a (deallocateObject b objects)
+                if not (isCODEBLOCK a) && not (isFUNC a)  && not (isUNKNOWN a && Map.member (getUNKNOWN a) functions) 
+                    || not (isCODEBLOCK b) && not (isFUNC b) && not (isUNKNOWN b && Map.member (getUNKNOWN b) functions)
+                    then (inpStack, newObjects, ERROR ExpectedCodeblock : rest)
+                else do
+                    let break   | isCODEBLOCK a = [a, FUNC "exec"]
+                                | otherwise = [a]
+                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
+                                | otherwise = [b]
+                    let (newObjects, values) = loop break block (objects, variables, functions, rest)
+                    let (_, objects) = deallocateStack (break ++ block) newObjects
+                    (values ++ inpStack, objects, []))
     put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
 

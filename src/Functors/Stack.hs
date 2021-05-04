@@ -13,13 +13,13 @@ import Stack
 funcPop :: StackState
 funcPop = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "pop"
-                                            then deallocateStack outStack objects
-                                        else do
-                                            let (a:rest) = outStack
-                                            let newObjects = deallocateObject a objects
-                                            (rest, newObjects)
-                                    )
+    let (newOutStack, newObjects) = ( do
+            if length outStack < functors Map.! "pop"
+                then deallocateStack outStack objects
+            else do
+                let (a:rest) = outStack
+                let newObjects = deallocateObject a objects
+                (rest, newObjects))
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
@@ -27,13 +27,13 @@ funcPop = do
 funcDup :: StackState
 funcDup = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "dup"
-                                            then deallocateStack outStack objects
-                                        else do
-                                            let (a:rest) = outStack
-                                            let (value, newObjects) = duplicateStack [a] ([], objects)
-                                            (head value : outStack, newObjects)
-                                    )
+    let (newOutStack, newObjects) = ( do
+            if length outStack < functors Map.! "dup"
+                then deallocateStack outStack objects
+            else do
+                let (a:rest) = outStack
+                let (value, newObjects) = duplicateStack [a] ([], objects)
+                (head value : outStack, newObjects))
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
 
@@ -41,11 +41,11 @@ funcDup = do
 funcSwap :: StackState
 funcSwap = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    let (newOutStack, newObjects) = (   if length outStack < functors Map.! "swap"
-                                            then deallocateStack outStack objects
-                                        else do
-                                            let (b:a:rest) = outStack
-                                            (a:b:rest, objects)
-                                    )
+    let (newOutStack, newObjects) = ( do
+            if length outStack < functors Map.! "swap"
+                then deallocateStack outStack objects
+            else do
+                let (b:a:rest) = outStack
+                (a:b:rest, objects))
     put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
     return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
