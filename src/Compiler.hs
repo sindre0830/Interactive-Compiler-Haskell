@@ -168,8 +168,8 @@ funcMap = do
                     else do
                         let newObjects = updateObject (getLIST a) (reverse newList) objects
                         (newObjects, newVariables, newFunctions, a : rest))
-    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
-    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcEach :: StackState
@@ -194,8 +194,8 @@ funcEach = do
                     let (newObjects, newVariables, newFunctions, values) = mapOf list block (objects, variables, functions, [])
                     let (_, objects) = deallocateStack block newObjects
                     (deallocateObject a objects, newVariables, newFunctions, values ++ rest))
-    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
-    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    put result >> return result
 
 
 mapOf :: Stack -> Stack -> (Objects, Variables, Functions, OutputStack) -> (Objects, Variables, Functions, OutputStack)
@@ -234,8 +234,8 @@ funcFoldl = do
                     let (newObjects, newVariables, newFunctions, newValue) = foldlOf list block (objects, variables, functions, b)
                     let (_, objects) = deallocateStack block newObjects
                     (deallocateObject a objects, newVariables, newFunctions, newValue : rest))
-    put (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
-    return (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, newVariables, newFunctions, newOutStack, statusIO)
+    put result >> return result
 
 
 foldlOf :: Stack -> Stack -> (Objects, Variables, Functions, Type) -> (Objects, Variables, Functions, Type)
@@ -272,8 +272,8 @@ funcLoop = do
                     let (newObjects, values) = loop break block (objects, variables, functions, rest)
                     let (_, objects) = deallocateStack (break ++ block) newObjects
                     (values ++ inpStack, objects, []))
-    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 loop :: Stack -> Stack -> (Objects, Variables, Functions, Stack) -> (Objects, Stack)

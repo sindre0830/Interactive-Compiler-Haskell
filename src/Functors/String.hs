@@ -25,8 +25,8 @@ funcParseInteger = do
                             | isJust (readMaybe (getSTRING a) :: Maybe Integer) = INT (fromJust (readMaybe (getSTRING a) :: Maybe Integer))
                             | otherwise = ERROR ExpectedStringOfInteger
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcParseFloat :: StackState
@@ -42,8 +42,8 @@ funcParseFloat = do
                             | isJust (readMaybe (getSTRING a) :: Maybe Float) = FLOAT (fromJust (readMaybe (getSTRING a) :: Maybe Float))
                             | otherwise = ERROR ExpectedStringOfFloat
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcWords :: StackState
@@ -60,5 +60,5 @@ funcWords = do
                                             let (newObjects, key) = allocateObject list objects
                                             (LIST key, newObjects)
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result

@@ -20,8 +20,8 @@ funcPop = do
                 let (a:rest) = outStack
                 let newObjects = deallocateObject a objects
                 (rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcDup :: StackState
@@ -34,8 +34,8 @@ funcDup = do
                 let (a:rest) = outStack
                 let (value, newObjects) = duplicateStack [a] ([], objects)
                 (head value : outStack, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcSwap :: StackState
@@ -47,5 +47,5 @@ funcSwap = do
             else do
                 let (b:a:rest) = outStack
                 (a:b:rest, objects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result

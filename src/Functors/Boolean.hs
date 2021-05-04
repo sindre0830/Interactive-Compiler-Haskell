@@ -22,8 +22,8 @@ funcAND = do
                 let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
                             | otherwise = BOOL (getBOOL a && getBOOL b)
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcOR :: StackState
@@ -38,8 +38,8 @@ funcOR = do
                 let value   | not (isBOOL a) || not (isBOOL b) = ERROR ExpectedBool
                             | otherwise = BOOL (getBOOL a || getBOOL b)
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcNOT :: StackState
@@ -54,5 +54,5 @@ funcNOT = do
                 let value   | not (isBOOL a) = ERROR ExpectedBool
                             | otherwise = BOOL (not $ getBOOL a)
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result

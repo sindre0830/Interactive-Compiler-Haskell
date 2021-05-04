@@ -21,8 +21,8 @@ funcEqual = do
                 let newObjects = deallocateObject a (deallocateObject b objects)
                 let value = compareStack [a] [b] objects
                 (BOOL value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 compareStack :: Stack -> Stack -> Objects -> Bool
@@ -53,8 +53,8 @@ funcLess = do
                             | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     < getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcGreater :: StackState
@@ -72,5 +72,5 @@ funcGreater = do
                             | isFLOAT a && isFLOAT b    = BOOL  (getFLOAT a     > getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result

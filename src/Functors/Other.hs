@@ -25,5 +25,5 @@ funcExec = do
                 else do
                     let block = objects Map.! getCODEBLOCK a
                     (block ++ inpStack, rest, deallocateOneObject a objects))
-    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result

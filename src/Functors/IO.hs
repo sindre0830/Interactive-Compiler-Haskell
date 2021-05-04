@@ -13,8 +13,8 @@ import Stack
 funcRead :: StackState
 funcRead = do
     (inpStack, objects, variables, functions, outStack, statusIO) <- get
-    put (inpStack, objects, variables, functions, outStack, Input)
-    return (inpStack, objects, variables, functions, outStack, Input)
+    let result = (inpStack, objects, variables, functions, outStack, Input)
+    put result >> return result
 
 
 funcPrint :: StackState
@@ -31,5 +31,5 @@ funcPrint = do
                 if not (isSTRING a)
                     then (ERROR ExpectedString : rest, newObjects, statusIO)
                 else (PRINT (getSTRING a) : rest, newObjects, Output))
-    put (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, newStatusIO)
+    put result >> return result

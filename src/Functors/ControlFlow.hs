@@ -32,8 +32,8 @@ funcIf = do
                     let values  | isCODEBLOCK c = [c, FUNC "exec"]
                                 | otherwise = [c]
                     (values ++ inpStack, rest, deallocateObject a (deallocateObject b objects)))
-    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcTimes :: StackState
@@ -55,8 +55,8 @@ funcTimes = do
                     let (values, newObjects) = loopN (getINT a) block ([], objects)
                     let (_, objects) = deallocateStack block newObjects
                     (values ++ inpStack, deallocateObject a objects, rest))
-    put (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (newInpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 loopN :: Integer -> Stack -> (Stack, Objects) -> (Stack, Objects)

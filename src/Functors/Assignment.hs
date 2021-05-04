@@ -26,8 +26,8 @@ funcSetVariable = do
                 else do
                     let newVariables = Map.insert (getUNKNOWN a) b variables
                     (newObjects, newVariables, rest))
-    put (inpStack, newObjects, newVariables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, newVariables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, newVariables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcSetFunction :: StackState
@@ -50,5 +50,5 @@ funcSetFunction = do
                     let (dupBlock, newObjects) = duplicateStack block ([], objects)
                     let newFunctions = Map.insert (getUNKNOWN a) dupBlock functions
                     (deallocateObject a (deallocateObject b newObjects), newFunctions, rest))
-    put (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, newFunctions, newOutStack, statusIO)
+    put result >> return result

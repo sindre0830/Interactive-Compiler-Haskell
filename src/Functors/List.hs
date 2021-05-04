@@ -22,8 +22,8 @@ funcEmpty = do
                 let value   | not (isLIST a) = ERROR ExpectedList
                             | otherwise = BOOL (null (objects Map.! getLIST a))
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcHead :: StackState
@@ -42,8 +42,8 @@ funcHead = do
                     if null list
                         then (rest, newObjects)
                     else (head list : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcTail :: StackState
@@ -64,8 +64,8 @@ funcTail = do
                     let newObjects  | null list = objects
                                     | otherwise = updateObject key (tail list) objects
                     (outStack, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcCons :: StackState
@@ -84,8 +84,8 @@ funcCons = do
                     let key = getLIST b
                     let newObjects = updateObject key (a : (objects Map.! key)) objects
                     (b : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcAppend :: StackState
@@ -105,8 +105,8 @@ funcAppend = do
                     let keyB = getLIST b
                     let newObjects = deallocateObject a (updateObject keyB ((objects Map.! keyA) ++ (objects Map.! keyB)) objects)
                     (b : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcLength :: StackState
@@ -123,5 +123,5 @@ funcLength = do
                             | isCODEBLOCK a = INT (toInteger $ length $ objects Map.! getCODEBLOCK a)
                             | otherwise = ERROR ExpectedList
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result

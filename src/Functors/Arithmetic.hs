@@ -25,9 +25,8 @@ funcAddition = do
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     + getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcSubtraction :: StackState
@@ -45,8 +44,8 @@ funcSubtraction = do
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     - getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcMultiplication :: StackState
@@ -64,8 +63,8 @@ funcMultiplication = do
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     * getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcDivisionFloat :: StackState
@@ -83,8 +82,8 @@ funcDivisionFloat = do
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     / getFLOAT b)
                             | otherwise = ERROR ExpectedNumber
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
 
 
 funcDivisionInteger :: StackState
@@ -102,5 +101,5 @@ funcDivisionInteger = do
                             | isFLOAT a && isFLOAT b    = INT   (floor  (getFLOAT a     / getFLOAT b))
                             | otherwise = ERROR ExpectedNumber
                 (value : rest, newObjects))
-    put (inpStack, newObjects, variables, functions, newOutStack, statusIO)
-    return (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    let result = (inpStack, newObjects, variables, functions, newOutStack, statusIO)
+    put result >> return result
