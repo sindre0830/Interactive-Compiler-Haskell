@@ -152,8 +152,7 @@ funcMap = do
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
                     then (deallocateStack [a,b] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
-                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                | otherwise = [b]
+                    let block = getBlock b
                     let list = getContainer a containers
                     let (newContainers, newVariables, newFunctions, newList) = mapOf list block (containers, variables, functions, [])
                     let containers = deallocateStack block newContainers
@@ -190,8 +189,7 @@ funcFoldl = do
                 else if not (isCODEBLOCK c) && not (isFUNC c) && not (isFunction c functions)
                     then (deallocateStack [a,b,c] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
-                    let block   | isCODEBLOCK c = [c, FUNC "exec"]
-                                | otherwise = [c]
+                    let block = getBlock c
                     let list = getContainer a containers
                     let (newContainers, newVariables, newFunctions, newValue) = foldlOf list block (containers, variables, functions, b)
                     (deallocateStack (a : block) newContainers, newVariables, newFunctions, newValue : rest))
@@ -221,10 +219,8 @@ funcLoop = do
                     || not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
                     then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
                 else do
-                    let break   | isCODEBLOCK a = [a, FUNC "exec"]
-                                | otherwise = [a]
-                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                | otherwise = [b]
+                    let break = getBlock a
+                    let block = getBlock b
                     let (newContainers, values) = loop break block (containers, variables, functions, rest)
                     (values ++ inpStack, deallocateStack (break ++ block) newContainers, []))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)

@@ -58,10 +58,10 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
         putStrLn ""
         if stringToLower input == "--debug"
             then do
-                putStrLn $ "Stack:     " ++ show outStack
-                putStrLn $ "Containers:   " ++ show containers
-                putStrLn $ "Variables: " ++ show variables
-                putStrLn $ "Functions: " ++ show functions ++ "\n"
+                putStrLn $ "Stack:      " ++ show outStack
+                putStrLn $ "Containers: " ++ show (Map.toList containers)
+                putStrLn $ "Variables:  " ++ show (Map.toList variables)
+                putStrLn $ "Functions:  " ++ show (Map.toList functions) ++ "\n"
                 modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) False
         else do
             let tokens = tokenize input

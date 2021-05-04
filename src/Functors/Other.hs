@@ -39,8 +39,7 @@ funcEach = do
                     then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
                 else do
                     let list = getContainer a containers
-                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                | otherwise = [b]
+                    let block = getBlock b
                     let (values, newContainers) = eachOf (reverse list) block ([], containers)
                     (values ++ inpStack, deallocateStack (a : block) newContainers, rest))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)

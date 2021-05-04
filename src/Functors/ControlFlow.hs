@@ -20,12 +20,10 @@ funcIf = do
                     then (inpStack, deallocateStack [a,b,c] containers, ERROR ExpectedBool : rest)
                 else if getBOOL a
                     then do
-                        let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                    | otherwise = [b]
+                        let block = getBlock b
                         (block ++ inpStack, deallocateStack [a,c] containers, rest)
                 else do
-                    let block   | isCODEBLOCK c = [c, FUNC "exec"]
-                                | otherwise = [c]
+                    let block = getBlock c
                     (block ++ inpStack, deallocateStack [a,b] containers, rest))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -42,8 +40,7 @@ funcTimes = do
                 if not (isINT a) || getINT a < 0
                     then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedPositiveInteger : rest)
                 else do
-                    let block   | isCODEBLOCK b = [b, FUNC "exec"]
-                                | otherwise = [b]
+                    let block = getBlock b
                     let (values, newContainers) = loopN (getINT a) block ([], containers)
                     (values ++ inpStack, deallocateStack (a : block) newContainers, rest))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)

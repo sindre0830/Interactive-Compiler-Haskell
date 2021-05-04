@@ -70,6 +70,11 @@ deallocateMemory x containers
     | otherwise = containers
 
 
+getBlock :: Type -> Stack
+getBlock x
+    | isCODEBLOCK x = [x, FUNC "exec"]
+    | otherwise = [x]
+
 getContainer :: Type -> Containers -> Stack
 getContainer container containers
     | isLIST container = containers Map.! getLIST container
