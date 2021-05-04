@@ -23,10 +23,8 @@ import Functors.Other
 executeStack :: StackState
 executeStack = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
-    if null inpStack || statusIO /= None
-        then do
-            put (inpStack, containers, variables, functions, outStack, statusIO)
-            return (inpStack, containers, variables, functions, outStack, statusIO)
+    if null inpStack || searchForErrors outStack containers || statusIO /= None
+        then return (inpStack, containers, variables, functions, outStack, statusIO)
     else do
         let (x:xs) = inpStack
         let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack variables functions
@@ -88,6 +86,18 @@ executeStack = do
             else put (xs, newContainers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
 
 
+searchForErrors :: Stack -> Containers -> Bool
+searchForErrors [] _ = False
+searchForErrors (x:xs) containers
+    | isLIST x = do
+        let list = getContainer x containers
+        searchForErrors list containers || searchForErrors xs containers
+    | isCODEBLOCK x = do
+        let block = getContainer x containers
+        searchForErrors block containers || searchForErrors block containers
+    | otherwise = isERROR x
+
+
 setVariable :: Stack -> Variables -> Functions -> (Bool, Containers, OutputStack) -> (Bool, Containers, OutputStack)
 setVariable [] _ _ (moveToBuffer, containers, outStack) = (moveToBuffer, containers, outStack)
 setVariable (x:xs) variables functions (moveToBuffer, containers, outStack)
@@ -116,12 +126,12 @@ setVariable (x:xs) variables functions (moveToBuffer, containers, outStack)
 
 skipOperation :: Stack -> Variables -> Functions -> (Bool, Stack, Stack)
 skipOperation stack variables functions
-    | length stack >= 3 && isFUNC (stack !! 2) 
+    | length stack >= 3 && isFUNC (stack !! 2)
         && (getFUNC (stack !! 2) == "loop"
         || getFUNC (stack !! 2) == "if") = do
             let (x:y:rest) = stack
             (True, rest, y:[x])
-    | length stack >= 2 && isFUNC (stack !! 1) 
+    | length stack >= 2 && isFUNC (stack !! 1)
         && (getFUNC (stack !! 1) == "map"
         || getFUNC (stack !! 1) == "each"
         || getFUNC (stack !! 1) == "loop"
@@ -130,7 +140,7 @@ skipOperation stack variables functions
         || getFUNC (stack !! 1) == "foldl") = do
             let (x:rest) = stack
             (True, rest, [x])
-    | length stack >= 3 && isFUNC (stack !! 2) && isUNKNOWN (head stack) 
+    | length stack >= 3 && isFUNC (stack !! 2) && isUNKNOWN (head stack)
         && (isVariable (head stack) variables || isFunction (head stack) functions)
         && (getFUNC (stack !! 2) == ":="
         || getFUNC (stack !! 2) == "fun") = do
@@ -142,7 +152,7 @@ skipOperation stack variables functions
 funcMap :: StackState
 funcMap = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
-    let (newContainers, newVariables, newFunctions, newOutStack) = ( do   
+    let (newContainers, newVariables, newFunctions, newOutStack) = ( do
             if validateParameters outStack "map"
                 then (deallocateStack outStack containers, variables, functions, [ERROR InvalidParameterAmount])
             else do
@@ -215,7 +225,7 @@ funcLoop = do
                 then (inpStack, deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (b:a:rest) = outStack
-                if not (isCODEBLOCK a) && not (isFUNC a)  && not (isFunction a functions) 
+                if not (isCODEBLOCK a) && not (isFUNC a)  && not (isFunction a functions)
                     || not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
                     then (inpStack, deallocateStack [a,b] containers, ERROR ExpectedCodeblock : rest)
                 else do

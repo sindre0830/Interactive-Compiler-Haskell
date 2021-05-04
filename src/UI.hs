@@ -49,7 +49,13 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, value : outStack, None)
             modeInteractive (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if showStack
-        then do
+        then if searchForErrors outStack containers
+            then do
+                putStrLn "FOUND ERROR!"
+                renderLogsAfterExecute (inpStack, containers, outStack)
+                putStrLn "Reverting back to a stable version of the program...\n"
+                modeInteractive ([], deallocateStack outStack containers, variables, functions, [], statusIO) False
+        else do
             putStrLn $ "Stack: " ++ printableStack (inpStack, containers, variables, functions, outStack, statusIO) ++ "\n"
             modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) False
     else do
@@ -65,9 +71,16 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
                 modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) False
         else do
             let tokens = tokenize input
-            let (newInpStack, newContainers) = parser tokens inpStack containers
-            let (inpStack, containers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (newInpStack, newContainers, variables, functions, outStack, None)
-            modeInteractive (inpStack, containers, newVariables, newFunctions, newOutStack, newStatusIO) True
+            let (parsedInpStack, parsedContainers) = parser tokens inpStack containers
+            let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (parsedInpStack, parsedContainers, variables, functions, outStack, None)
+            if searchForErrors newOutStack newContainers
+                then do
+                    putStrLn "FOUND ERROR!"
+                    renderLogsBeforeExecute (parsedInpStack, parsedContainers, outStack)
+                    renderLogsAfterExecute (newInpStack, newContainers, newOutStack)
+                    putStrLn "Reverting back to a stable version of the program...\n"
+                    modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) True
+            else modeInteractive (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
 
 modeCompiler :: (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
 modeCompiler (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
@@ -85,14 +98,37 @@ modeCompiler (inpStack, containers, variables, functions, outStack, statusIO) sh
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, value : outStack, None)
             modeCompiler (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
     else if showStack
-        then putStrLn $ "Stack: " ++ printableStack (inpStack, containers, variables, functions, outStack, statusIO) ++ "\n"
+        then if searchForErrors outStack containers
+            then do
+                putStrLn "FOUND ERROR!"
+                renderLogsAfterExecute (inpStack, containers, outStack)
+                putStrLn "Terminating program...\n"
+        else putStrLn $ "Stack: " ++ printableStack (inpStack, containers, variables, functions, outStack, statusIO) ++ "\n"
     else do
         handle <- openFile "documents/test.txt" ReadMode
         contents <- hGetContents handle
         let tokens = tokenize contents
-        let (newInpStack, newContainers) = parser tokens inpStack containers
-        let (inpStack, containers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (newInpStack, newContainers, variables, functions, outStack, None)
-        modeCompiler (inpStack, containers, newVariables, newFunctions, newOutStack, newStatusIO) True
+        let (parsedInpStack, parsedContainers) = parser tokens inpStack containers
+        let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (parsedInpStack, parsedContainers, variables, functions, outStack, None)
+        if searchForErrors newOutStack newContainers
+            then do
+                putStrLn "FOUND ERROR!"
+                renderLogsBeforeExecute (parsedInpStack, parsedContainers, outStack)
+                renderLogsAfterExecute (newInpStack, newContainers, newOutStack)
+                putStrLn "Terminating program...\n"
+        else modeCompiler (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+
+renderLogsBeforeExecute :: (InputStack, Containers, OutputStack) -> IO ()
+renderLogsBeforeExecute (beforeInpStack, beforeContainers, beforeOutStack) = do
+    putStrLn "    Logs before execute:"
+    putStrLn $ "        Buffer  " ++ printableStack ([], beforeContainers, Map.empty, Map.empty, beforeInpStack, None)
+    putStrLn $ "        Stack   " ++ printableStack ([], beforeContainers, Map.empty, Map.empty, beforeOutStack, None)
+
+renderLogsAfterExecute :: (InputStack, Containers, OutputStack) -> IO ()
+renderLogsAfterExecute (afterInpStack, afterContainers, afterOutStack) = do
+    putStrLn "    Logs after execute:"
+    putStrLn $ "        Buffer  " ++ printableStack ([], afterContainers, Map.empty, Map.empty, afterInpStack, None)
+    putStrLn $ "        Stack   " ++ printableStack ([], afterContainers, Map.empty, Map.empty, afterOutStack, None)
 
 -- | Converts string to lowercase.
 stringToLower :: String -> String

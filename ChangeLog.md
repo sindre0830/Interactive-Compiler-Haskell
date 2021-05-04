@@ -223,3 +223,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.9.0] **development**: Added getBlock to reduce clutter in functors
 
 [3.10.0] **development**: Added error handling when trying to divide by zero
+
+[3.11.0] **development**: Added proper error handler (Ends executer on error, prints logs, reverts back to a stable version of the program)
