@@ -27,8 +27,8 @@ compareStacks [] [] _ = True
 compareStacks [] _ _ = False
 compareStacks _ [] _ = False
 compareStacks (x : xs) (y : ys) containers
-    | isLIST x && isLIST y = compareStacks (getContainer x containers) (getContainer y containers) containers
-    | isCODEBLOCK x && isCODEBLOCK y = compareStacks (getContainer x containers) (getContainer y containers) containers
+    | isLIST x && isLIST y = compareStacks (containers `getContainer` x) (containers `getContainer` y) containers
+    | isCODEBLOCK x && isCODEBLOCK y = compareStacks (containers `getContainer` x) (containers `getContainer` y) containers
     | isINT x && isFLOAT y = convertFloat x == getFLOAT y
     | isFLOAT x && isINT y = getFLOAT x == convertFloat y
     | x /= y = False

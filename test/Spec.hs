@@ -625,8 +625,8 @@ spec_getAvailableAddress = do
 spec_updateContainer :: Spec
 spec_updateContainer = do
     describe "updateContainer tests:" $ do
-        it "updateContainer \"0\" [INT 1, INT 2] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1, INT 2])]" $ do
-            updateContainer "0" [INT 1, INT 2] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1, INT 2])]
+        it "updateContainer (LIST \"0\") [INT 1, INT 2] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1, INT 2])]" $ do
+            updateContainer (LIST "0") [INT 1, INT 2] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1, INT 2])]
 
 spec_allocateMemory :: Spec
 spec_allocateMemory = do

@@ -17,14 +17,19 @@ deallocateStack xs containers = foldl (flip deallocateMemory) containers xs
 generateAddress :: Containers -> String
 generateAddress containers = show $ getAvailableAddress containers 0
 
+getAddress :: Type -> Key
+getAddress x
+    | isLIST x = getLIST x
+    | isCODEBLOCK x = getCODEBLOCK x
+
 getAvailableAddress :: Containers -> Int -> Int
 getAvailableAddress containers index = do
     if Map.member (show index) containers
         then getAvailableAddress containers (index + 1)
     else index
 
-updateContainer :: Key -> Stack -> Containers -> Containers
-updateContainer = Map.insert
+updateContainer :: Type -> Stack -> Containers -> Containers
+updateContainer x = Map.insert (getAddress x)
 
 allocateMemory :: Stack -> Containers -> (Containers, Key)
 allocateMemory stack containers = do
@@ -75,8 +80,8 @@ getBlock x
     | isCODEBLOCK x = [x, FUNC "exec"]
     | otherwise = [x]
 
-getContainer :: Type -> Containers -> Stack
-getContainer container containers
+getContainer :: Containers -> Type -> Stack
+getContainer containers container
     | isLIST container = containers Map.! getLIST container
     | isCODEBLOCK container = containers Map.! getCODEBLOCK container
 

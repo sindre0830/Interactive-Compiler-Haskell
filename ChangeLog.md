@@ -229,3 +229,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.12.0] **development**: Added directory handler to display available files and allow the user to pick in the compiler mode
 
 [3.12.1] **formatting**: Added space between elements in lists
+
+[3.13.0] **development**: Modified updateContainer to take type instead of key and switched parameters of getContainer

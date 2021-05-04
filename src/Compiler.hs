@@ -90,10 +90,10 @@ searchForErrors :: Stack -> Containers -> Bool
 searchForErrors [] _ = False
 searchForErrors (x : xs) containers
     | isLIST x = do
-        let list = getContainer x containers
+        let list = containers `getContainer` x
         searchForErrors list containers || searchForErrors xs containers
     | isCODEBLOCK x = do
-        let block = getContainer x containers
+        let block = containers `getContainer` x
         searchForErrors block containers || searchForErrors block containers
     | otherwise = isERROR x
 
@@ -102,16 +102,14 @@ setVariable :: Stack -> Variables -> Functions -> (Bool, Containers, OutputStack
 setVariable [] _ _ (moveToBuffer, containers, outStack) = (moveToBuffer, containers, outStack)
 setVariable (x : xs) variables functions (moveToBuffer, containers, outStack)
     | isLIST x = do
-        let key = getLIST x
-        let list = getContainer x containers
+        let list = containers `getContainer` x
         let (newMoveToBuffer, newContainers, newOutStack) = setVariable list variables functions (moveToBuffer, containers, [])
-        let containers = updateContainer key (reverse newOutStack) newContainers
+        let containers = updateContainer x (reverse newOutStack) newContainers
         setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
     | isCODEBLOCK x = do
-        let key = getCODEBLOCK x
-        let block = getContainer x containers
+        let block = containers `getContainer` x
         let (newMoveToBuffer, newContainers, newOutStack) = setVariable block variables functions (moveToBuffer, containers, [])
-        let containers = updateContainer key (reverse newOutStack) newContainers
+        let containers = updateContainer x (reverse newOutStack) newContainers
         setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
     | isVariable x variables = do
         let value = variables Map.! getUNKNOWN x
@@ -163,13 +161,13 @@ funcMap = do
                     then (deallocateStack [a, b] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block = getBlock b
-                    let list = getContainer a containers
+                    let list = containers `getContainer` a
                     let (newContainers, newVariables, newFunctions, newList) = mapOf list block (containers, variables, functions, [])
                     let containers = deallocateStack block newContainers
                     if head newList == ERROR InvalidOperationIO
                         then (deallocateMemory a containers, variables, functions, head newList : rest)
                     else do
-                        let newContainers = updateContainer (getLIST a) (reverse newList) containers
+                        let newContainers = updateContainer a (reverse newList) containers
                         (newContainers, newVariables, newFunctions, a : rest))
     let result = (inpStack, newContainers, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
@@ -200,7 +198,7 @@ funcFoldl = do
                     then (deallocateStack [a, b, c] containers, variables, functions, ERROR ExpectedCodeblock : rest)
                 else do
                     let block = getBlock c
-                    let list = getContainer a containers
+                    let list = containers `getContainer` a
                     let (newContainers, newVariables, newFunctions, newValue) = foldlOf list block (containers, variables, functions, b)
                     (deallocateStack (a : block) newContainers, newVariables, newFunctions, newValue : rest))
     let result = (inpStack, newContainers, newVariables, newFunctions, newOutStack, statusIO)

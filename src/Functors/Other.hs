@@ -19,7 +19,7 @@ funcExec = do
                 if not (isCODEBLOCK a)
                     then (inpStack, deallocateMemory a containers, ERROR ExpectedCodeblock : rest)
                 else do
-                    let block = getContainer a containers
+                    let block = containers `getContainer` a
                     (block ++ inpStack, deallocateRootContainer a containers, rest))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -38,7 +38,7 @@ funcEach = do
                 else if not (isCODEBLOCK b) && not (isFUNC b) && not (isFunction b functions)
                     then (inpStack, deallocateStack [a, b] containers, ERROR ExpectedCodeblock : rest)
                 else do
-                    let list = getContainer a containers
+                    let list = containers `getContainer` a
                     let block = getBlock b
                     let (values, newContainers) = eachOf (reverse list) block ([], containers)
                     (values ++ inpStack, deallocateStack (a : block) newContainers, rest))

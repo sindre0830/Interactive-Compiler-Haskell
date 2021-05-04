@@ -17,7 +17,7 @@ funcEmpty = do
             else do
                 let (a : rest) = outStack
                 let value   | not (isLIST a) = ERROR ExpectedList
-                            | otherwise = BOOL (null (getContainer a containers))
+                            | otherwise = BOOL (null (containers `getContainer` a))
                 (deallocateMemory a containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -34,7 +34,7 @@ funcHead = do
                 if not (isLIST a)
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
-                    let list = getContainer a containers
+                    let list = containers `getContainer` a
                     if null list
                         then (deallocateMemory a containers, rest)
                     else do
@@ -55,10 +55,9 @@ funcTail = do
                 if not (isLIST a)
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
-                    let list = getContainer a containers
-                    let key = getLIST a
+                    let list = containers `getContainer` a
                     let newContainers   | null list = containers
-                                        | otherwise = updateContainer key (tail list) containers
+                                        | otherwise = updateContainer a (tail list) containers
                     (deallocateMemory (head list) newContainers, outStack))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -75,8 +74,7 @@ funcCons = do
                 if not (isLIST b)
                     then (deallocateStack [a, b] containers, ERROR ExpectedList : rest)
                 else do
-                    let key = getLIST b
-                    let newContainers = updateContainer key (a : getContainer b containers) containers
+                    let newContainers = updateContainer b (a : containers `getContainer` b) containers
                     (newContainers, b : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -93,8 +91,7 @@ funcAppend = do
                 if not (isLIST a) || not (isLIST b)
                     then (deallocateStack [a, b] containers, ERROR ExpectedList : rest)
                 else do
-                    let keyB = getLIST b
-                    let newContainers = updateContainer keyB (getContainer a containers ++ getContainer b containers) containers
+                    let newContainers = updateContainer b (containers `getContainer` a ++ containers `getContainer` b) containers
                     (deallocateMemory a newContainers, b : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -109,8 +106,7 @@ funcLength = do
             else do
                 let (a : rest) = outStack
                 let value   | isSTRING a = INT (toInteger $ length $ getSTRING a)
-                            | isLIST a = INT (toInteger $ length $ getContainer a containers)
-                            | isCODEBLOCK a = INT (toInteger $ length $ getContainer a containers)
+                            | isLIST a || isCODEBLOCK a = INT (toInteger $ length $ containers `getContainer` a)
                             | otherwise = ERROR ExpectedList
                 (deallocateMemory a containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
