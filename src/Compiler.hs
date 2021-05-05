@@ -8,7 +8,7 @@ import Control.Monad.State.Lazy (evalState, MonadState(put, get))
 -- local modules
 import Dictionary
 import MemoryHandler
-import Convert
+import Converter
 import Functors.Arithmetic
 import Functors.Boolean
 import Functors.Assignment

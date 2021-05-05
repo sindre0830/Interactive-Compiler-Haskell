@@ -8,7 +8,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
 import MemoryHandler
-import Convert
+import Converter
 
 -- | Set unknown value to another value.
 funcSetVariable :: StackState

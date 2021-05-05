@@ -16,7 +16,7 @@ cradle:
             - path: "./src/Functors/Stack.hs"
             - path: "./src/Functors/String.hs"
             - path: "./src/Compiler.hs"
-            - path: "./src/Convert.hs"
+            - path: "./src/Converter.hs"
             - path: "./src/Dictionary.hs"
             - path: "./src/Parser.hs"
             - path: "./src/MemoryHandler.hs"

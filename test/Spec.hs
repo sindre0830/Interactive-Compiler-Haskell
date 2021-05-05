@@ -7,7 +7,7 @@ import Control.Monad.State.Lazy
 import Dictionary
 import Parser
 import MemoryHandler
-import Convert
+import Converter
 import Compiler
 import Functors.Arithmetic
 import Functors.Boolean
@@ -81,7 +81,7 @@ main = do
         spec_foldlOf
         spec_funcLoop
         spec_loop
-        -- module Convert
+        -- module Converter
         spec_getBlock
         spec_stringToLower
         spec_tokenize
@@ -683,7 +683,7 @@ spec_loop = do
         it "loop [BOOL False] [FUNC \"read\"] (Map.empty, Map.empty, Map.empty, []) returns (Map.empty, [ERROR InvalidOperationIO])" $ do
             loop [BOOL False] [FUNC "read"] (Map.empty, Map.empty, Map.empty, []) `shouldBe` (Map.empty, [ERROR InvalidOperationIO])
 
-{-- module Convert -}
+{-- module Converter -}
 
 spec_getBlock :: Spec
 spec_getBlock = do

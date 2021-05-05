@@ -13,7 +13,7 @@ import Dictionary
 import MemoryHandler
 import Parser
 import Compiler
-import Convert
+import Converter
 
 -- | Adds a flush input message to the user.
 readInput :: String -> IO ()

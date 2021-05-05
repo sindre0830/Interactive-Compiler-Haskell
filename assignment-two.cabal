@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b463ad62ef3ade3900729320cc160ecfcbfbb0352f91da9bbae3cf9271edddda
+-- hash: a5efaad220731c0a3463084e94bf6970ba92a8beec50b90725d0bd8b5847cdc8
 
 name:           assignment-two
 version:        3.1.0
@@ -28,7 +28,7 @@ source-repository head
 library
   exposed-modules:
       Compiler
-      Convert
+      Converter
       Dictionary
       Functors.Arithmetic
       Functors.Assignment

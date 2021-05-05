@@ -1,5 +1,5 @@
-module Convert 
-    ( module Convert
+module Converter 
+    ( module Converter
     ) where
 -- foreign modules
 import Data.Map (Map)
@@ -9,7 +9,7 @@ import Data.Char (toLower)
 -- local modules
 import Dictionary
 
--- | Converts type to stack.
+-- | Converts type to operational stack.
 getBlock :: Type -> Stack
 getBlock x
     | isCODEBLOCK x = [x, FUNC "exec"]

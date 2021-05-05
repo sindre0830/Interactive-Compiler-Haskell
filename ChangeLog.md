@@ -247,3 +247,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.17.1] **structure**: Renamed Parsing module to Parser
 
 [3.17.2] **structure**: Renamed Stack module to MemoryHandler
+
+[3.17.3] **structure**: Renamed Convert module to Converter

@@ -6,7 +6,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
 import MemoryHandler
-import Convert
+import Converter
 
 -- | Executes the codeblock and puts it in the stack.
 funcExec :: StackState
