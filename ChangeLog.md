@@ -233,3 +233,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.13.0] **development**: Modified updateContainer to take type instead of key and switched parameters of getContainer
 
 [3.13.1] **formatting**: Added function headers
+
+[3.13.2] **formatting**: Restructured spec tests to mimic folder structure
