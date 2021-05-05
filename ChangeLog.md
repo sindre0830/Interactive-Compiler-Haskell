@@ -239,3 +239,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.14.0] **development**: Added the remaining tests for all Functor modules
 
 [3.15.0] **development**: Added the remaining tests for the Compiler module
+
+[3.16.0] **development**: Added the remaining tests for the Convert module

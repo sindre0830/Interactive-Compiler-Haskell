@@ -82,9 +82,9 @@ main = do
         spec_funcLoop
         spec_loop
         -- module Convert
-
+        spec_stringToLower
         spec_tokenize
-
+        spec_convertFloat
         -- module Parsing
         spec_parser
         spec_codeBlockParser
@@ -683,11 +683,31 @@ spec_loop = do
 
 {-- module Convert -}
 
+spec_stringToLower :: Spec
+spec_stringToLower = do
+    describe "stringToLower tests:" $ do
+        it "stringToLower \"aBcDe\" returns \"abcde\"" $ do
+            stringToLower "aBcDe" `shouldBe` "abcde"
+        it "stringToLower \"abcde\" returns \"abcde\"" $ do
+            stringToLower "abcde" `shouldBe` "abcde"
+        it "stringToLower \"\" returns \"\"" $ do
+            stringToLower "" `shouldBe` ""
+
 spec_tokenize :: Spec
 spec_tokenize = do
     describe "tokenize tests:" $ do
         it "tokenize \"1 2 +\" returns [\"1\", \"2\", \"+\"]" $ do
             tokenize "1 2 +" `shouldBe` ["1", "2", "+"]
+
+spec_convertFloat :: Spec
+spec_convertFloat = do
+    describe "convertFloat tests:" $ do
+        it "convertFloat (INT 5) returns 5.0" $ do
+            convertFloat (INT 5) `shouldBe` 5.0
+        it "convertFloat (INT 0) returns 0.0" $ do
+            convertFloat (INT 0) `shouldBe` 0.0
+        it "convertFloat (INT (-5)) returns -5.0" $ do
+            convertFloat (INT (-5)) `shouldBe` -5.0
 
 {-- module Parsing -}
 
