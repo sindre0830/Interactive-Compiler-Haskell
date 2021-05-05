@@ -24,10 +24,12 @@ import Functors.Other (funcEach, funcExec)
 executeStack :: StackState
 executeStack = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    -- exit executer the stack is empty, IO is required or if any errors are found on the stack
     if null inpStack || searchForErrors outStack containers || statusIO /= None
         then return (inpStack, containers, variables, functions, outStack, statusIO)
     else do
         let (x : xs) = inpStack
+        -- check if the executer should skip operations (this allows functors to be used in other functors)
         let (newInpStack, newOutStack) = skipOperation inpStack variables functions
         if not $ null newOutStack
             then put (newInpStack, containers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
@@ -81,7 +83,9 @@ executeStack = do
                     "print" -> funcPrint
                 ) >> executeStack
         else do
+            -- convert type to it's assigned value if it's a variable or function
             let (moveToBuffer, newContainers, newOutStack) = setVariable [x] variables functions (False, containers, [])
+            -- if it is a function, send stack back to the buffer
             if moveToBuffer
                 then put (reverse newOutStack ++ xs, newContainers, variables, functions, outStack, statusIO) >> executeStack
             else put (xs, newContainers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
@@ -90,25 +94,27 @@ executeStack = do
 searchForErrors :: Stack -> Containers -> Bool
 searchForErrors [] _ = False
 searchForErrors (x : xs) containers
-    | isLIST x = do
+    | isERROR x     = True
+    | isLIST x      = do
         let list = containers `getContainer` x
         searchForErrors list containers || searchForErrors xs containers
     | isCODEBLOCK x = do
         let block = containers `getContainer` x
         searchForErrors block containers || searchForErrors block containers
-    | isERROR x = True
-    | otherwise = searchForErrors xs containers
+    | otherwise     = searchForErrors xs containers
 
 -- | Checks if a stack has any unknown values that can be converted to their respected values.
 setVariable :: Stack -> Variables -> Functions -> (Bool, Containers, OutputStack) -> (Bool, Containers, OutputStack)
 setVariable [] _ _ (moveToBuffer, containers, outStack) = (moveToBuffer, containers, outStack)
 setVariable (x : xs) variables functions (moveToBuffer, containers, outStack)
     | isLIST x = do
+        -- search through container
         let list = containers `getContainer` x
         let (newMoveToBuffer, newContainers, newOutStack) = setVariable list variables functions (moveToBuffer, containers, [])
         let containers = updateContainer x (reverse newOutStack) newContainers
         setVariable xs variables functions (newMoveToBuffer, containers, x : outStack)
     | isCODEBLOCK x = do
+        -- search through container
         let block = containers `getContainer` x
         let (newMoveToBuffer, newContainers, newOutStack) = setVariable block variables functions (moveToBuffer, containers, [])
         let containers = updateContainer x (reverse newOutStack) newContainers
@@ -126,11 +132,13 @@ setVariable (x : xs) variables functions (moveToBuffer, containers, outStack)
 -- | Checks if the handler should skip operations on the stack to deal with functions that can take other operations than codeblock.
 skipOperation :: Stack -> Variables -> Functions -> (Stack, Stack)
 skipOperation stack variables functions
+    -- skips 2 operations if there is a valid function
     | length stack >= 3 && isFUNC (stack !! 2)
         && (getFUNC (stack !! 2) == "loop"
         || getFUNC (stack !! 2) == "if") = do
             let (x : y : rest) = stack
             (rest, [y, x])
+    -- skips 1 operation if there is a valid function
     | length stack >= 2 && isFUNC (stack !! 1)
         && (getFUNC (stack !! 1) == "map"
         || getFUNC (stack !! 1) == "each"
@@ -140,6 +148,7 @@ skipOperation stack variables functions
         || getFUNC (stack !! 1) == "foldl") = do
             let (x : rest) = stack
             (rest, [x])
+    -- skips 2 operations if there is a valid function and value is unknown (allows for reassigning variables and functions)
     | length stack >= 3 && isFUNC (stack !! 2) 
         && (isVariable (head stack) variables || isFunction (head stack) functions)
         && (getFUNC (stack !! 2) == ":="
@@ -178,6 +187,7 @@ funcMap = do
 mapOf :: Stack -> Stack -> (Containers, Variables, Functions, OutputStack) -> (Containers, Variables, Functions, OutputStack)
 mapOf [] _ (containers, variables, functions, outStack) = (containers, variables, functions, outStack)
 mapOf (x : xs) block (containers, variables, functions, outStack) = do
+    -- duplicate block before sending it to the nested executer
     let (dupBlock, newContainers) = duplicateStack block ([], containers)
     let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, [x], None)
     if statusIO /= None
@@ -211,6 +221,7 @@ funcFoldl = do
 foldlOf :: Stack -> Stack -> (Containers, Variables, Functions, Type) -> (Containers, Variables, Functions, Type)
 foldlOf [] _ (containers, variables, functions, value) = (containers, variables, functions, value)
 foldlOf (x : xs) block (containers, variables, functions, value) = do
+    -- duplicate block before sending it to the nested executer
     let (dupBlock, newContainers) = duplicateStack block ([], containers)
     let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, [x, value], None)
     if statusIO /= None
@@ -247,8 +258,10 @@ loop break block (containers, variables, functions, outStack) = do
     else if not (isBOOL value)
         then (containers, [ERROR ExpectedBool])
     else if getBOOL value
+        -- exit loop successfully
         then (containers, reverse outStack)
     else do
+        -- duplicate block before sending it to the nested executer
         let (dupBlock, newContainers) = duplicateStack block ([], containers)
         let (_, containers, newVariables, newFunctions, newOutStack, statusIO) = evalState executeStack (dupBlock, newContainers, variables, functions, outStack, None)
         if statusIO /= None

@@ -20,6 +20,7 @@ funcExec = do
                 if not (isCODEBLOCK a)
                     then (inpStack, deallocateMemory a containers, ERROR ExpectedCodeblock : rest)
                 else do
+                    -- adds content of code block to the buffer stack.
                     let block = containers `getContainer` a
                     (block ++ inpStack, deallocateRootContainer a containers, rest))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)

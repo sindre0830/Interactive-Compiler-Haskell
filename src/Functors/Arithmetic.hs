@@ -21,7 +21,7 @@ funcAddition = do
                             | isINT a && isFLOAT b      = FLOAT    (convertFloat a + getFLOAT b)
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     + convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     + getFLOAT b)
-                            | otherwise = ERROR ExpectedNumber
+                            | otherwise                 = ERROR ExpectedNumber
                 (deallocateStack [a, b] containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -39,7 +39,7 @@ funcSubtraction = do
                             | isINT a && isFLOAT b      = FLOAT    (convertFloat a - getFLOAT b)
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     - convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     - getFLOAT b)
-                            | otherwise = ERROR ExpectedNumber
+                            | otherwise                 = ERROR ExpectedNumber
                 (deallocateStack [a, b] containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -57,7 +57,7 @@ funcMultiplication = do
                             | isINT a && isFLOAT b      = FLOAT    (convertFloat a * getFLOAT b)
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     * convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     * getFLOAT b)
-                            | otherwise = ERROR ExpectedNumber
+                            | otherwise                 = ERROR ExpectedNumber
                 (deallocateStack [a, b] containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -76,7 +76,7 @@ funcDivisionFloat = do
                             | isINT a && isFLOAT b      = FLOAT    (convertFloat a / getFLOAT b)
                             | isFLOAT a && isINT b      = FLOAT    (getFLOAT a     / convertFloat b)
                             | isFLOAT a && isFLOAT b    = FLOAT    (getFLOAT a     / getFLOAT b)
-                            | otherwise = ERROR ExpectedNumber
+                            | otherwise                 = ERROR ExpectedNumber
                 (deallocateStack [a, b] containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -95,7 +95,7 @@ funcDivisionInteger = do
                             | isINT a && isFLOAT b      = INT   (floor  (convertFloat a / getFLOAT b))
                             | isFLOAT a && isINT b      = INT   (floor  (getFLOAT a     / convertFloat b))
                             | isFLOAT a && isFLOAT b    = INT   (floor  (getFLOAT a     / getFLOAT b))
-                            | otherwise = ERROR ExpectedNumber
+                            | otherwise                 = ERROR ExpectedNumber
                 (deallocateStack [a, b] containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result

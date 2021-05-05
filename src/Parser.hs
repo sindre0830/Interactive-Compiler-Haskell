@@ -2,13 +2,13 @@ module Parser
     ( module Parser
     ) where
 -- foreign modules
-import Text.Read ( readMaybe )
-import Data.Maybe ( fromJust, isJust )
+import Text.Read (readMaybe)
+import Data.Maybe (fromJust, isJust)
 import Data.Map (Map)
 import qualified Data.Map as Map
 -- local modules
 import Dictionary
-import MemoryHandler (generateAddress)
+import MemoryHandler (generateAddress, allocateMemory)
 
 -- ! Parses tokens to a stack.
 parser :: Tokens -> Stack -> Containers -> (Stack, Containers)
@@ -26,8 +26,7 @@ parser (x : xs) stack containers =
                 then parser rest (head newStack : stack) newContainers
             else do
                 -- update map with inner list
-                let key = generateAddress newContainers
-                let containers = Map.insert key (reverse newStack) newContainers
+                let (containers, key) = allocateMemory (reverse newStack) newContainers
                 parser rest (LIST key : stack) containers
         ['{'] -> do
             -- parse codeBlock
@@ -37,8 +36,7 @@ parser (x : xs) stack containers =
                 then parser rest (head newStack : stack) newContainers
             else do
                 -- update map with inner codeBlock
-                let key = generateAddress newContainers
-                let containers = Map.insert key (reverse newStack) newContainers
+                let (containers, key) = allocateMemory (reverse newStack) newContainers
                 parser rest (CODEBLOCK key : stack) containers
         _ -> parser xs (typeParser x : stack) containers
 
@@ -52,15 +50,13 @@ codeBlockParser (x : xs) stack containers =
             -- get inner codeBlock
             let (newStack, rest, newContainers) = codeBlockParser xs [] containers
             -- update map with inner list
-            let key = generateAddress newContainers
-            let containers = Map.insert key (reverse newStack) newContainers
+            let (containers, key) = allocateMemory (reverse newStack) newContainers
             codeBlockParser rest (CODEBLOCK key : stack) containers
         "[" -> do
             -- get inner list
             let (newStack, rest, newContainers) = listParser xs [] containers
             -- update map with inner codeBlock
-            let key = generateAddress newContainers
-            let containers = Map.insert key (reverse newStack) newContainers
+            let (containers, key) = allocateMemory (reverse newStack) newContainers
             codeBlockParser rest (LIST key : stack) containers
         ['"'] -> do
             let (value, rest) = stringParser xs []
@@ -77,15 +73,13 @@ listParser (x : xs) stack containers =
             -- get inner list
             let (newStack, rest, newContainers) = listParser xs [] containers
             -- update map with inner list
-            let key = generateAddress newContainers
-            let containers = Map.insert key (reverse newStack) newContainers
+            let (containers, key) = allocateMemory (reverse newStack) newContainers
             listParser rest (LIST key : stack) containers
         "{" -> do
             -- get inner codeBlock
             let (newStack, rest, newContainers) = codeBlockParser xs [] containers
             -- update map with inner codeBlock
-            let key = generateAddress newContainers
-            let containers = Map.insert key (reverse newStack) newContainers
+            let (containers, key) = allocateMemory (reverse newStack) newContainers
             listParser rest (CODEBLOCK key : stack) containers
         ['"'] -> do
             let (value, rest) = stringParser xs []
@@ -105,8 +99,8 @@ stringParser (x : xs) str =
 -- | Parses types.
 typeParser :: Token -> Type
 typeParser value
-  | isJust (readMaybe value :: Maybe Integer) = INT (fromJust (readMaybe value :: Maybe Integer))
-  | isJust (readMaybe value :: Maybe Float) = FLOAT (fromJust (readMaybe value :: Maybe Float))
-  | isJust (readMaybe value :: Maybe Bool) = BOOL (fromJust (readMaybe value :: Maybe Bool))
-  | Map.member value functors = FUNC value
-  | otherwise = UNKNOWN value
+  | isJust (readMaybe value :: Maybe Integer)   = INT (fromJust (readMaybe value :: Maybe Integer))
+  | isJust (readMaybe value :: Maybe Float)     = FLOAT (fromJust (readMaybe value :: Maybe Float))
+  | isJust (readMaybe value :: Maybe Bool)      = BOOL (fromJust (readMaybe value :: Maybe Bool))
+  | Map.member value functors                   = FUNC value
+  | otherwise                                   = UNKNOWN value

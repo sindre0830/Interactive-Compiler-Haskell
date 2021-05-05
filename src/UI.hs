@@ -27,6 +27,7 @@ menu = do
             modeInteractive ([], Map.empty, Map.empty, Map.empty, [], None) False
     else if cmd == "compiler"
         then do
+            -- get all files from directory
             files <- listDirectory "documents"
             if null files
                 then putStrLn "No files available. Terminating program...\n"
@@ -53,12 +54,14 @@ getFileName input files
 -- | Handler for the interactive mode. Allows for continius usage after stack has been executed.
 modeInteractive :: (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
 modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
+    -- deals with print functor
     if statusIO == Output
         then do
             let (x:rest) = outStack
             putStrLn $ "output > " ++ getSTRING x
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, rest, None)
             modeInteractive (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+    -- deals with read functor
     else if statusIO == Input
         then do
             readInput "input > "
@@ -66,6 +69,7 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
             let value = STRING input
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, value : outStack, None)
             modeInteractive (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+    -- display stack
     else if showStack
         then if searchForErrors outStack containers
             then do
@@ -76,6 +80,7 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
         else do
             putStrLn $ "Stack: " ++ printableStack outStack containers ++ "\n"
             modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) False
+    -- get tokens
     else do
         readInput "bprog2 > "
         input <- getLine
@@ -103,12 +108,14 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
 -- | Handler for the compiler mode. Executes a text file and ends the program upon errors or end of the file.
 modeCompiler :: FilePath -> (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
 modeCompiler file (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
+    -- deals with print functor
     if statusIO == Output
         then do
             let (x:rest) = outStack
             putStrLn $ "output: " ++ getSTRING x
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, rest, None)
             modeCompiler file (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+    -- deals with read functor
     else if statusIO == Input
         then do
             readInput "input > "
@@ -116,6 +123,7 @@ modeCompiler file (inpStack, containers, variables, functions, outStack, statusI
             let value = STRING input
             let (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) = evalState executeStack (inpStack, containers, variables, functions, value : outStack, None)
             modeCompiler file (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
+    -- display stack
     else if showStack
         then if searchForErrors outStack containers
             then do
@@ -123,6 +131,7 @@ modeCompiler file (inpStack, containers, variables, functions, outStack, statusI
                 renderLogsAfterExecute (inpStack, containers, outStack)
                 putStrLn "Terminating program...\n"
         else putStrLn $ "Stack: " ++ printableStack outStack containers ++ "\n"
+    -- get tokens
     else do
         handle <- openFile ("documents/" ++ file) ReadMode
         contents <- hGetContents handle

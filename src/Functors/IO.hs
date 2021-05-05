@@ -11,6 +11,7 @@ import MemoryHandler (deallocateMemory, deallocateStack)
 funcRead :: StackState
 funcRead = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
+    -- changes IO status to input to indicate a jump out of the executer
     let result = (inpStack, containers, variables, functions, outStack, Input)
     put result >> return result
 

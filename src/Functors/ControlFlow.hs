@@ -20,16 +20,12 @@ funcIf = do
                 if not (isBOOL a)
                     then (inpStack, deallocateStack [a, b, c] containers, ERROR ExpectedBool : rest)
                 else if getBOOL a
-                    then do
-                        let block = getBlock b
-                        (block ++ inpStack, deallocateStack [a, c] containers, rest)
-                else do
-                    let block = getBlock c
-                    (block ++ inpStack, deallocateStack [a, b] containers, rest))
+                    then (getBlock b ++ inpStack, deallocateStack [a, c] containers, rest)
+                else (getBlock c ++ inpStack, deallocateStack [a, b] containers, rest))
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
--- | Performs a loop n times according to an integer and adds a value to the stack for each iteration.
+-- | Adds n operations to the stack by looping untill the integer is zero.
 funcTimes :: StackState
 funcTimes = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -47,7 +43,7 @@ funcTimes = do
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
--- | Adds stacks together n times.
+-- | Append operations together n times.
 loopN :: Integer -> Stack -> (Stack, Containers) -> (Stack, Containers)
 loopN 0 _ (stack, containers) = (stack, containers)
 loopN n block (stack, containers) = do

@@ -22,6 +22,7 @@ funcSetVariable = do
                 if not (isUNKNOWN a)
                     then (deallocateStack [a, b] containers, variables, ERROR ExpectedUnknown : rest)
                 else do
+                    -- adds/updates variable
                     let newVariables = Map.insert (getUNKNOWN a) b variables
                     (deallocateMemory a containers, newVariables, rest))
     let result = (inpStack, newContainers, newVariables, functions, newOutStack, statusIO)
@@ -41,8 +42,8 @@ funcSetFunction = do
                 else if not (isCODEBLOCK b)
                     then (deallocateStack [a, b] containers, functions, ERROR ExpectedCodeblock : rest)
                 else do
-                    let block = getBlock b
-                    let newFunctions = Map.insert (getUNKNOWN a) block functions
+                    -- adds/updates function
+                    let newFunctions = Map.insert (getUNKNOWN a) (getBlock b) functions
                     (deallocateMemory a containers, newFunctions, rest))
     let result = (inpStack, newContainers, variables, newFunctions, newOutStack, statusIO)
     put result >> return result

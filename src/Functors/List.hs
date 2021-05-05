@@ -5,7 +5,7 @@ module Functors.List
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler (deallocateMemory, deallocateStack, duplicateValue, getContainer, updateContainer)
+import MemoryHandler (deallocateMemory, deallocateStack, duplicateValue, getContainer, updateContainer, deallocateRootContainer)
 
 -- | Performs empty operation by checking if there are any elements in the list.
 funcEmpty :: StackState
@@ -16,8 +16,8 @@ funcEmpty = do
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (a : rest) = outStack
-                let value   | not (isLIST a) = ERROR ExpectedList
-                            | otherwise = BOOL (null (containers `getContainer` a))
+                let value   | not (isLIST a)    = ERROR ExpectedList
+                            | otherwise         = BOOL (null (containers `getContainer` a))
                 (deallocateMemory a containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
@@ -35,6 +35,7 @@ funcHead = do
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
                     let list = containers `getContainer` a
+                    -- allows head on an empty list (does nothing)
                     if null list
                         then (deallocateMemory a containers, rest)
                     else do
@@ -56,6 +57,7 @@ funcTail = do
                     then (deallocateMemory a containers, ERROR ExpectedList : rest)
                 else do
                     let list = containers `getContainer` a
+                    -- allows tail on an empty list (does nothing)
                     let newContainers   | null list = containers
                                         | otherwise = updateContainer a (tail list) containers
                     (deallocateMemory (head list) newContainers, outStack))
@@ -92,7 +94,7 @@ funcAppend = do
                     then (deallocateStack [a, b] containers, ERROR ExpectedList : rest)
                 else do
                     let newContainers = updateContainer b (containers `getContainer` a ++ containers `getContainer` b) containers
-                    (deallocateMemory a newContainers, b : rest))
+                    (deallocateRootContainer a newContainers, b : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
@@ -105,9 +107,9 @@ funcLength = do
                 then (deallocateStack outStack containers, [ERROR InvalidParameterAmount])
             else do
                 let (a : rest) = outStack
-                let value   | isSTRING a = INT (toInteger $ length $ getSTRING a)
+                let value   | isSTRING a                = INT (toInteger $ length $ getSTRING a)
                             | isLIST a || isCODEBLOCK a = INT (toInteger $ length $ containers `getContainer` a)
-                            | otherwise = ERROR ExpectedList
+                            | otherwise                 = ERROR ExpectedList
                 (deallocateMemory a containers, value : rest))
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
