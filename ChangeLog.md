@@ -243,3 +243,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.16.0] **development**: Added the remaining tests for the Convert module
 
 [3.17.0] **development**: Added the remaining tests for the Stack module
+
+[3.17.1] **structure**: Renamed Parsing module to Parser

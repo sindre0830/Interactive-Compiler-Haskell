@@ -1,5 +1,5 @@
-module Parsing
-    ( module Parsing
+module Parser
+    ( module Parser
     ) where
 -- foreign modules
 import Text.Read ( readMaybe )

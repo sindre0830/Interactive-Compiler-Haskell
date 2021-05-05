@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e447f5bd708f2664d20dae32a95ed76d16ed305fed2a9a9f1b850307f2b77158
+-- hash: 3ddb781723b206c2b7c43bd9a2a147b60ff38b2f0d42c37397957ccbbfdfdcf5
 
 name:           assignment-two
 version:        3.1.0
@@ -40,7 +40,7 @@ library
       Functors.Other
       Functors.Stack
       Functors.String
-      Parsing
+      Parser
       Stack
       UI
   other-modules:

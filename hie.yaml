@@ -18,7 +18,7 @@ cradle:
             - path: "./src/Compiler.hs"
             - path: "./src/Convert.hs"
             - path: "./src/Dictionary.hs"
-            - path: "./src/Parsing.hs"
+            - path: "./src/Parser.hs"
             - path: "./src/Stack.hs"
             - path: "./src/UI.hs"
             - path: "./test/Spec.hs"

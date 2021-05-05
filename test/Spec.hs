@@ -5,7 +5,7 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
-import Parsing
+import Parser
 import Stack
 import Convert
 import Compiler
@@ -85,7 +85,7 @@ main = do
         spec_stringToLower
         spec_tokenize
         spec_convertFloat
-        -- module Parsing
+        -- module Parser
         spec_parser
         spec_codeBlockParser
         spec_listParser
@@ -709,7 +709,7 @@ spec_convertFloat = do
         it "convertFloat (INT (-5)) returns -5.0" $ do
             convertFloat (INT (-5)) `shouldBe` -5.0
 
-{-- module Parsing -}
+{-- module Parser -}
 
 spec_parser :: Spec
 spec_parser = do

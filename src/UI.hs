@@ -11,7 +11,7 @@ import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
 import Stack
-import Parsing
+import Parser
 import Compiler
 import Convert
 
