@@ -15,12 +15,6 @@ import Parser
 import Compiler
 import Converter
 
--- | Adds a flush input message to the user.
-readInput :: String -> IO ()
-readInput message = do
-    putStr message
-    hFlush stdout
-
 -- | Menu of the program.
 menu :: IO ()
 menu = do
@@ -80,7 +74,7 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
                 putStrLn "Reverting back to a stable version of the program...\n"
                 modeInteractive ([], deallocateStack outStack containers, variables, functions, [], statusIO) False
         else do
-            putStrLn $ "Stack: " ++ printableStack (inpStack, containers, variables, functions, outStack, statusIO) ++ "\n"
+            putStrLn $ "Stack: " ++ printableStack outStack containers ++ "\n"
             modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) False
     else do
         readInput "bprog2 > "
@@ -128,7 +122,7 @@ modeCompiler file (inpStack, containers, variables, functions, outStack, statusI
                 putStrLn "FOUND ERROR!"
                 renderLogsAfterExecute (inpStack, containers, outStack)
                 putStrLn "Terminating program...\n"
-        else putStrLn $ "Stack: " ++ printableStack (inpStack, containers, variables, functions, outStack, statusIO) ++ "\n"
+        else putStrLn $ "Stack: " ++ printableStack outStack containers ++ "\n"
     else do
         handle <- openFile ("documents/" ++ file) ReadMode
         contents <- hGetContents handle
@@ -143,23 +137,22 @@ modeCompiler file (inpStack, containers, variables, functions, outStack, statusI
                 putStrLn "Terminating program...\n"
         else modeCompiler file (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
 
+-- | Adds a flush input message to the user.
+readInput :: String -> IO ()
+readInput message = do
+    putStr message
+    hFlush stdout
+
 -- | Renders logs of the stack before it was executed.
 renderLogsBeforeExecute :: (InputStack, Containers, OutputStack) -> IO ()
 renderLogsBeforeExecute (beforeInpStack, beforeContainers, beforeOutStack) = do
     putStrLn "    Logs before execute:"
-    putStrLn $ "        Buffer  " ++ printableStack ([], beforeContainers, Map.empty, Map.empty, beforeInpStack, None)
-    putStrLn $ "        Stack   " ++ printableStack ([], beforeContainers, Map.empty, Map.empty, beforeOutStack, None)
+    putStrLn $ "        Buffer  " ++ printableStack beforeInpStack beforeContainers
+    putStrLn $ "        Stack   " ++ printableStack beforeOutStack beforeContainers
 
 -- | Renders logs of the stack after it was executed.
 renderLogsAfterExecute :: (InputStack, Containers, OutputStack) -> IO ()
 renderLogsAfterExecute (afterInpStack, afterContainers, afterOutStack) = do
     putStrLn "    Logs after execute:"
-    putStrLn $ "        Buffer  " ++ printableStack ([], afterContainers, Map.empty, Map.empty, afterInpStack, None)
-    putStrLn $ "        Stack   " ++ printableStack ([], afterContainers, Map.empty, Map.empty, afterOutStack, None)
-
--- | Function to test the compiler. Used in Spec.hs
-testCompiler :: String -> String
-testCompiler input = do
-    let tokens = tokenize input
-    let (newInpStack, newContainers) = parser tokens [] Map.empty
-    printableStack $ evalState executeStack (newInpStack, newContainers, Map.empty, Map.empty, [], None)
+    putStrLn $ "        Buffer  " ++ printableStack afterInpStack afterContainers
+    putStrLn $ "        Stack   " ++ printableStack afterOutStack afterContainers

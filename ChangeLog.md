@@ -249,3 +249,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.17.2] **structure**: Renamed Stack module to MemoryHandler
 
 [3.17.3] **structure**: Renamed Convert module to Converter
+
+[3.18.0] **development**: Moved functions used for testing to Spec.hs
