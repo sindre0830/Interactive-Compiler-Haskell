@@ -1,0 +1,3 @@
+read words print each
+
+[ ] 2 { read words dup head print tail append } times print each

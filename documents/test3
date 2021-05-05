@@ -1,0 +1,3 @@
+list [ [ 1 2 3 ] [ 1 2 3 ] [ 1 2 3 ] ] :=
+block { { 0 swap cons } exec } fun
+list block map
