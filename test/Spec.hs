@@ -31,7 +31,7 @@ main = do
         spec_funcMultiplication
         spec_funcDivisionFloat
         spec_funcDivisionInteger
-
+        spec_isZero
         -- module Functors.Assignment
         spec_funcSetVariable
         spec_funcSetFunction
@@ -41,13 +41,13 @@ main = do
         spec_funcNOT
         -- module Functors.Comparison
         spec_funcEqual
-
+        spec_compareStacks
         spec_funcLess
         spec_funcGreater
         -- module Functors.ControlFlow
         spec_funcIf
         spec_funcTimes
-
+        spec_loopN
         -- module Functors.IO
         spec_funcRead
         spec_funcPrint
@@ -61,7 +61,7 @@ main = do
         -- module Functors.Other
         spec_funcExec
         spec_funcEach
-
+        spec_eachOf
         -- module Functors.Stack
         spec_funcPop
         spec_funcDup
@@ -106,7 +106,7 @@ main = do
 
 
 
-        
+
         spec_printableStack
         spec_formatStack
         -- offical tests
@@ -198,6 +198,16 @@ spec_funcDivisionInteger = do
         it "printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [INT 2, BOOL True], None)) returns \"[ExpectedNumber]\"" $ do
             printableStack (evalState funcDivisionInteger ([], Map.empty, Map.empty, Map.empty, [INT 2, BOOL True], None)) `shouldBe` "[ExpectedNumber]"
 
+spec_isZero :: Spec
+spec_isZero = do
+    describe "isZero tests:" $ do
+        it "isZero (INT 0) (INT 5) returns True" $ do
+            isZero (INT 0) (INT 5) `shouldBe` True
+        it "isZero (INT 5) (FLOAT 0) returns True" $ do
+            isZero (INT 5) (FLOAT 0) `shouldBe` True
+        it "isZero (INT 5) (FLOAT 0.6) returns False" $ do
+            isZero (INT 5) (FLOAT 0.6) `shouldBe` False
+
 {-- module Functors.Assignment -}
 
 spec_funcSetVariable :: Spec
@@ -282,6 +292,18 @@ spec_funcEqual = do
         it "printableStack (evalState funcEqual ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcEqual ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
 
+spec_compareStacks :: Spec
+spec_compareStacks = do
+    describe "compareStacks tests:" $ do
+        it "compareStacks [BOOL True, LIST \"0\"] [BOOL True, LIST \"1\"] (Map.fromList [(\"0\", [INT 1, INT 5]), (\"1\", [INT 1, INT 5])]) returns True" $ do
+            compareStacks [BOOL True, LIST "0"] [BOOL True, LIST "1"] (Map.fromList [("0", [INT 1, INT 5]), ("1", [INT 1, INT 5])]) `shouldBe` True
+        it "compareStacks [] [] Map.empty returns True" $ do
+            compareStacks [] [] Map.empty `shouldBe` True
+        it "compareStacks [BOOL True, LIST \"0\"] [BOOL True, LIST \"1\"] (Map.fromList [(\"0\", [INT 123]), (\"1\", [INT 1, INT 5])]) returns False" $ do
+            compareStacks [BOOL True, LIST "0"] [BOOL True, LIST "1"] (Map.fromList [("0", [INT 123]), ("1", [INT 1, INT 5])]) `shouldBe` False
+        it "compareStacks [BOOL True] [BOOL True, LIST \"1\"] (Map.fromList [(\"1\", [INT 1, INT 5])]) returns False" $ do
+            compareStacks [BOOL True] [BOOL True, LIST "1"] (Map.fromList [("1", [INT 1, INT 5])]) `shouldBe` False
+
 spec_funcLess :: Spec
 spec_funcLess = do
     describe "funcLess tests:" $ do
@@ -339,6 +361,18 @@ spec_funcTimes = do
             printableStack (evalState funcTimes ([], Map.empty, Map.empty, Map.empty, [FLOAT 5.0, FLOAT 5.0], None)) `shouldBe` "[ExpectedPositiveInteger]"
         it "printableStack (evalState funcTimes ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcTimes ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
+
+spec_loopN :: Spec
+spec_loopN = do
+    describe "loopN tests:" $ do
+        it "loopN 0 [INT 10, FUNC \"*\"] ([], Map.empty) returns ([], Map.empty)" $ do
+            loopN 0 [INT 10, FUNC "*"] ([], Map.empty) `shouldBe` ([], Map.empty)
+        it "loopN 3 [INT 10, FUNC \"*\"] ([], Map.empty) returns ([INT 10, FUNC \"*\", INT 10, FUNC \"*\", INT 10, FUNC \"*\"], Map.empty)" $ do
+            loopN 3 [INT 10, FUNC "*"] ([], Map.empty) `shouldBe` ([INT 10, FUNC "*", INT 10, FUNC "*", INT 10, FUNC "*"], Map.empty)
+        it "loopN 2 [CODEBLOCK \"0\", FUNC \"exec\"] ([], Map.fromList [(\"0\", [INT 10, FUNC \"*\"])]) \
+            \ returns ([CODEBLOCK \"2\", FUNC \"exec\", CODEBLOCK \"1\", FUNC \"exec\"], \
+                    \  Map.fromList [(\"0\", [INT 10, FUNC \"*\"]), (\"1\", [INT 10, FUNC \"*\"]), (\"2\", [INT 10, FUNC \"*\"])])" $ do
+            loopN 2 [CODEBLOCK "0", FUNC "exec"] ([], Map.fromList [("0", [INT 10, FUNC "*"])]) `shouldBe` ([CODEBLOCK "2", FUNC "exec", CODEBLOCK "1", FUNC "exec"], Map.fromList [("0", [INT 10, FUNC "*"]), ("1", [INT 10, FUNC "*"]), ("2", [INT 10, FUNC "*"])])
 
 {-- module Functors.IO -}
 
@@ -454,6 +488,13 @@ spec_funcEach = do
         it "printableStack (evalState funcEach ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcEach ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
 
+spec_eachOf :: Spec
+spec_eachOf = do
+    describe "eachOf tests:" $ do
+        it "eachOf [INT 1, INT 2, INT 3] [INT 10, FUNC \"*\"] ([], Map.empty) returns ([INT 3, INT 10, FUNC \"*\", INT 2, INT 10, FUNC \"*\", INT 1, INT 10, FUNC \"*\"], Map.empty)" $ do
+            eachOf [INT 1, INT 2, INT 3] [INT 10, FUNC "*"] ([], Map.empty) `shouldBe` ([INT 3, INT 10, FUNC "*", INT 2, INT 10, FUNC "*", INT 1, INT 10, FUNC "*"], Map.empty)
+        it "eachOf [] [INT 10, FUNC \"*\"] ([], Map.empty) returns ([], Map.empty)" $ do
+            eachOf [] [INT 10, FUNC "*"] ([], Map.empty) `shouldBe` ([], Map.empty)
 {-- module Functors.Stack -}
 
 spec_funcPop :: Spec

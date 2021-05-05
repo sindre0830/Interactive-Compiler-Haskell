@@ -235,3 +235,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.13.1] **formatting**: Added function headers
 
 [3.13.2] **formatting**: Restructured spec tests to mimic folder structure
+
+[3.14.0] **development**: Added the remaining tests for all Functor modules
