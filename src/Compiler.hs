@@ -27,8 +27,8 @@ executeStack = do
         then return (inpStack, containers, variables, functions, outStack, statusIO)
     else do
         let (x : xs) = inpStack
-        let (shouldSkip, newInpStack, newOutStack) = skipOperation inpStack variables functions
-        if shouldSkip
+        let (newInpStack, newOutStack) = skipOperation inpStack variables functions
+        if not $ null newOutStack
             then put (newInpStack, containers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
         else if isFUNC x
             then ( do
@@ -95,7 +95,8 @@ searchForErrors (x : xs) containers
     | isCODEBLOCK x = do
         let block = containers `getContainer` x
         searchForErrors block containers || searchForErrors block containers
-    | otherwise = isERROR x
+    | isERROR x = True
+    | otherwise = searchForErrors xs containers
 
 -- | Checks if a stack has any unknown values that can be converted to their respected values.
 setVariable :: Stack -> Variables -> Functions -> (Bool, Containers, OutputStack) -> (Bool, Containers, OutputStack)
@@ -122,13 +123,13 @@ setVariable (x : xs) variables functions (moveToBuffer, containers, outStack)
     | otherwise = setVariable xs variables functions (moveToBuffer, containers, x : outStack)
 
 -- | Checks if the handler should skip operations on the stack to deal with functions that can take other operations than codeblock.
-skipOperation :: Stack -> Variables -> Functions -> (Bool, Stack, Stack)
+skipOperation :: Stack -> Variables -> Functions -> (Stack, Stack)
 skipOperation stack variables functions
     | length stack >= 3 && isFUNC (stack !! 2)
         && (getFUNC (stack !! 2) == "loop"
         || getFUNC (stack !! 2) == "if") = do
             let (x : y : rest) = stack
-            (True, rest, [y, x])
+            (rest, [y, x])
     | length stack >= 2 && isFUNC (stack !! 1)
         && (getFUNC (stack !! 1) == "map"
         || getFUNC (stack !! 1) == "each"
@@ -137,14 +138,14 @@ skipOperation stack variables functions
         || getFUNC (stack !! 1) == "if"
         || getFUNC (stack !! 1) == "foldl") = do
             let (x : rest) = stack
-            (True, rest, [x])
+            (rest, [x])
     | length stack >= 3 && isFUNC (stack !! 2) 
         && (isVariable (head stack) variables || isFunction (head stack) functions)
         && (getFUNC (stack !! 2) == ":="
         || getFUNC (stack !! 2) == "fun") = do
             let (x : y : rest) = stack
-            (True, rest, [y, x])
-    | otherwise = (False, stack, [])
+            (rest, [y, x])
+    | otherwise = (stack, [])
 
 -- | Performs an operation on each element of a list and returns a list.
 funcMap :: StackState

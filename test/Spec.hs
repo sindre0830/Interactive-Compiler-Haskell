@@ -71,16 +71,16 @@ main = do
         spec_funcParseFloat
         spec_funcWords
         -- module Compiler
-
-
-
-
+        spec_executeStack
+        spec_searchForErrors
+        spec_setVariable
+        spec_skipOperation
         spec_funcMap
         spec_mapOf
         spec_funcFoldl
-
+        spec_foldlOf
         spec_funcLoop
-
+        spec_loop
         -- module Convert
 
         spec_tokenize
@@ -567,6 +567,54 @@ spec_funcWords = do
 
 {-- module Compiler -}
 
+spec_executeStack :: Spec
+spec_executeStack = do
+    describe "executeStack tests:" $ do
+        it "printableStack (evalState executeStack ([INT 1, INT 2, FUNC \"+\"], Map.empty, Map.empty, Map.empty, [], None)) returns \"[3]\"" $ do
+            printableStack (evalState executeStack ([INT 1, INT 2, FUNC "+"], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[3]"
+        it "printableStack (evalState executeStack ([UNKNOWN \"list\", LIST \"0\", FUNC \":=\", UNKNOWN \"block\", CODEBLOCK \"1\", FUNC \"fun\", UNKNOWN \"list\", UNKNOWN \"block\", FUNC \"map\"], Map.fromList [(\"0\", [INT 1, INT 2, INT 3]), (\"1\", [INT 10, FUNC \"*\"])], Map.empty, Map.empty, [], None)) returns \"[[10,20,30]]\"" $ do
+            printableStack (evalState executeStack ([UNKNOWN "list", LIST "0", FUNC ":=", UNKNOWN "block", CODEBLOCK "1", FUNC "fun", UNKNOWN "list", UNKNOWN "block", FUNC "map"], Map.fromList [("0", [INT 1, INT 2, INT 3]), ("1", [INT 10, FUNC "*"])], Map.empty, Map.empty, [], None)) `shouldBe` "[[10,20,30]]"
+        it "printableStack (evalState executeStack ([STRING \"abc\", FUNC \"print\", INT 1], Map.empty, Map.empty, Map.empty, [], None)) returns \"[\"abc\"]\"" $ do
+            printableStack (evalState executeStack ([STRING "abc", FUNC "print", INT 1], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[\"abc\"]"
+        it "printableStack (evalState executeStack ([INT 0, INT 43, FUNC \"div\", INT 1], Map.empty, Map.empty, Map.empty, [], None)) returns \"[DivisionByZero]\"" $ do
+            printableStack (evalState executeStack ([INT 0, INT 43, FUNC "div", INT 1], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[DivisionByZero]"
+        it "printableStack (evalState executeStack ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[]\"" $ do
+            printableStack (evalState executeStack ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[]"
+
+spec_searchForErrors :: Spec
+spec_searchForErrors = do
+    describe "searchForErrors tests:" $ do
+        it "searchForErrors [ERROR InvalidType] Map.empty returns True" $ do
+            searchForErrors [ERROR InvalidType] Map.empty `shouldBe` True
+        it "searchForErrors [INT 5, ERROR InvalidType] Map.empty returns True" $ do
+            searchForErrors [INT 5, ERROR InvalidType] Map.empty `shouldBe` True
+        it "searchForErrors [INT 5] Map.empty returns False" $ do
+            searchForErrors [INT 5] Map.empty `shouldBe` False
+        it "searchForErrors [] Map.empty returns False" $ do
+            searchForErrors [] Map.empty `shouldBe` False
+
+spec_setVariable :: Spec
+spec_setVariable = do
+    describe "setVariable tests:" $ do
+        it "setVariable [INT 5, UNKNOWN \"abc\"] (Map.fromList [(\"abc\", INT 10)]) Map.empty (False, Map.empty, []) returns (False, Map.empty, [INT 10, INT 5])" $ do
+            setVariable [INT 5, UNKNOWN "abc"] (Map.fromList [("abc", INT 10)]) Map.empty (False, Map.empty, []) `shouldBe` (False, Map.empty, [INT 10, INT 5])
+        it "setVariable [INT 5, UNKNOWN \"abc\"] Map.empty (Map.fromList [(\"abc\", [INT 10, FUNC \"+\"])]) (False, Map.empty, []) returns (True, Map.empty, [FUNC \"+\", INT 10, INT 5])" $ do
+            setVariable [INT 5, UNKNOWN "abc"] Map.empty (Map.fromList [("abc", [INT 10, FUNC "+"])]) (False, Map.empty, []) `shouldBe` (True, Map.empty, [FUNC "+", INT 10, INT 5])
+        it "setVariable [INT 5, UNKNOWN \"abc\"] Map.empty Map.empty (False, Map.empty, []) returns (False, Map.empty, [UNKNOWN \"abc\", INT 5])" $ do
+            setVariable [INT 5, UNKNOWN "abc"] Map.empty Map.empty (False, Map.empty, []) `shouldBe` (False, Map.empty, [UNKNOWN "abc", INT 5])
+        it "setVariable [] Map.empty Map.empty (False, Map.empty, []) returns (False, Map.empty, [])" $ do
+            setVariable [] Map.empty Map.empty (False, Map.empty, []) `shouldBe` (False, Map.empty, [])
+
+spec_skipOperation :: Spec
+spec_skipOperation = do
+    describe "skipOperation" $ do
+        it "skipOperation [FUNC \"read\", FUNC \"times\"] Map.empty Map.empty returns ([FUNC \"times\"], [FUNC \"read\"])" $ do
+            skipOperation [FUNC "read", FUNC "times"] Map.empty Map.empty `shouldBe` ([FUNC "times"], [FUNC "read"])
+        it "skipOperation [INT 5, INT 5, FUNC \"+\"] Map.empty Map.empty returns ([INT 5, INT 5, FUNC \"+\"], [])" $ do
+            skipOperation [INT 5, INT 5, FUNC "+"] Map.empty Map.empty `shouldBe` ([INT 5, INT 5, FUNC "+"], [])
+        it "skipOperation [] Map.empty Map.empty returns ([], [])" $ do
+            skipOperation [] Map.empty Map.empty `shouldBe` ([], [])
+
 spec_funcMap :: Spec
 spec_funcMap = do
     describe "funcMap tests:" $ do
@@ -601,6 +649,16 @@ spec_funcFoldl = do
         it "printableStack (evalState funcFoldl ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcFoldl ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
 
+spec_foldlOf :: Spec
+spec_foldlOf = do
+    describe "foldlOf tests:" $ do
+        it "foldlOf [INT 3, INT 2, INT 1] [FUNC \"+\"] (Map.empty, Map.empty, Map.empty, INT 0) returns (Map.empty, Map.empty, Map.empty, INT 6)" $ do
+            foldlOf [INT 3, INT 2, INT 1] [FUNC "+"] (Map.empty, Map.empty, Map.empty, INT 0) `shouldBe` (Map.empty, Map.empty, Map.empty, INT 6)
+        it "foldlOf [] [FUNC \"+\"] (Map.empty, Map.empty, Map.empty, INT 0) returns (Map.empty, Map.empty, Map.empty, INT 0)" $ do
+            foldlOf [] [FUNC "+"] (Map.empty, Map.empty, Map.empty, INT 0) `shouldBe` (Map.empty, Map.empty, Map.empty, INT 0)
+        it "foldlOf [INT 3, INT 2, INT 1] [FUNC \"read\"] (Map.empty, Map.empty, Map.empty, STRING \"abc\") returns (Map.empty, Map.empty, Map.empty, ERROR InvalidOperationIO)" $ do
+            foldlOf [INT 3, INT 2, INT 1] [FUNC "read"] (Map.empty, Map.empty, Map.empty, STRING "abc") `shouldBe` (Map.empty, Map.empty, Map.empty, ERROR InvalidOperationIO)
+
 spec_funcLoop :: Spec
 spec_funcLoop = do
     describe "funcLoop tests:" $ do
@@ -612,6 +670,16 @@ spec_funcLoop = do
             printableStack (evalState funcLoop ([], Map.fromList [("0", [FUNC "dup", INT 4, FUNC ">"])], Map.empty, Map.empty, [FLOAT 5.0, CODEBLOCK "0"], None)) `shouldBe` "[ExpectedCodeblock]"
         it "printableStack (evalState funcLoop ([], Map.empty, Map.empty, Map.empty, [], None)) returns \"[InvalidParameterAmount]\"" $ do
             printableStack (evalState funcLoop ([], Map.empty, Map.empty, Map.empty, [], None)) `shouldBe` "[InvalidParameterAmount]"
+
+spec_loop :: Spec
+spec_loop = do
+    describe "loop tests:" $ do
+        it "loop [BOOL True] [] (Map.empty, Map.empty, Map.empty, []) returns (Map.empty, [])" $ do
+            loop [BOOL True] [] (Map.empty, Map.empty, Map.empty, []) `shouldBe` (Map.empty, [])
+        it "loop [FUNC \"read\"] [] (Map.empty, Map.empty, Map.empty, []) returns (Map.empty, [ERROR InvalidOperationIO])" $ do
+            loop [FUNC "read"] [] (Map.empty, Map.empty, Map.empty, []) `shouldBe` (Map.empty, [ERROR InvalidOperationIO])
+        it "loop [BOOL False] [FUNC \"read\"] (Map.empty, Map.empty, Map.empty, []) returns (Map.empty, [ERROR InvalidOperationIO])" $ do
+            loop [BOOL False] [FUNC "read"] (Map.empty, Map.empty, Map.empty, []) `shouldBe` (Map.empty, [ERROR InvalidOperationIO])
 
 {-- module Convert -}
 
