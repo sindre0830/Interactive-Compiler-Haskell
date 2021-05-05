@@ -259,3 +259,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.19.1] **formatting**: Added comments
 
 [3.19.2] **structure**: Added more example files
+
+[3.19.3] **formatting**: Added disclaimer in README

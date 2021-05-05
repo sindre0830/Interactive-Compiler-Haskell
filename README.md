@@ -32,6 +32,8 @@ The program will catch any errors on the stack and display them to the user. If 
 
 ### Notes
 
+DISCLAIMER: I realized too late that what I've implemented isn't a stack, but rather two queues. This was a mistake given how easier it would have been with a single stack. I don't have time to rewrite everything now, but know that the stack in my program refers to the queue. (same functionality in the end, just not the prettiest)
+
 - I have written my program in bprog2 style
 - I use sum types to build my stack type.
 - I use State monad to handle the executer and functors. 
