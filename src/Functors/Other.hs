@@ -5,8 +5,8 @@ module Functors.Other
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
-import Converter
+import MemoryHandler (deallocateMemory, deallocateRootContainer, deallocateStack, duplicateStack, duplicateValue, getContainer, isFunction)
+import Converter (getBlock)
 
 -- | Executes the codeblock and puts it in the stack.
 funcExec :: StackState

@@ -7,18 +7,18 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy (evalState, MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
-import Converter
-import Functors.Arithmetic
-import Functors.Boolean
-import Functors.Assignment
-import Functors.IO
-import Functors.Comparison
-import Functors.Stack
-import Functors.String
-import Functors.List
-import Functors.ControlFlow
-import Functors.Other
+import MemoryHandler (deallocateMemory, deallocateStack, duplicateStack, getContainer, isFunction, isVariable, updateContainer)
+import Converter (getBlock)
+import Functors.Arithmetic (funcDivisionInteger, funcDivisionFloat, funcMultiplication, funcSubtraction, funcAddition)
+import Functors.Boolean (funcAND, funcNOT, funcOR)
+import Functors.Assignment (funcSetFunction, funcSetVariable)
+import Functors.IO (funcPrint, funcRead)
+import Functors.Comparison (funcGreater, funcLess, funcEqual)
+import Functors.Stack (funcDup, funcPop, funcSwap)
+import Functors.String (funcParseFloat, funcParseInteger, funcWords)
+import Functors.List (funcAppend, funcCons, funcEmpty, funcHead, funcLength, funcTail)
+import Functors.ControlFlow (funcTimes, funcIf)
+import Functors.Other (funcEach, funcExec)
 
 -- | Handles the execution of the stack.
 executeStack :: StackState

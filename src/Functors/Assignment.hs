@@ -7,8 +7,8 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
-import Converter
+import MemoryHandler (deallocateMemory, deallocateStack)
+import Converter (getBlock)
 
 -- | Set unknown value to another value.
 funcSetVariable :: StackState

@@ -5,7 +5,7 @@ module Functors.Boolean
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
+import MemoryHandler (deallocateMemory, deallocateStack)
 
 -- | Performs AND operation on boolean values.
 funcAND :: StackState

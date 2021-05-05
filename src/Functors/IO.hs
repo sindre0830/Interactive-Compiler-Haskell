@@ -5,7 +5,7 @@ module Functors.IO
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
+import MemoryHandler (deallocateMemory, deallocateStack)
 
 -- | Performs read operation and adds a string to the stack.
 funcRead :: StackState

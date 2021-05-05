@@ -5,8 +5,8 @@ module Functors.Comparison
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
-import Converter
+import MemoryHandler (deallocateStack, getContainer)
+import Converter (convertFloat)
 
 -- | Performs equal operation on values.
 funcEqual :: StackState

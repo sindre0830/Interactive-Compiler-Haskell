@@ -5,7 +5,7 @@ module Functors.Stack
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
+import MemoryHandler (deallocateMemory, deallocateStack, duplicateValue)
 
 -- | Removes a value from the stack.
 funcPop :: StackState

@@ -1,19 +1,19 @@
 module UI
-    ( module UI
+    ( menu
     ) where
 -- foreign modules
-import System.IO
-import System.Directory
+import System.IO (stdout, IOMode(ReadMode), hFlush, hGetContents, openFile)
+import System.Directory (listDirectory)
 import Data.List (intercalate)
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Control.Monad.State.Lazy
+import Control.Monad.State.Lazy (evalState)
 -- local modules
 import Dictionary
-import MemoryHandler
-import Parser
-import Compiler
-import Converter
+import MemoryHandler (deallocateStack)
+import Parser (parser)
+import Compiler (searchForErrors, executeStack)
+import Converter (printableStack, tokenize, stringToLower)
 
 -- | Menu of the program.
 menu :: IO ()

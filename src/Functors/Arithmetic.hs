@@ -5,8 +5,8 @@ module Functors.Arithmetic
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import MemoryHandler
-import Converter
+import MemoryHandler (deallocateStack)
+import Converter (convertFloat)
 
 -- | Performs addition operation on number values.
 funcAddition :: StackState
