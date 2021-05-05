@@ -5,7 +5,6 @@ module UI
 import System.IO
 import System.Directory
 import Data.List (intercalate)
-import Data.Char (toLower)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Monad.State.Lazy
@@ -14,12 +13,15 @@ import Dictionary
 import Stack
 import Parsing
 import Compiler
+import Convert
 
+-- | Adds a flush input message to the user.
 readInput :: String -> IO ()
 readInput message = do
     putStr message
     hFlush stdout
 
+-- | Menu of the program.
 menu :: IO ()
 menu = do
     readInput "bprog2 > "
@@ -41,6 +43,7 @@ menu = do
                 getFileName input files
     else menu
 
+-- | Gets valid file name from the user.
 getFileName :: String -> [FilePath] -> IO ()
 getFileName input files
     | input `elem` files = do
@@ -53,6 +56,7 @@ getFileName input files
         input <- getLine
         getFileName input files
 
+-- | Handler for the interactive mode. Allows for continius usage after stack has been executed.
 modeInteractive :: (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
 modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
     if statusIO == Output
@@ -102,6 +106,7 @@ modeInteractive (inpStack, containers, variables, functions, outStack, statusIO)
                     modeInteractive (inpStack, containers, variables, functions, outStack, statusIO) True
             else modeInteractive (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
 
+-- | Handler for the compiler mode. Executes a text file and ends the program upon errors or end of the file.
 modeCompiler :: FilePath -> (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) -> Bool -> IO ()
 modeCompiler file (inpStack, containers, variables, functions, outStack, statusIO) showStack = do
     if statusIO == Output
@@ -138,22 +143,21 @@ modeCompiler file (inpStack, containers, variables, functions, outStack, statusI
                 putStrLn "Terminating program...\n"
         else modeCompiler file (newInpStack, newContainers, newVariables, newFunctions, newOutStack, newStatusIO) True
 
+-- | Renders logs of the stack before it was executed.
 renderLogsBeforeExecute :: (InputStack, Containers, OutputStack) -> IO ()
 renderLogsBeforeExecute (beforeInpStack, beforeContainers, beforeOutStack) = do
     putStrLn "    Logs before execute:"
     putStrLn $ "        Buffer  " ++ printableStack ([], beforeContainers, Map.empty, Map.empty, beforeInpStack, None)
     putStrLn $ "        Stack   " ++ printableStack ([], beforeContainers, Map.empty, Map.empty, beforeOutStack, None)
 
+-- | Renders logs of the stack after it was executed.
 renderLogsAfterExecute :: (InputStack, Containers, OutputStack) -> IO ()
 renderLogsAfterExecute (afterInpStack, afterContainers, afterOutStack) = do
     putStrLn "    Logs after execute:"
     putStrLn $ "        Buffer  " ++ printableStack ([], afterContainers, Map.empty, Map.empty, afterInpStack, None)
     putStrLn $ "        Stack   " ++ printableStack ([], afterContainers, Map.empty, Map.empty, afterOutStack, None)
 
--- | Converts string to lowercase.
-stringToLower :: String -> String
-stringToLower = map toLower
-
+-- | Function to test the compiler. Used in Spec.hs
 testCompiler :: String -> String
 testCompiler input = do
     let tokens = tokenize input

@@ -1,9 +1,6 @@
-1
- { dup 4 > } { dup 1 + } loop
-[ ]
-5 cons times
-dup length
-5 ==
+1 { dup 4 > } { dup 1 + } loop
+[ ] 5 cons times
+dup length 5 ==
 { 
   " list has 5 elements! " print 
 }

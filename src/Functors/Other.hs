@@ -7,7 +7,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Executes the codeblock and puts it in the stack.
 funcExec :: StackState
 funcExec = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -24,7 +24,7 @@ funcExec = do
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs an operation on each element of a list and returns values on the stack.
 funcEach :: StackState
 funcEach = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -45,7 +45,7 @@ funcEach = do
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | For every element in a list, it will add an operation.
 eachOf :: Stack -> Stack -> (Stack, Containers) -> (Stack, Containers)
 eachOf [] _ (stack, containers) = (stack, containers)
 eachOf (x : xs) block (stack, containers) = do

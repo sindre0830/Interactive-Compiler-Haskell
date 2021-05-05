@@ -9,7 +9,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Parses a string to a integer value.
 funcParseInteger :: StackState
 funcParseInteger = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -25,7 +25,7 @@ funcParseInteger = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Parses a string to a float value
 funcParseFloat :: StackState
 funcParseFloat = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -41,7 +41,7 @@ funcParseFloat = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs words operation on a string and adds a list of strings on the stack.
 funcWords :: StackState
 funcWords = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get

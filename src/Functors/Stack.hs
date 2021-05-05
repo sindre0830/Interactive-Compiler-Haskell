@@ -7,7 +7,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Removes a value from the stack.
 funcPop :: StackState
 funcPop = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -20,7 +20,7 @@ funcPop = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Duplicate a value from the stack.
 funcDup :: StackState
 funcDup = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -34,7 +34,7 @@ funcDup = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Swap to values on the stack.
 funcSwap :: StackState
 funcSwap = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get

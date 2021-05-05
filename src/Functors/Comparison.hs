@@ -6,8 +6,9 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
 import Stack
+import Convert
 
-
+-- | Performs equal operation on values.
 funcEqual :: StackState
 funcEqual = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -21,7 +22,7 @@ funcEqual = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Compare two stacks.
 compareStacks :: Stack -> Stack -> Containers -> Bool
 compareStacks [] [] _ = True
 compareStacks [] _ _ = False
@@ -34,7 +35,7 @@ compareStacks (x : xs) (y : ys) containers
     | x /= y = False
     | otherwise = compareStacks xs ys containers
 
-
+-- | Performs less-than operation on number values.
 funcLess :: StackState
 funcLess = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -52,7 +53,7 @@ funcLess = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs greater-than operation on number values.
 funcGreater :: StackState
 funcGreater = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get

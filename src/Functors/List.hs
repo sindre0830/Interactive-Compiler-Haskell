@@ -7,7 +7,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Performs empty operation by checking if there are any elements in the list.
 funcEmpty :: StackState
 funcEmpty = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -22,7 +22,7 @@ funcEmpty = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Gets the first value in the list and puts it on the stack.
 funcHead :: StackState
 funcHead = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -43,7 +43,7 @@ funcHead = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Gets the tail of a list and puts it on the stack.
 funcTail :: StackState
 funcTail = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -62,7 +62,7 @@ funcTail = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Adds a value to the start of a list.
 funcCons :: StackState
 funcCons = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -79,7 +79,7 @@ funcCons = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Appends a list to another list.
 funcAppend :: StackState
 funcAppend = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -96,7 +96,7 @@ funcAppend = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Gets the lenght of a list.
 funcLength :: StackState
 funcLength = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get

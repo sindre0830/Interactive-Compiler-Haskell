@@ -9,7 +9,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Set unknown value to another value.
 funcSetVariable :: StackState
 funcSetVariable = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -26,7 +26,7 @@ funcSetVariable = do
     let result = (inpStack, newContainers, newVariables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Set unknown value to a code block.
 funcSetFunction :: StackState
 funcSetFunction = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get

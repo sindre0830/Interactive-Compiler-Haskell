@@ -19,7 +19,7 @@ import Functors.List
 import Functors.ControlFlow
 import Functors.Other
 
-
+-- | Handles the execution of the stack.
 executeStack :: StackState
 executeStack = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -85,7 +85,7 @@ executeStack = do
                 then put (reverse newOutStack ++ xs, newContainers, variables, functions, outStack, statusIO) >> executeStack
             else put (xs, newContainers, variables, functions, newOutStack ++ outStack, statusIO) >> executeStack
 
-
+-- | Searches for errors in the stack.
 searchForErrors :: Stack -> Containers -> Bool
 searchForErrors [] _ = False
 searchForErrors (x : xs) containers
@@ -97,7 +97,7 @@ searchForErrors (x : xs) containers
         searchForErrors block containers || searchForErrors block containers
     | otherwise = isERROR x
 
-
+-- | Checks if a stack has any unknown values that can be converted to their respected values.
 setVariable :: Stack -> Variables -> Functions -> (Bool, Containers, OutputStack) -> (Bool, Containers, OutputStack)
 setVariable [] _ _ (moveToBuffer, containers, outStack) = (moveToBuffer, containers, outStack)
 setVariable (x : xs) variables functions (moveToBuffer, containers, outStack)
@@ -121,7 +121,7 @@ setVariable (x : xs) variables functions (moveToBuffer, containers, outStack)
         setVariable xs variables functions (True, newContainers, reverse newStack ++ outStack)
     | otherwise = setVariable xs variables functions (moveToBuffer, containers, x : outStack)
 
-
+-- | Checks if the handler should skip operations on the stack to deal with functions that can take other operations than codeblock.
 skipOperation :: Stack -> Variables -> Functions -> (Bool, Stack, Stack)
 skipOperation stack variables functions
     | length stack >= 3 && isFUNC (stack !! 2)
@@ -146,7 +146,7 @@ skipOperation stack variables functions
             (True, rest, [y, x])
     | otherwise = (False, stack, [])
 
-
+-- | Performs an operation on each element of a list and returns a list.
 funcMap :: StackState
 funcMap = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -172,6 +172,7 @@ funcMap = do
     let result = (inpStack, newContainers, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
 
+-- | For every element in a list, it will add an operation. Then run it through a nested executer to get back a list.
 mapOf :: Stack -> Stack -> (Containers, Variables, Functions, OutputStack) -> (Containers, Variables, Functions, OutputStack)
 mapOf [] _ (containers, variables, functions, outStack) = (containers, variables, functions, outStack)
 mapOf (x : xs) block (containers, variables, functions, outStack) = do
@@ -181,7 +182,7 @@ mapOf (x : xs) block (containers, variables, functions, outStack) = do
         then (deallocateStack outStack containers, variables, functions, [ERROR InvalidOperationIO])
     else mapOf xs block (containers, newVariables, newFunctions, newOutStack ++ outStack)
 
-
+-- | Performs a operation on a value and each elemnt of a list.
 funcFoldl :: StackState
 funcFoldl = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -204,7 +205,7 @@ funcFoldl = do
     let result = (inpStack, newContainers, newVariables, newFunctions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | For every element in a list, it will add an operation and the value to be stored for the next iteration.
 foldlOf :: Stack -> Stack -> (Containers, Variables, Functions, Type) -> (Containers, Variables, Functions, Type)
 foldlOf [] _ (containers, variables, functions, value) = (containers, variables, functions, value)
 foldlOf (x : xs) block (containers, variables, functions, value) = do
@@ -214,7 +215,7 @@ foldlOf (x : xs) block (containers, variables, functions, value) = do
         then (deallocateStack (value : dupBlock) newContainers, variables, functions, ERROR InvalidOperationIO)
     else foldlOf xs block (containers, newVariables, newFunctions, head newOutStack)
 
-
+-- | Does an operation untill a False boolean is given.
 funcLoop :: StackState
 funcLoop = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -234,7 +235,7 @@ funcLoop = do
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Checks if the operation is false, if it isn't it will perform the operation.
 loop :: Stack -> Stack -> (Containers, Variables, Functions, Stack) -> (Containers, Stack)
 loop break block (containers, variables, functions, outStack) = do
     let (_, _, _, _, newOutStack, statusIO) = evalState executeStack (break, containers, variables, functions, outStack, None)

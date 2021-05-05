@@ -6,8 +6,9 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
 import Stack
+import Convert
 
-
+-- | Performs addition operation on number values.
 funcAddition :: StackState
 funcAddition = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -25,7 +26,7 @@ funcAddition = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs subtraction operation on number values.
 funcSubtraction :: StackState
 funcSubtraction = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -43,7 +44,7 @@ funcSubtraction = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs multiplication operation on number values.
 funcMultiplication :: StackState
 funcMultiplication = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -61,7 +62,7 @@ funcMultiplication = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs floating division operation on number values.
 funcDivisionFloat :: StackState
 funcDivisionFloat = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -80,7 +81,7 @@ funcDivisionFloat = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs integer division operation on number values.
 funcDivisionInteger :: StackState
 funcDivisionInteger = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -99,5 +100,6 @@ funcDivisionInteger = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
+-- | Check if any of the values are zero.
 isZero :: Type -> Type -> Bool
 isZero x y = x == INT 0 || x == FLOAT 0 || y == INT 0 || y == FLOAT 0

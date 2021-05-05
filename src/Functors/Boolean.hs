@@ -7,7 +7,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Performs AND operation on boolean values.
 funcAND :: StackState
 funcAND = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -22,7 +22,7 @@ funcAND = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs OR operation on boolean values.
 funcOR :: StackState
 funcOR = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -37,7 +37,7 @@ funcOR = do
     let result = (inpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs NOT operation on boolean values.
 funcNOT :: StackState
 funcNOT = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get

@@ -11,11 +11,7 @@ import Control.Monad.State.Lazy
 import Dictionary
 import Stack
 
--- | Splits string by whitespace.
-tokenize :: String -> Tokens
-tokenize = words
-
--- ! parses tokens to stack and list of containers.
+-- ! Parses tokens to a stack.
 parser :: Tokens -> Stack -> Containers -> (Stack, Containers)
 parser [] stack containers = (reverse stack, containers)
 parser (x : xs) stack containers =
@@ -47,7 +43,7 @@ parser (x : xs) stack containers =
                 parser rest (CODEBLOCK key : stack) containers
         _ -> parser xs (typeParser x : stack) containers
 
--- | Parses codeBlocks.
+-- | Parses code blocks.
 codeBlockParser :: Tokens -> Stack -> Containers -> (Stack, Tokens, Containers)
 codeBlockParser [] _ containers = ([ERROR IncompleteCodeBlock], [], containers)
 codeBlockParser (x : xs) stack containers =

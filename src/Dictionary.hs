@@ -2,27 +2,33 @@ module Dictionary
     ( module Dictionary
     ) where
 -- foreign modules
-import Text.Read ( readMaybe )
-import Data.Maybe ( fromJust, isJust )
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Control.Monad.State.Lazy
+import Control.Monad.State.Lazy (State)
 
+-- general types
 type Data = String
 type Key = String
-type Divider = String
-
-type Tokens = [String]
-
 type Token = String
+type Tokens = [Token]
 
+-- types for the EitherN
+type Func = Data
+type Unknown = Data
+type List = Key
+type CodeBlock = Key
+type Error = ErrorTypes
+type Type = EitherN Integer Float Bool String Func Unknown List CodeBlock Error
 
+-- stack type
+type Stack = [Type]
+
+-- types used in the stack, based on Either
 data EitherN a b c d e f g h i
     = INT a | FLOAT b | BOOL c | STRING d | FUNC e | UNKNOWN f | LIST g | CODEBLOCK h | ERROR i
     deriving (Eq, Show)
 
-convertFloat :: Integral a => EitherN a b c d e f g h i -> Float
-convertFloat (INT a) = fromIntegral a
+{-- Gets value from a EitherN type -}
 
 getINT :: EitherN a b c d e f g h i -> a
 getINT (INT a) = a
@@ -50,6 +56,8 @@ getCODEBLOCK (CODEBLOCK h) = h
 
 getERROR :: EitherN a b c d e f g h i -> i
 getERROR (ERROR i) = i
+
+{-- Checks if a value is a EitherN type -}
 
 isINT :: EitherN a b c d e f g h i -> Bool
 isINT (INT _) = True
@@ -87,38 +95,19 @@ isCODEBLOCK :: EitherN a b c d e f g h i -> Bool
 isCODEBLOCK (CODEBLOCK _) = True
 isCODEBLOCK _ = False
 
-type List = Key
-
-type CodeBlock = Key
-
-type Func = Data
-
-type Error = ErrorTypes
-
-type Unknown = Data
-
+-- types for the stack state
+type InputStack = Stack
+type Containers = Map Key Stack
+type Variables = Map Key Type
+type Functions = Map Key Stack
+type OutputStack = Stack
 type StatusIO = TypeIO
 
-type Type = EitherN Integer Float Bool String Func Unknown List CodeBlock Error
-
-type Stack = [Type]
-
-type InputStack = Stack
-
-type OutputStack = Stack
-
-type Variables = Map Key Type
-
-type Functions = Map Key Stack
-
-type Containers = Map Key Stack
-
+-- state type
 type StackState = State (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) (InputStack, Containers, Variables, Functions, OutputStack, StatusIO)
 
-type FuncInfo = Map Key Int
-
--- | List of functors and their amount of parameters.
-functors :: FuncInfo
+-- | List of functors and their expected amount of parameters.
+functors :: Map Key Int
 functors = Map.fromList [
         -- Arithmetic
         ("+", 2), ("-", 2), ("*", 2), ("/", 2), ("div", 2),
@@ -144,12 +133,14 @@ functors = Map.fromList [
         ("read", 0), ("print", 1)
     ]
 
+-- | Type for each IO status.
 data TypeIO
     = Input
     | Output
     | None
     deriving (Eq, Show)
 
+-- | Type for each error.
 data ErrorTypes
     = StackEmpty
     | InvalidOperationIO

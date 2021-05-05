@@ -7,14 +7,14 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Performs read operation and adds a string to the stack.
 funcRead :: StackState
 funcRead = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
     let result = (inpStack, containers, variables, functions, outStack, Input)
     put result >> return result
 
-
+-- | Performs print operation and prints a string on the stack.
 funcPrint :: StackState
 funcPrint = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get

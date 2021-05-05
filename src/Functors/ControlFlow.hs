@@ -7,7 +7,7 @@ import Control.Monad.State.Lazy (MonadState(put, get))
 import Dictionary
 import Stack
 
-
+-- | Performs if operation and returns a value according to a boolean.
 funcIf :: StackState
 funcIf = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -28,7 +28,7 @@ funcIf = do
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Performs a loop n times according to an integer and adds a value to the stack for each iteration.
 funcTimes :: StackState
 funcTimes = do
     (inpStack, containers, variables, functions, outStack, statusIO) <- get
@@ -46,7 +46,7 @@ funcTimes = do
     let result = (newInpStack, newContainers, variables, functions, newOutStack, statusIO)
     put result >> return result
 
-
+-- | Adds stacks together n times.
 loopN :: Integer -> Stack -> (Stack, Containers) -> (Stack, Containers)
 loopN 0 _ (stack, containers) = (stack, containers)
 loopN n block (stack, containers) = do
