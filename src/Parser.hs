@@ -9,7 +9,7 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
-import Stack
+import MemoryHandler
 
 -- ! Parses tokens to a stack.
 parser :: Tokens -> Stack -> Containers -> (Stack, Containers)

@@ -245,3 +245,5 @@ Fucked up last commit by commiting files that weren't ready
 [3.17.0] **development**: Added the remaining tests for the Stack module
 
 [3.17.1] **structure**: Renamed Parsing module to Parser
+
+[3.17.2] **structure**: Renamed Stack module to MemoryHandler

@@ -5,7 +5,7 @@ module Functors.Comparison
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import Stack
+import MemoryHandler
 import Convert
 
 -- | Performs equal operation on values.

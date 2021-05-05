@@ -7,7 +7,7 @@ import Data.Maybe (fromJust, isJust)
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import Stack
+import MemoryHandler
 
 -- | Parses a string to a integer value.
 funcParseInteger :: StackState

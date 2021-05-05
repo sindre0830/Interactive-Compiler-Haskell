@@ -7,7 +7,8 @@ import qualified Data.Map as Map
 import Control.Monad.State.Lazy (evalState, MonadState(put, get))
 -- local modules
 import Dictionary
-import Stack
+import MemoryHandler
+import Convert
 import Functors.Arithmetic
 import Functors.Boolean
 import Functors.Assignment

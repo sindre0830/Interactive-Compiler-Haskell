@@ -6,7 +6,7 @@ import Control.Monad.State.Lazy
 -- local modules
 import Dictionary
 import Parser
-import Stack
+import MemoryHandler
 import Convert
 import Compiler
 import Functors.Arithmetic
@@ -82,33 +82,34 @@ main = do
         spec_funcLoop
         spec_loop
         -- module Convert
+        spec_getBlock
         spec_stringToLower
         spec_tokenize
         spec_convertFloat
+        spec_printableStack
+        spec_formatStack
+        -- module Dictionary
+        spec_validateParameters
+        -- module MemoryHandler
+        spec_generateAddress
+        spec_getAvailableAddress
+        spec_getAddress
+        spec_duplicateStack
+        spec_duplicateValue
+        spec_allocateMemory
+        spec_deallocateStack
+        spec_deallocateMemory
+        spec_deallocateRootContainer
+        spec_updateContainer
+        spec_getContainer
+        spec_isFunction
+        spec_isVariable
         -- module Parser
         spec_parser
         spec_codeBlockParser
         spec_listParser
         spec_stringParser
         spec_typeParser
-        -- module Stack
-        spec_validateParameters
-        spec_deallocateStack
-        spec_generateAddress
-        spec_getAddress
-        spec_getAvailableAddress
-        spec_updateContainer
-        spec_allocateMemory
-        spec_duplicateStack
-        spec_duplicateValue
-        spec_deallocateRootContainer
-        spec_deallocateMemory
-        spec_getBlock
-        spec_getContainer
-        spec_isFunction
-        spec_isVariable
-        spec_printableStack
-        spec_formatStack
         -- offical tests
         spec_testCompiler
 
@@ -495,6 +496,7 @@ spec_eachOf = do
             eachOf [INT 1, INT 2, INT 3] [INT 10, FUNC "*"] ([], Map.empty) `shouldBe` ([INT 3, INT 10, FUNC "*", INT 2, INT 10, FUNC "*", INT 1, INT 10, FUNC "*"], Map.empty)
         it "eachOf [] [INT 10, FUNC \"*\"] ([], Map.empty) returns ([], Map.empty)" $ do
             eachOf [] [INT 10, FUNC "*"] ([], Map.empty) `shouldBe` ([], Map.empty)
+
 {-- module Functors.Stack -}
 
 spec_funcPop :: Spec
@@ -683,6 +685,16 @@ spec_loop = do
 
 {-- module Convert -}
 
+spec_getBlock :: Spec
+spec_getBlock = do
+    describe "getBlock tests:" $ do
+        it "getBlock (CODEBLOCK \"0\") returns [CODEBLOCK \"0\", FUNC \"exec\"]" $ do
+            getBlock (CODEBLOCK "0") `shouldBe` [CODEBLOCK "0", FUNC "exec"]
+        it "getBlock (FUNC \"+\") returns [FUNC \"+\"]" $ do
+            getBlock (FUNC "+") `shouldBe` [FUNC "+"]
+        it "getBlock (UNKNOWN \"block\") returns [UNKNOWN \"block\"]" $ do
+            getBlock (UNKNOWN "block") `shouldBe` [UNKNOWN "block"]
+
 spec_stringToLower :: Spec
 spec_stringToLower = do
     describe "stringToLower tests:" $ do
@@ -708,6 +720,148 @@ spec_convertFloat = do
             convertFloat (INT 0) `shouldBe` 0.0
         it "convertFloat (INT (-5)) returns -5.0" $ do
             convertFloat (INT (-5)) `shouldBe` -5.0
+
+spec_printableStack :: Spec
+spec_printableStack = do
+    describe "printableStack tests:" $ do
+        it "printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING \"a string\", INT 1], None) returns \"[1,\"a string\",2\"]" $ do
+            printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING "a string", INT 1], None) `shouldBe` "[1,\"a string\",2]"
+
+spec_formatStack :: Spec
+spec_formatStack = do
+    describe "formatStack tests:" $ do
+        it "formatStack [INT 2, STRING \"a string\", INT 1] Map.empty returns [\"2\",\"\"a string\"\",\"1\"]" $ do
+            formatStack [INT 2, STRING "a string", INT 1] Map.empty `shouldBe` ["2","\"a string\"","1"]
+
+{-- module Dictionary -}
+
+spec_validateParameters :: Spec
+spec_validateParameters = do
+    describe "validateParameters tests:" $ do
+        it "validateParameters [INT 1, INT 2] \"+\" returns False" $ do
+            validateParameters [INT 1, INT 2] "+" `shouldBe` False
+        it "validateParameters [INT 1, INT 2, INT 3] \"+\" returns False" $ do
+            validateParameters [INT 1, INT 2, INT 3] "+" `shouldBe` False
+        it "validateParameters [INT 1] \"+\" returns True" $ do
+            validateParameters [INT 1] "+" `shouldBe` True
+        it "validateParameters [] \"+\" returns True" $ do
+            validateParameters [] "+" `shouldBe` True
+
+{-- module MemoryHandler -}
+
+spec_generateAddress :: Spec
+spec_generateAddress = do
+    describe "generateAddress tests:" $ do
+        it "generateAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) returns \"4\"" $ do
+            generateAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) `shouldBe` "4"
+        it "generateAddress Map.empty returns \"0\"" $ do
+            generateAddress Map.empty `shouldBe` "0"
+
+spec_getAvailableAddress :: Spec
+spec_getAvailableAddress = do
+    describe "getAvailableAddress tests:" $ do
+        it "getAvailableAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) 0 returns 4" $ do
+            getAvailableAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) 0 `shouldBe` 4
+        it "getAvailableAddress Map.empty 0 returns 0" $ do
+            getAvailableAddress Map.empty 0 `shouldBe` 0
+
+spec_getAddress :: Spec
+spec_getAddress = do
+    describe "getAddress tests:" $ do
+        it "getAddress (LIST \"66\") returns \"66\"" $ do
+            getAddress (LIST "66") `shouldBe` "66"
+        it "getAddress (CODEBLOCK \"666\") returns \"666\"" $ do
+            getAddress (CODEBLOCK "666") `shouldBe` "666"
+        it "getAddress (CODEBLOCK \"\") returns \"\"" $ do
+            getAddress (CODEBLOCK "") `shouldBe` ""
+
+spec_duplicateStack :: Spec
+spec_duplicateStack = do
+    describe "duplicateStack tests:" $ do
+        it "duplicateStack [LIST \"0\"] ([], Map.fromList [(\"0\", [INT 45])]) returns ([LIST \"1\"], Map.fromList [(\"0\", [INT 45]), (\"1\", [INT 45])])" $ do
+            duplicateStack [LIST "0"] ([], Map.fromList [("0", [INT 45])]) `shouldBe` ([LIST "1"], Map.fromList [("0", [INT 45]), ("1", [INT 45])])
+        it "duplicateStack [INT 45, INT 30] ([], Map.empty) returns ([INT 45, INT 30], Map.empty)" $ do
+            duplicateStack [INT 45, INT 30] ([], Map.empty) `shouldBe` ([INT 45, INT 30], Map.empty)
+        it "duplicateStack [] ([], Map.empty) returns ([], Map.empty)" $ do
+            duplicateStack [] ([], Map.empty) `shouldBe` ([], Map.empty)
+
+spec_duplicateValue :: Spec
+spec_duplicateValue = do
+    describe "duplicateValue tests:" $ do
+        it "duplicateValue (LIST \"0\") (Map.fromList [(\"0\", [INT 45])]) returns (LIST \"1\", Map.fromList [(\"0\", [INT 45]), (\"1\", [INT 45])])" $ do
+            duplicateValue (LIST "0") (Map.fromList [("0", [INT 45])]) `shouldBe` (LIST "1", Map.fromList [("0", [INT 45]), ("1", [INT 45])])
+        it "duplicateValue (INT 45) Map.empty returns (INT 45, Map.empty)" $ do
+            duplicateValue (INT 45) Map.empty `shouldBe` (INT 45, Map.empty)
+
+spec_allocateMemory :: Spec
+spec_allocateMemory = do
+    describe "allocateMemory tests:" $ do
+        it "allocateMemory [INT 1] (Map.fromList [(\"0\", []), (\"2\", [])]) returns (Map.fromList [(\"0\", []), (\"2\", []), (\"1\", [INT 1])], \"1\")" $ do
+            allocateMemory [INT 1] (Map.fromList [("0", []), ("2", [])]) `shouldBe` (Map.fromList [("0", []), ("2", []), ("1", [INT 1])], "1")
+
+spec_deallocateStack :: Spec
+spec_deallocateStack = do
+    describe "deallocateStack tests:" $ do
+        it "deallocateStack [INT 0] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1])]" $ do
+            deallocateStack [INT 0] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1])]
+        it "deallocateStack [LIST \"0\"] (Map.fromList [(\"0\", [INT 1])]) returns Map.empty" $ do
+            deallocateStack [LIST "0"] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.empty
+        it "deallocateStack [LIST \"1\"] (Map.fromList [(\"0\", [INT 1]), (\"1\", [LIST \"0\"])]) returns Map.empty" $ do
+            deallocateStack [LIST "1"] (Map.fromList [("0", [INT 1]), ("1", [LIST "0"])]) `shouldBe` Map.empty
+        it "deallocateStack [] Map.empty returns Map.empty" $ do
+            deallocateStack [] Map.empty `shouldBe` Map.empty
+
+spec_deallocateMemory :: Spec
+spec_deallocateMemory = do
+    describe "deallocateMemory tests:" $ do
+        it "deallocateMemory (LIST \"3\") (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"2\", []), (\"5\", [])]" $ do
+            deallocateMemory (LIST "3") (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("2", []), ("5", [])]
+        it "deallocateMemory (INT 1) Map.empty returns Map.empty" $ do
+            deallocateMemory (INT 1) Map.empty `shouldBe` Map.empty
+        it "deallocateMemory (INT 1) (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]" $ do
+            deallocateMemory (INT 1) (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]
+
+spec_deallocateRootContainer :: Spec
+spec_deallocateRootContainer = do
+    describe "deallocateRootContainer tests:" $ do
+        it "deallocateRootContainer (CODEBLOCK \"0\") (Map.fromList [(\"0\", [LIST \"1\"]), (\"1\", [INT 42])]) returns Map.fromList [(\"1\", [INT 42])]" $ do
+            deallocateRootContainer (CODEBLOCK "0") (Map.fromList [("0", [LIST "1"]), ("1", [INT 42])]) `shouldBe` Map.fromList [("1", [INT 42])]
+        it "deallocateRootContainer (INT 45) (Map.fromList [(\"0\", [INT 42])]) returns Map.fromList [(\"0\", [INT 42])]" $ do
+            deallocateRootContainer (INT 45) (Map.fromList [("0", [INT 42])]) `shouldBe` Map.fromList [("0", [INT 42])]
+
+spec_updateContainer :: Spec
+spec_updateContainer = do
+    describe "updateContainer tests:" $ do
+        it "updateContainer (LIST \"0\") [INT 1, INT 2] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1, INT 2])]" $ do
+            updateContainer (LIST "0") [INT 1, INT 2] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1, INT 2])]
+
+spec_getContainer :: Spec
+spec_getContainer = do
+    describe "getContainer tests:" $ do
+        it "getContainer (Map.fromList [(\"0\", [INT 45])]) (LIST \"0\") returns [INT 45]" $ do
+            getContainer (Map.fromList [("0", [INT 45])]) (LIST "0") `shouldBe` [INT 45]
+        it "getContainer (Map.fromList [(\"0\", [INT 45])]) (CODEBLOCK \"0\") returns [INT 45]" $ do
+            getContainer (Map.fromList [("0", [INT 45])]) (CODEBLOCK "0") `shouldBe` [INT 45]
+
+spec_isFunction :: Spec
+spec_isFunction = do
+    describe "isFunction tests:" $ do
+        it "isFunction (UNKNOWN \"block\") (Map.fromList [(\"block\", [INT 45])]) returns True" $ do
+            isFunction (UNKNOWN "block") (Map.fromList [("block", [INT 45])]) `shouldBe` True
+        it "isFunction (UNKNOWN \"list\") (Map.fromList [(\"block\", [INT 45])]) returns False" $ do
+            isFunction (UNKNOWN "list") (Map.fromList [("block", [INT 45])]) `shouldBe` False
+        it "isFunction (STRING \"block\") (Map.fromList [(\"block\", [INT 45])]) returns False" $ do
+            isFunction (STRING "block") (Map.fromList [("block", [INT 45])]) `shouldBe` False
+
+spec_isVariable :: Spec
+spec_isVariable = do
+    describe "isVariable tests:" $ do
+        it "isVariable (UNKNOWN \"block\") (Map.fromList [(\"block\", INT 45)]) returns True" $ do
+            isVariable (UNKNOWN "block") (Map.fromList [("block", INT 45)]) `shouldBe` True
+        it "isVariable (UNKNOWN \"list\") (Map.fromList [(\"block\", INT 45)]) returns False" $ do
+            isVariable (UNKNOWN "list") (Map.fromList [("block", INT 45)]) `shouldBe` False
+        it "isVariable (STRING \"block\") (Map.fromList [(\"block\", INT 45)]) returns False" $ do
+            isVariable (STRING "block") (Map.fromList [("block", INT 45)]) `shouldBe` False
 
 {-- module Parser -}
 
@@ -788,156 +942,6 @@ spec_typeParser = do
             typeParser "+" `shouldBe` FUNC "+"
         it "typeParser \"abc\" returns UNKNOWN \"abc\"" $ do
             typeParser "abc" `shouldBe` UNKNOWN "abc"
-
-{-- module Stack -}
-
-spec_validateParameters :: Spec
-spec_validateParameters = do
-    describe "validateParameters tests:" $ do
-        it "validateParameters [INT 1, INT 2] \"+\" returns False" $ do
-            validateParameters [INT 1, INT 2] "+" `shouldBe` False
-        it "validateParameters [INT 1, INT 2, INT 3] \"+\" returns False" $ do
-            validateParameters [INT 1, INT 2, INT 3] "+" `shouldBe` False
-        it "validateParameters [INT 1] \"+\" returns True" $ do
-            validateParameters [INT 1] "+" `shouldBe` True
-        it "validateParameters [] \"+\" returns True" $ do
-            validateParameters [] "+" `shouldBe` True
-
-spec_deallocateStack :: Spec
-spec_deallocateStack = do
-    describe "deallocateStack tests:" $ do
-        it "deallocateStack [INT 0] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1])]" $ do
-            deallocateStack [INT 0] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1])]
-        it "deallocateStack [LIST \"0\"] (Map.fromList [(\"0\", [INT 1])]) returns Map.empty" $ do
-            deallocateStack [LIST "0"] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.empty
-        it "deallocateStack [LIST \"1\"] (Map.fromList [(\"0\", [INT 1]), (\"1\", [LIST \"0\"])]) returns Map.empty" $ do
-            deallocateStack [LIST "1"] (Map.fromList [("0", [INT 1]), ("1", [LIST "0"])]) `shouldBe` Map.empty
-        it "deallocateStack [] Map.empty returns Map.empty" $ do
-            deallocateStack [] Map.empty `shouldBe` Map.empty
-
-spec_generateAddress :: Spec
-spec_generateAddress = do
-    describe "generateAddress tests:" $ do
-        it "generateAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) returns \"4\"" $ do
-            generateAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) `shouldBe` "4"
-        it "generateAddress Map.empty returns \"0\"" $ do
-            generateAddress Map.empty `shouldBe` "0"
-
-spec_getAddress :: Spec
-spec_getAddress = do
-    describe "getAddress tests:" $ do
-        it "getAddress (LIST \"66\") returns \"66\"" $ do
-            getAddress (LIST "66") `shouldBe` "66"
-        it "getAddress (CODEBLOCK \"666\") returns \"666\"" $ do
-            getAddress (CODEBLOCK "666") `shouldBe` "666"
-        it "getAddress (CODEBLOCK \"\") returns \"\"" $ do
-            getAddress (CODEBLOCK "") `shouldBe` ""
-
-spec_getAvailableAddress :: Spec
-spec_getAvailableAddress = do
-    describe "getAvailableAddress tests:" $ do
-        it "getAvailableAddress (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", []), (\"1\", [])]) 0 returns 4" $ do
-            getAvailableAddress (Map.fromList [("0", []), ("3", []), ("2", []), ("5", []), ("1", [])]) 0 `shouldBe` 4
-        it "getAvailableAddress Map.empty 0 returns 0" $ do
-            getAvailableAddress Map.empty 0 `shouldBe` 0
-
-spec_updateContainer :: Spec
-spec_updateContainer = do
-    describe "updateContainer tests:" $ do
-        it "updateContainer (LIST \"0\") [INT 1, INT 2] (Map.fromList [(\"0\", [INT 1])]) returns Map.fromList [(\"0\", [INT 1, INT 2])]" $ do
-            updateContainer (LIST "0") [INT 1, INT 2] (Map.fromList [("0", [INT 1])]) `shouldBe` Map.fromList [("0", [INT 1, INT 2])]
-
-spec_allocateMemory :: Spec
-spec_allocateMemory = do
-    describe "allocateMemory tests:" $ do
-        it "allocateMemory [INT 1] (Map.fromList [(\"0\", []), (\"2\", [])]) returns (Map.fromList [(\"0\", []), (\"2\", []), (\"1\", [INT 1])], \"1\")" $ do
-            allocateMemory [INT 1] (Map.fromList [("0", []), ("2", [])]) `shouldBe` (Map.fromList [("0", []), ("2", []), ("1", [INT 1])], "1")
-
-spec_duplicateStack :: Spec
-spec_duplicateStack = do
-    describe "duplicateStack tests:" $ do
-        it "duplicateStack [LIST \"0\"] ([], Map.fromList [(\"0\", [INT 45])]) returns ([LIST \"1\"], Map.fromList [(\"0\", [INT 45]), (\"1\", [INT 45])])" $ do
-            duplicateStack [LIST "0"] ([], Map.fromList [("0", [INT 45])]) `shouldBe` ([LIST "1"], Map.fromList [("0", [INT 45]), ("1", [INT 45])])
-        it "duplicateStack [INT 45, INT 30] ([], Map.empty) returns ([INT 45, INT 30], Map.empty)" $ do
-            duplicateStack [INT 45, INT 30] ([], Map.empty) `shouldBe` ([INT 45, INT 30], Map.empty)
-        it "duplicateStack [] ([], Map.empty) returns ([], Map.empty)" $ do
-            duplicateStack [] ([], Map.empty) `shouldBe` ([], Map.empty)
-
-spec_duplicateValue :: Spec
-spec_duplicateValue = do
-    describe "duplicateValue tests:" $ do
-        it "duplicateValue (LIST \"0\") (Map.fromList [(\"0\", [INT 45])]) returns (LIST \"1\", Map.fromList [(\"0\", [INT 45]), (\"1\", [INT 45])])" $ do
-            duplicateValue (LIST "0") (Map.fromList [("0", [INT 45])]) `shouldBe` (LIST "1", Map.fromList [("0", [INT 45]), ("1", [INT 45])])
-        it "duplicateValue (INT 45) Map.empty returns (INT 45, Map.empty)" $ do
-            duplicateValue (INT 45) Map.empty `shouldBe` (INT 45, Map.empty)
-
-spec_deallocateRootContainer :: Spec
-spec_deallocateRootContainer = do
-    describe "deallocateRootContainer tests:" $ do
-        it "deallocateRootContainer (CODEBLOCK \"0\") (Map.fromList [(\"0\", [LIST \"1\"]), (\"1\", [INT 42])]) returns Map.fromList [(\"1\", [INT 42])]" $ do
-            deallocateRootContainer (CODEBLOCK "0") (Map.fromList [("0", [LIST "1"]), ("1", [INT 42])]) `shouldBe` Map.fromList [("1", [INT 42])]
-        it "deallocateRootContainer (INT 45) (Map.fromList [(\"0\", [INT 42])]) returns Map.fromList [(\"0\", [INT 42])]" $ do
-            deallocateRootContainer (INT 45) (Map.fromList [("0", [INT 42])]) `shouldBe` Map.fromList [("0", [INT 42])]
-
-spec_deallocateMemory :: Spec
-spec_deallocateMemory = do
-    describe "deallocateMemory tests:" $ do
-        it "deallocateMemory (LIST \"3\") (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"2\", []), (\"5\", [])]" $ do
-            deallocateMemory (LIST "3") (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("2", []), ("5", [])]
-        it "deallocateMemory (INT 1) Map.empty returns Map.empty" $ do
-            deallocateMemory (INT 1) Map.empty `shouldBe` Map.empty
-        it "deallocateMemory (INT 1) (Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]) returns Map.fromList [(\"0\", []), (\"3\", []), (\"2\", []), (\"5\", [])]" $ do
-            deallocateMemory (INT 1) (Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]) `shouldBe` Map.fromList [("0", []), ("3", []), ("2", []), ("5", [])]
-
-spec_getBlock :: Spec
-spec_getBlock = do
-    describe "getBlock tests:" $ do
-        it "getBlock (CODEBLOCK \"0\") returns [CODEBLOCK \"0\", FUNC \"exec\"]" $ do
-            getBlock (CODEBLOCK "0") `shouldBe` [CODEBLOCK "0", FUNC "exec"]
-        it "getBlock (FUNC \"+\") returns [FUNC \"+\"]" $ do
-            getBlock (FUNC "+") `shouldBe` [FUNC "+"]
-        it "getBlock (UNKNOWN \"block\") returns [UNKNOWN \"block\"]" $ do
-            getBlock (UNKNOWN "block") `shouldBe` [UNKNOWN "block"]
-
-spec_getContainer :: Spec
-spec_getContainer = do
-    describe "getContainer tests:" $ do
-        it "getContainer (Map.fromList [(\"0\", [INT 45])]) (LIST \"0\") returns [INT 45]" $ do
-            getContainer (Map.fromList [("0", [INT 45])]) (LIST "0") `shouldBe` [INT 45]
-        it "getContainer (Map.fromList [(\"0\", [INT 45])]) (CODEBLOCK \"0\") returns [INT 45]" $ do
-            getContainer (Map.fromList [("0", [INT 45])]) (CODEBLOCK "0") `shouldBe` [INT 45]
-
-spec_isFunction :: Spec
-spec_isFunction = do
-    describe "isFunction tests:" $ do
-        it "isFunction (UNKNOWN \"block\") (Map.fromList [(\"block\", [INT 45])]) returns True" $ do
-            isFunction (UNKNOWN "block") (Map.fromList [("block", [INT 45])]) `shouldBe` True
-        it "isFunction (UNKNOWN \"list\") (Map.fromList [(\"block\", [INT 45])]) returns False" $ do
-            isFunction (UNKNOWN "list") (Map.fromList [("block", [INT 45])]) `shouldBe` False
-        it "isFunction (STRING \"block\") (Map.fromList [(\"block\", [INT 45])]) returns False" $ do
-            isFunction (STRING "block") (Map.fromList [("block", [INT 45])]) `shouldBe` False
-
-spec_isVariable :: Spec
-spec_isVariable = do
-    describe "isVariable tests:" $ do
-        it "isVariable (UNKNOWN \"block\") (Map.fromList [(\"block\", INT 45)]) returns True" $ do
-            isVariable (UNKNOWN "block") (Map.fromList [("block", INT 45)]) `shouldBe` True
-        it "isVariable (UNKNOWN \"list\") (Map.fromList [(\"block\", INT 45)]) returns False" $ do
-            isVariable (UNKNOWN "list") (Map.fromList [("block", INT 45)]) `shouldBe` False
-        it "isVariable (STRING \"block\") (Map.fromList [(\"block\", INT 45)]) returns False" $ do
-            isVariable (STRING "block") (Map.fromList [("block", INT 45)]) `shouldBe` False
-
-spec_printableStack :: Spec
-spec_printableStack = do
-    describe "printableStack tests:" $ do
-        it "printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING \"a string\", INT 1], None) returns \"[1,\"a string\",2\"]" $ do
-            printableStack ([], Map.empty, Map.empty, Map.empty, [INT 2, STRING "a string", INT 1], None) `shouldBe` "[1,\"a string\",2]"
-
-spec_formatStack :: Spec
-spec_formatStack = do
-    describe "formatStack tests:" $ do
-        it "formatStack [INT 2, STRING \"a string\", INT 1] Map.empty returns [\"2\",\"\"a string\"\",\"1\"]" $ do
-            formatStack [INT 2, STRING "a string", INT 1] Map.empty `shouldBe` ["2","\"a string\"","1"]
 
 {-- offical tests. modified so it works with bprog2 and output is in format of a stack [...] -}
 

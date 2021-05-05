@@ -5,7 +5,7 @@ module Functors.List
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import Stack
+import MemoryHandler
 
 -- | Performs empty operation by checking if there are any elements in the list.
 funcEmpty :: StackState

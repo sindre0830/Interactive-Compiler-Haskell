@@ -106,6 +106,11 @@ type StatusIO = TypeIO
 -- state type
 type StackState = State (InputStack, Containers, Variables, Functions, OutputStack, StatusIO) (InputStack, Containers, Variables, Functions, OutputStack, StatusIO)
 
+
+-- | Validates parameter amount for given functor.
+validateParameters :: Stack -> String -> Bool
+validateParameters stack functor = length stack < functors Map.! functor
+
 -- | List of functors and their expected amount of parameters.
 functors :: Map Key Int
 functors = Map.fromList [

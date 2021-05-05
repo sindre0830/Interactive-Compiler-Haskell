@@ -5,7 +5,8 @@ module Functors.ControlFlow
 import Control.Monad.State.Lazy (MonadState(put, get))
 -- local modules
 import Dictionary
-import Stack
+import MemoryHandler
+import Convert
 
 -- | Performs if operation and returns a value according to a boolean.
 funcIf :: StackState
