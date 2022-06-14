@@ -1,4 +1,4 @@
-# [Assignment 2 - bprog](https://git.gvk.idi.ntnu.no/course/prog2006/prog2006-2021/-/wikis/Tasks/Assignment-2:-bprog)
+# [Assignment 2 - bprog]
 
 ### Information
 
@@ -6,12 +6,11 @@
     - While the submission is individual, I have discussed the tasks with Rickard Loland. We have also helped each other with problems that occurred during development ([rubber ducking](https://en.wikipedia.org/wiki/Rubber_duck_debugging) mostly).
 - I am using the Haddock formatting style for documentation.
 - I am using Stack to format the structure of my repository.
-- [First iteration](https://git.gvk.idi.ntnu.no/course/prog2006/as/sindre0830/assignment-two/assignment-two-iteration-one)
-    - I decided to redo the assignment when I realized I couldn't implement everything using that design. If you are interested in seeing that design, you should look at the Dictionary file (hint: no sum types or state).
+- I decided to redo the assignment when I realized I couldn't implement everything using that design.
 
 ### Setup
 
-Open a terminal and navigate to the project directory ```cd (...)/assignment-two-iteration-two```
+Open a terminal and navigate to the project directory ```cd (...)/Interactive-Compiler-Haskell```
 1. Type in ```stack run``` to build and run the program
 2. Type in ```stack test``` to build and run the tests
 
